@@ -1,0 +1,138 @@
+initialize(){
+
+	initializeMutationRate(1e-5); //change??
+	
+	// neutral mutations in non-coding regions
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeGenomicElementType("g1", m1, 1.0);
+	
+	// adaptive mutations in coding regions
+	initializeMutationType("m2", 0.5, "f", 0.01); //change??
+	initializeGenomicElementType("g2", m2, 1.0);
+	
+	// 20 chromosomes
+	defineConstant("C", 20);
+	// number of chunks
+	defineConstant("D", 40);
+	// netural buffer on both sides of QTN
+	defineConstant("N", 499);
+	
+	// bp position counter for a chromosome
+	pos = 0;
+	
+	// initialize q for loading QTN positions
+	q = NULL;
+	
+	// set up chromosomes
+	for (i in 1:C) // creates 20 chromosomes
+		{
+		
+		// set up 1000 bp chunks 499 base pair neutral regions on either side of a QTN
+		for (i in 1:D) // creates 40 chunks within the chromosome
+			{
+				initializeGenomicElement(g1, pos, pos + N); // Neutral buffer
+				pos = pos + N + 1; 
+				//step 1: 0 + 499 + 1 = 500
+				//step 2: 1000 + 499 + 1 = 1500
+				//step 3: 2000 + 499 + 1 = 2500
+				
+				initializeGenomicElement(g2, pos, pos); // QTN
+				q = c(q, pos); // building a vector of QTN positions
+				pos = pos + 1; 
+				//step 1: 500 + 1 = 501
+				//step 2: 1500 + 1 = 1501
+				//step 3: 2500 + 1 = 2501
+				
+				initializeGenomicElement(g1, pos, pos + N - 1); // Neutral buffer
+				pos = pos + N; 
+				//step 1: 501 + 499 - 1 = 999
+				//step 2: 1501 + 499 - 1 = 1999
+				//step 3: 2501 + 499 = 2999
+			}
+		
+		}	
+		
+		defineConstant("Q", q); // QTN positions within each chunk 
+		// first three: c(500, 1500, 2500, ....)
+		// will this work for all QTNs across all chromosomes? I think it should
+
+		// set up 21st chromosome as a neutral chromosome
+		b = NULL;		
+		for (i in 1:D){
+			
+			initializeGenomicElement(g1, pos, pos + (N*2)+1);  
+			pos = pos + 2*N + 1; 
+			b = c(b, pos);
+			pos = pos + 1; 
+			b = c(b, pos);
+		}
+
+		defineConstant("B", b);
+
+		// set up recombination map
+		rates = c(rep(c(rep(c(10e-6, 2e-5), D-1), 10e-6, 0.5), C)[0:(D*C*2-2)], c(rep(c(10e-6, 2e-5), D-1), 10e-6)); 
+		ends = c((repEach(Q + N, 2) + rep(c(0,1), D*C))[0:(D*C*2 - 2)], B[0:(D*2-2)]); 
+		initializeRecombinationRate(rates, ends);
+	}
+
+1 early(){
+	
+	// set up initial population sizes
+	sim.addSubpop("p1", 1000); 
+	sim.addSubpop("p2", 1000); 
+
+	// set up migration rates 
+	p1.setMigrationRates(p2, 0.01);
+	p2.setMigrationRates(p1, 0.01);
+	
+	//sim.registerLateEvent("s2", s1.source, 1, 1);
+	
+
+}
+
+/* 
+1 late(){
+	// run for 4Ne generations first to develop standing genetic variation and then implement selection
+	
+	g = sim.subpopulations.genomes;
+	n = size(g);
+	
+	
+}
+*/
+
+1: late(){
+	// construct phenotypes for the additive effects of QTLs
+	inds = sim.subpopulations.individuals; // defines all the individuals (objects of class individuals)
+														// that are gathered from across the subpopulations
+	phenotype = asInteger(inds.sumOfMutationsOfType(m2)); //count the number of mutations at QTLs = phenotype
+	// expand to a two trait model here where you add up two different phenotypes and two different mutations
+
+}
+
+// fitness callbacks population means
+
+fitness(NULL, p1){
+	// optimum of +10
+	return 1.0 + dnorm(10.0 - individual.tag, 0.0, 5.0);
+}
+
+fitness(NULL, p2){
+	// optimum of -10
+	return 1.0 + dnorm(-10.0 - individual.tag, 0.0, 5.0);
+}
+
+s1 6000 late(){ // do we want to output the fitness values every generation or just at the beginning and end?
+	// Output population mean fitness values
+	cat("p1 mean fitness = " + mean(p1.cachedFitness(NULL)) + "\n"); // output into a file instead of just printing
+	cat("p2 mean fitness = " + mean(p2.cachedFitness(NULL)) + "\n");
+	
+	// Output population additive QTL-based phenotypes
+	cat("p1 mean phenotype = " + mean(p1.individuals.tag) + "\n");
+	cat("p2 mean phenotype = " + mean(p2.individuals.tag) + "\n");	
+
+	// print out files
+	p1.individuals.genomes.outputVCF();
+	p2.individuals.genomes.outputVCF();
+
+}
