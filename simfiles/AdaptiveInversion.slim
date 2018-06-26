@@ -1,8 +1,8 @@
 initialize(){
 
 	// to make code reproducible need to define a seed that will be used 
-	//setSeed(); 
-	defineConstant("my_seed", seed);
+	//setSeed(1528533727450); 
+	//defineConstant("my_seed", seed);
 	
 	initializeMutationRate(1e-5); //change??
 	
@@ -11,10 +11,10 @@ initialize(){
 	initializeGenomicElementType("g1", m1, 1.0);
 	
 	// adaptive mutations in coding regions
-	scriptForQTLs = "if (runif(1) < 0.5) -1; else 1;";
-	initializeMutationType("m2", 0.5, "s", scriptForQTLs); // should we do this in a different way?
+	//scriptForQTLs = "if (runif(1) < 0.5) -1; else 1;";
+	//initializeMutationType("m2", 0.5, "s", scriptForQTLs); // should we do this in a different way?
 	// gives mutations a value of -1 or 1
-	// initializeMutationType("m2", 0.5, "n", 0.0, 0.7); 
+	initializeMutationType("m2", 0.5, "n", 0.0, 0.7); 
 	// give a value from the normal distribution with a mean of 0 and SD of 0.7
 	initializeGenomicElementType("g2", m2, 1.0);
 	
@@ -93,17 +93,15 @@ initialize(){
 	p1.setMigrationRates(p2, 0.01);
 	p2.setMigrationRates(p1, 0.01);
 	
-	//sim.registerLateEvent("s2", s1.source, 1, 1);
+	sim.registerLateEvent("s2", s1.source, 1, 1);
 	
 
 }
 
 /* 
-1 late(){
+1:4000 late(){
 	// run for 4Ne generations first to develop standing genetic variation and then implement selection
 	
-	g = sim.subpopulations.genomes;
-	n = size(g);
 	
 	
 }
@@ -118,16 +116,29 @@ initialize(){
 
 }
 
-// fitness callbacks population means
+// fitness callbacks population means - no selection for first 4000
 
-fitness(NULL, p1){
-	// optimum of +10
-	return 1.0 + dnorm(10.0 - individual.tag, 0.0, 5.0);
-}
+if (sim.generation < 4000){
 
-fitness(NULL, p2){
-	// optimum of -10
-	return 1.0 + dnorm(-10.0 - individual.tag, 0.0, 5.0);
+	fitness(NULL, p1){
+		return 1.0 + dnorm(0 - individual.tag, 0.0, 5.0);
+	}
+	
+	fitness(NULL, p2){
+		return 1.0 + dnorm(0 - individual.tag, 0.0, 5.0);
+	}
+	
+	} else {
+
+	fitness(NULL, p1){
+		// optimum of +10
+		return 1.0 + dnorm(10.0 - individual.tag, 0.0, 5.0);
+	}
+
+	fitness(NULL, p2){
+		// optimum of -10
+		return 1.0 + dnorm(-10.0 - individual.tag, 0.0, 5.0);
+	}
 }
 
 s1 1: late(){ // output fitness every 200 generations
@@ -147,10 +158,10 @@ s1 1: late(){ // output fitness every 200 generations
 		// writeFile();
 		
 		muts = sim.mutationsOfType(m2); // get all mutations at QTLs
-		plus = muts[muts.selectionCoeff == 1.0]; // get all mutations that are plus
-		minus = muts[muts.selectionCoeff == -1.0]; // get all mutations that are minus
-		// plus = muts[muts.selectionCoeff > 0];
-		// minus = muts[muts.selectionCoeff < 0];
+		//plus = muts[muts.selectionCoeff == 1.0]; // get all mutations that are plus
+		//minus = muts[muts.selectionCoeff == -1.0]; // get all mutations that are minus
+		plus = muts[muts.selectionCoeff > 0];
+		minus = muts[muts.selectionCoeff < 0];
 		
 		// Print Allele Freqency Spectrum
 		for (q in Q){
@@ -171,11 +182,8 @@ s1 1: late(){ // output fitness every 200 generations
 		}
 		
 	
-	}
-
-	// print out VCF files
-	p1.individuals.genomes.outputVCF(paste(c(path, my_seed, "_QTL_VCFallpop1.vcf"), sep = ""));
-	p2.individuals.genomes.outputVCF(paste(c(path, my_seed, "_QTL_VCFallpop2.vcf"), sep = ""));
-	
+	}	
 	
 }
+
+6000 {}
