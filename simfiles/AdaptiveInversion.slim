@@ -1,5 +1,9 @@
 initialize(){
 
+	// to make code reproducible need to define a seed that will be used 
+	//setSeed(); 
+	defineConstant("my_seed", seed);
+	
 	initializeMutationRate(1e-5); //change??
 	
 	// neutral mutations in non-coding regions
@@ -122,17 +126,37 @@ fitness(NULL, p2){
 	return 1.0 + dnorm(-10.0 - individual.tag, 0.0, 5.0);
 }
 
-s1 6000 late(){ // do we want to output the fitness values every generation or just at the beginning and end?
-	// Output population mean fitness values
-	cat("p1 mean fitness = " + mean(p1.cachedFitness(NULL)) + "\n"); // output into a file instead of just printing
-	cat("p2 mean fitness = " + mean(p2.cachedFitness(NULL)) + "\n");
+s1 1: late(){ // output fitness every 100 - 200 generations
+
+	if (sim.generation % 200 == 0){
 	
-	// Output population additive QTL-based phenotypes
-	cat("p1 mean phenotype = " + mean(p1.individuals.tag) + "\n");
-	cat("p2 mean phenotype = " + mean(p2.individuals.tag) + "\n");	
+		// X X X X X Output into a file instead of just printing X X X X X
+		
+		// Output population mean fitness values
+		cat("p1 mean fitness = " + mean(p1.cachedFitness(NULL)) + "\n"); 
+				cat("p2 mean fitness = " + mean(p2.cachedFitness(NULL)) + "\n");
+	
+		// Output population additive QTL-based phenotypes
+		cat("p1 mean phenotype = " + mean(p1.individuals.tag) + "\n");
+		cat("p2 mean phenotype = " + mean(p2.individuals.tag) + "\n");	
+		
+		muts = sim.mutationsOfType(m2); //get all mutations at QTLs
+		plus = muts[muts.selectionCoeff == 1.0];
+		minus = muts[muts.selectionCoeff == -1.0];
+		
+		// Print Allele Freqency Spectrum
+		for (q in Q){
+			qPlus = plus[plus.position == q];
+			qMinus = minus[minus.position == q];
+		
+		}
+		
+	
+	}
 
-	// print out files
-	p1.individuals.genomes.outputVCF();
-	p2.individuals.genomes.outputVCF();
-
+	// print out VCF files
+	p1.individuals.genomes.outputVCF(paste(c(path, my_seed, "_QTL_VCFallpop1.vcf"), sep = ""));
+	p2.individuals.genomes.outputVCF(paste(c(path, my_seed, "_QTL_VCFallpop2.vcf"), sep = ""));
+	
+	
 }
