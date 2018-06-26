@@ -11,7 +11,11 @@ initialize(){
 	initializeGenomicElementType("g1", m1, 1.0);
 	
 	// adaptive mutations in coding regions
-	initializeMutationType("m2", 0.5, "f", 0.01); //change??
+	scriptForQTLs = "if (runif(1) < 0.5) -1; else 1;";
+	initializeMutationType("m2", 0.5, "s", scriptForQTLs); // should we do this in a different way?
+	// gives mutations a value of -1 or 1
+	// initializeMutationType("m2", 0.5, "n", 0.0, 0.7); 
+	// give a value from the normal distribution with a mean of 0 and SD of 0.7
 	initializeGenomicElementType("g2", m2, 1.0);
 	
 	// 20 chromosomes
@@ -126,7 +130,7 @@ fitness(NULL, p2){
 	return 1.0 + dnorm(-10.0 - individual.tag, 0.0, 5.0);
 }
 
-s1 1: late(){ // output fitness every 100 - 200 generations
+s1 1: late(){ // output fitness every 200 generations
 
 	if (sim.generation % 200 == 0){
 	
@@ -134,21 +138,36 @@ s1 1: late(){ // output fitness every 100 - 200 generations
 		
 		// Output population mean fitness values
 		cat("p1 mean fitness = " + mean(p1.cachedFitness(NULL)) + "\n"); 
-				cat("p2 mean fitness = " + mean(p2.cachedFitness(NULL)) + "\n");
+		cat("p2 mean fitness = " + mean(p2.cachedFitness(NULL)) + "\n");
 	
 		// Output population additive QTL-based phenotypes
 		cat("p1 mean phenotype = " + mean(p1.individuals.tag) + "\n");
 		cat("p2 mean phenotype = " + mean(p2.individuals.tag) + "\n");	
 		
-		muts = sim.mutationsOfType(m2); //get all mutations at QTLs
-		plus = muts[muts.selectionCoeff == 1.0];
-		minus = muts[muts.selectionCoeff == -1.0];
+		// writeFile();
+		
+		muts = sim.mutationsOfType(m2); // get all mutations at QTLs
+		plus = muts[muts.selectionCoeff == 1.0]; // get all mutations that are plus
+		minus = muts[muts.selectionCoeff == -1.0]; // get all mutations that are minus
+		// plus = muts[muts.selectionCoeff > 0];
+		// minus = muts[muts.selectionCoeff < 0];
 		
 		// Print Allele Freqency Spectrum
 		for (q in Q){
-			qPlus = plus[plus.position == q];
-			qMinus = minus[minus.position == q];
+			qPlus = plus[plus.position == q]; // get all plus mutations at the q it is on
+			qMinus = minus[minus.position == q]; // get all the minus mutations at the q it is on
+			pf = sum(sim.mutationFrequencies(NULL, qPlus)); // need NULL for first argument because subpop
+			mf = sum(sim.mutationFrequencies(NULL, qMinus)); // is required here we don't want to specify a subpopulation
+			pf1 = sum(sim.mutationFrequencies(p1, qPlus));
+			mf1 = sum(sim.mutationFrequencies(p1, qMinus));
+			pf2 = sum(sim.mutationFrequencies(p2, qPlus));
+			mf2 = sum(sim.mutationFrequencies(p2, qMinus));
 		
+			cat("   QTL " + q + ": f(+) == " + pf + ", f(-) == " + mf + "\n");
+			cat("         in p1: f(+) == " + pf1 + ", f(-) == " + mf1 + "\n");
+			cat("         in p2: f(+) == " + pf2 + ", f(-) == " + mf2 + "\n\n");
+			
+			
 		}
 		
 	
