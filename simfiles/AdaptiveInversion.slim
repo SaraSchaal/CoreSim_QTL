@@ -1,29 +1,33 @@
 initialize(){
-
-	// to make code reproducible need to define a seed that will be used 
-	//setSeed(1528533727450); 
-	//defineConstant("my_seed", seed);
+	//////////////////////////////////////////////////////////////////
+	// X X X X X Define Constants and Initialize Elements X X X X X //
+	//////////////////////////////////////////////////////////////////
 	
-	initializeMutationRate(1e-5); //change??
+	setSeed(1528533727450); // to make code reproducible need to define a seed that will be used 
+	defineConstant("my_seed", seed);
+	defineConstant("path", mypath); 
+	defineConstant("mu", 1e-06); // mutation rate
+	defineConstant("N", 1000); // population size
+	initializeMutationRate(mu); //change??
 	
 	// neutral mutations in non-coding regions
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeGenomicElementType("g1", m1, 1.0);
 	
 	// adaptive mutations in coding regions
-	//scriptForQTLs = "if (runif(1) < 0.5) -1; else 1;";
-	//initializeMutationType("m2", 0.5, "s", scriptForQTLs); // should we do this in a different way?
-	// gives mutations a value of -1 or 1
-	initializeMutationType("m2", 0.5, "n", 0.0, 0.7); 
-	// give a value from the normal distribution with a mean of 0 and SD of 0.7
+	initializeMutationType("m2", 0.5, "n", 0.0, 0.7); // give a value from the normal distribution with a mean of 0 and SD of 0.7
 	initializeGenomicElementType("g2", m2, 1.0);
+	
+	///////////////////////////////////////
+	// X X X X X Set up Genome X X X X X //
+	///////////////////////////////////////
 	
 	// 20 chromosomes
 	defineConstant("C", 20);
 	// number of chunks
 	defineConstant("D", 40);
 	// netural buffer on both sides of QTN
-	defineConstant("N", 499);
+	defineConstant("NB", 499);
 	
 	// bp position counter for a chromosome
 	pos = 0;
@@ -38,8 +42,8 @@ initialize(){
 		// set up 1000 bp chunks 499 base pair neutral regions on either side of a QTN
 		for (i in 1:D) // creates 40 chunks within the chromosome
 			{
-				initializeGenomicElement(g1, pos, pos + N); // Neutral buffer
-				pos = pos + N + 1; 
+				initializeGenomicElement(g1, pos, pos + NB); // Neutral buffer
+				pos = pos + NB + 1; 
 				//step 1: 0 + 499 + 1 = 500
 				//step 2: 1000 + 499 + 1 = 1500
 				//step 3: 2000 + 499 + 1 = 2500
@@ -51,8 +55,8 @@ initialize(){
 				//step 2: 1500 + 1 = 1501
 				//step 3: 2500 + 1 = 2501
 				
-				initializeGenomicElement(g1, pos, pos + N - 1); // Neutral buffer
-				pos = pos + N; 
+				initializeGenomicElement(g1, pos, pos + NB - 1); // Neutral buffer
+				pos = pos + NB; 
 				//step 1: 501 + 499 - 1 = 999
 				//step 2: 1501 + 499 - 1 = 1999
 				//step 3: 2501 + 499 = 2999
@@ -62,26 +66,26 @@ initialize(){
 		
 		defineConstant("Q", q); // QTN positions within each chunk 
 		// first three: c(500, 1500, 2500, ....)
-		// will this work for all QTNs across all chromosomes? I think it should
 
 		// set up 21st chromosome as a neutral chromosome
 		b = NULL;		
 		for (i in 1:D){
 			
-			initializeGenomicElement(g1, pos, pos + (N*2)+1);  
-			pos = pos + 2*N + 1; 
+			initializeGenomicElement(g1, pos, pos + (NB*2)+1);  
+			pos = pos + 2*NB + 1; 
 			b = c(b, pos);
 			pos = pos + 1; 
 			b = c(b, pos);
 		}
 
-		defineConstant("B", b);
+		defineConstant("B", b); // 
 
 		// set up recombination map
 		rates = c(rep(c(rep(c(10e-6, 2e-5), D-1), 10e-6, 0.5), C)[0:(D*C*2-2)], c(rep(c(10e-6, 2e-5), D-1), 10e-6)); 
-		ends = c((repEach(Q + N, 2) + rep(c(0,1), D*C))[0:(D*C*2 - 2)], B[0:(D*2-2)]); 
+		ends = c((repEach(Q + NB, 2) + rep(c(0,1), D*C))[0:(D*C*2 - 2)], B[0:(D*2-2)]); 
 		initializeRecombinationRate(rates, ends);
 	}
+
 
 1 early(){
 	
@@ -90,72 +94,81 @@ initialize(){
 	sim.addSubpop("p2", 1000); 
 
 	// set up migration rates 
-	p1.setMigrationRates(p2, 0.01);
-	p2.setMigrationRates(p1, 0.01);
+	migr_p1 = 0.01;
+	migr_p2 = 0.01;
+	p1.setMigrationRates(p2, migr_p1);
+	p2.setMigrationRates(p1, migr_p2);
 	
 	sim.registerLateEvent("s2", s1.source, 1, 1);
 	
 
 }
 
-/* 
-1:4000 late(){
-	// run for 4Ne generations first to develop standing genetic variation and then implement selection
-	
-	
-	
-}
-*/
-
-1: late(){
+/* 1: late(){
 	// construct phenotypes for the additive effects of QTLs
 	inds = sim.subpopulations.individuals; // defines all the individuals (objects of class individuals)
 														// that are gathered from across the subpopulations
 	phenotype = asInteger(inds.sumOfMutationsOfType(m2)); //count the number of mutations at QTLs = phenotype
 	// expand to a two trait model here where you add up two different phenotypes and two different mutations
 
+} */
+
+///////////////////////////////////////////
+// X X X X X fitness callbacks X X X X X //
+///////////////////////////////////////////
+1: late(){
+	
+	// Run phenotype under stabilizing selection for 4Ne generations
+	// Then implement landscape and run for 2000 more generations
+	
+	if (sim.generation < 4000){
+
+		fitness(NULL, p1){
+			return 1.0 + dnorm(0 - individual.tag, 0.0, 5.0);
+		}
+	
+		fitness(NULL, p2){
+			return 1.0 + dnorm(0 - individual.tag, 0.0, 5.0);
+		}
+	
+		} else {
+
+		fitness(NULL, p1){
+			// optimum of +1 distribution of effect sizes vs the same effect sizes
+			return 1.0 + dnorm(1.0 - individual.tag, 0.0, 5.0);
+		}
+
+		fitness(NULL, p2){
+			// optimum of -1
+			return 1.0 + dnorm(-1.0 - individual.tag, 0.0, 5.0);
+		}
+	}
 }
 
-// fitness callbacks population means - no selection for first 4000
+s1 1: late(){ 
 
-if (sim.generation < 4000){
-
-	fitness(NULL, p1){
-		return 1.0 + dnorm(0 - individual.tag, 0.0, 5.0);
-	}
-	
-	fitness(NULL, p2){
-		return 1.0 + dnorm(0 - individual.tag, 0.0, 5.0);
-	}
-	
-	} else {
-
-	fitness(NULL, p1){
-		// optimum of +10
-		return 1.0 + dnorm(10.0 - individual.tag, 0.0, 5.0);
-	}
-
-	fitness(NULL, p2){
-		// optimum of -10
-		return 1.0 + dnorm(-10.0 - individual.tag, 0.0, 5.0);
-	}
-}
-
-s1 1: late(){ // output fitness every 200 generations
-
+	// output fitness and phenotypes every 200 generations
 	if (sim.generation % 200 == 0){
 	
-		// X X X X X Output into a file instead of just printing X X X X X
+		//////////////////////////////////////////////////
+		// X X X X X Population Level Outputs X X X X X //
+		//////////////////////////////////////////////////
 		
 		// Output population mean fitness values
-		cat("p1 mean fitness = " + mean(p1.cachedFitness(NULL)) + "\n"); 
-		cat("p2 mean fitness = " + mean(p2.cachedFitness(NULL)) + "\n");
-	
-		// Output population additive QTL-based phenotypes
-		cat("p1 mean phenotype = " + mean(p1.individuals.tag) + "\n");
-		cat("p2 mean phenotype = " + mean(p2.individuals.tag) + "\n");	
+		fitline1 = "p1 mean fitness = " + mean(p1.cachedFitness(NULL)) + "\n"; 
+		fitline2 = "p2 mean fitness = " + mean(p2.cachedFitness(NULL)) + "\n";
+		fitlines = c(fitline1, fitline2);
 		
-		// writeFile();
+		fitFile = paste(lines, "");
+		//writeFile(paste(c(path, my_seed, "_pheno_siminfo.txt"), sep = ""), fitFile, append = T);
+		
+		// Output population additive QTL-based phenotypes
+		phenoline1 = "p1 mean phenotype = " + mean(p1.individuals.tag) + "\n";
+		phenoline2 = "p2 mean phenotype = " + mean(p2.individuals.tag) + "\n";	
+		phenolines = c(phenoline1, phenoline2);
+		
+		phenoFile = paste(lines, "");
+		// writeFile(paste(c(path, my_seed, "_pheno_siminfo.txt"), sep = ""), phenoFile, append = T);
 		
 		muts = sim.mutationsOfType(m2); // get all mutations at QTLs
 		//plus = muts[muts.selectionCoeff == 1.0]; // get all mutations that are plus
@@ -163,7 +176,7 @@ s1 1: late(){ // output fitness every 200 generations
 		plus = muts[muts.selectionCoeff > 0];
 		minus = muts[muts.selectionCoeff < 0];
 		
-		// Print Allele Freqency Spectrum
+		// Print Allele Freqencies
 		for (q in Q){
 			qPlus = plus[plus.position == q]; // get all plus mutations at the q it is on
 			qMinus = minus[minus.position == q]; // get all the minus mutations at the q it is on
@@ -179,11 +192,73 @@ s1 1: late(){ // output fitness every 200 generations
 			cat("         in p2: f(+) == " + pf2 + ", f(-) == " + mf2 + "\n\n");
 			
 			
-		}
-		
+		}	
 	
 	}	
 	
 }
 
-6000 {}
+6000 late() {
+
+  //////////////////////////////////////////
+  // X X X X X Simulation Stats X X X X X //
+  /////////////////////////////////////////
+	
+	output_sim = "seed " + getSeed() + "\n" + 
+	"pop 1 migration rate " + migr_p1 + "\n" +
+	"pop 2 migration rate " + migr_p2 + "\n" +
+	"pop 1 N " + p1.individualCount + "\n" + 
+	"pop 2 N " + p2.individualCount + "\n" + 
+	"mutation_rate" + 
+	
+  //////////////////////////////////////////////////
+  // X X X X X Individual Level Outputs X X X X X //
+  //////////////////////////////////////////////////
+	
+  // X X individual genomes 
+	
+	inds = sim.subpopulations.individuals
+	p1.individuals.genomes.outputVCF(paste(c(path, my_seed, "_CoreSimQTL_sim1pop1.vcf"), sep= ""));
+	p2.individuals.genomes.outputVCF(paste(c(path, my_seed, "_CoreSimQTL_sim1pop2.vcf"), sep= ""));
+	
+	
+  // X X phenotypes 
+  
+	phenotype = inds.sumOfMutationsOfType(m2);
+	
+	output_ind = "id " +  "subpop" + "phenotype " + "\n"; // create header for file
+	
+	i = 0; // counter to step through phenotype object
+	
+	// for loop to step through individuals and pull first the header then append new lines with 
+	// individual index information which subpopulation they are from and their phenotype
+	for(ind in inds){ 
+		output_ind = output_ind + ind.index + " " + ind.subpopulation + " " + phenotype[i] + "\n";
+		i = i + 1;
+	}
+	
+	// write file to working directory ** include seed on the file name
+	writeFile(paste(c(path, my_seed, "_Inv_outputIndPheno.txt"), sep = ""), output_ind);
+
+	
+  // X X mutations
+	
+	g = sim.subpopulations.genomes;
+	// unique mutations sorted by position
+	m = sortBy(unique(c(g.mutationsOfType(m2))), "position");
+	m_freqs = sim.mutationFrequencies(subpops, m);
+	
+	out_m = "position " + "selCoef " + "originGen " + "type " + "freq" + "\n"; //create header for file
+	
+	// for loop to step through mutations and pull the header then append new lines with
+	// mutation position, the selection coefficient, the generation the mutation originated from and 
+	// its frequency
+	for(i in 0:size(m)){
+		out_m = out_m + m.position[i] + " " + m.selectionCoeff[i] + " " + m.originGeneration[i] + " " + "m2" + m.freqs[i] + "\n";
+	}
+	
+}
+
+6001 late() {
+	sim.simulationFinished();
+}
