@@ -19,8 +19,8 @@ initialize(){
 	initializeTreeSeq();
 	
 	// neutral mutations in non-coding regions
-	initializeMutationType("m1", 0.5, "f", 0.0);
-	initializeGenomicElementType("g1", m1, 1.0);
+	//initializeMutationType("m1", 0.5, "f", 0.0); // TreeSeq
+	//initializeGenomicElementType("g1", m1, 1.0); // TreeSeq
 	
 	// adaptive mutations in coding regions
 	initializeMutationType("m2", 0.5, "n", 0.0, 0.7); // give a value from the normal distribution with a mean of 0 and SD of 0.7
@@ -45,7 +45,7 @@ initialize(){
 	for (i in 1:C) // creates 2000 LGs with QTN + neutral buffer
 		{
 		
-			initializeGenomicElement(g1, pos, pos + NB); // Neutral buffer
+			//initializeGenomicElement(g1, pos, pos + NB); // Neutral buffer // TreeSeq
 			pos = pos + NB + 1; 
 			//step 1: 0 + 499 + 1 = 500
 			//step 2: 1000 + 499 + 1 = 1500
@@ -58,7 +58,7 @@ initialize(){
 			//step 2: 1500 + 1 = 1501
 			//step 3: 2500 + 1 = 2501
 				
-			initializeGenomicElement(g1, pos, pos + NB - 1); // Neutral buffer
+			//initializeGenomicElement(g1, pos, pos + NB - 1); // Neutral buffer // TreeSeq
 			pos = pos + NB; 
 			//step 1: 501 + 499 - 1 = 999
 			//step 2: 1501 + 499 - 1 = 1999
@@ -70,7 +70,7 @@ initialize(){
 		// first three: c(500, 1500, 2500, ....)
 
 		// set up 21st LG as neutral
-		initializeGenomicElement(g1, pos, pos + 99999);
+		//initializeGenomicElement(g1, pos, pos + 99999); // TreeSeq
 		nlg = pos + 99999; // final location in the genome
 		defineConstant("NLG", nlg);
 
@@ -78,6 +78,8 @@ initialize(){
 		rates = c(rep(c(1e-6, 0.5), C), 1e-6);
 		ends = c(repEach(Q + NB, 2) + rep(c(0,1), C), nlg); //do not need last two ends
 		initializeRecombinationRate(rates, ends);
+		// as long as your recombination map indicates the end points of certain regions you do not need to track the neutral mutations. 
+		// TreeSeq will do this.
 	}
 
 
