@@ -5,11 +5,11 @@ initialize(){
 	
 	//setSeed(1528533727450); // to make code reproducible need to define a seed that will be used 
 	seed = getSeed();
-	setwd("~/Documents/Northeastern/LotterhosLab/Coding/SLiM/CoreSim_QTL/results/");
+	setwd("~/Documents/Northeastern/LotterhosLab/Coding/SLiM/CoreSim_QTL/results/Independent/");
 	mypath = getwd();
 	defineConstant("my_seed", seed);
 	defineConstant("path", mypath); 
-	defineConstant("mu", 1e-06); // mutation rate
+	defineConstant("mu", 1e-04); // mutation rate
 	defineConstant("N", 1000); // population size
 	defineConstant("mig1", 0.01); // pop 1 migration rate
 	defineConstant("mig2", 0.01); // pop 2 migration rate
@@ -31,7 +31,7 @@ initialize(){
 	///////////////////////////////////////
 	
 	// 2000 linkage groups (LGs)
-	defineConstant("C", 2000);
+	defineConstant("C", 20);
 	// netural buffer on both sides of QTN
 	defineConstant("NB", 499);
 	
@@ -71,7 +71,7 @@ initialize(){
 
 		// set up 21st LG as neutral
 		//initializeGenomicElement(g1, pos, pos + 99999); // TreeSeq
-		nlg = pos + 99999; // final location in the genome
+		nlg = pos + 999; // final location in the genome
 		defineConstant("NLG", nlg);
 
 		// set up recombination map
@@ -92,14 +92,16 @@ initialize(){
 	// set up migration rates 
 	p1.setMigrationRates(p2, mig1);
 	p2.setMigrationRates(p1, mig2);
+	
+	// header for every 200 generations output file
+	out_head = "Gen " + "muts " + "mean_fit_p1 " + "sd_fit_p1 " + "mean_pheno_p1 " + "sd_pheno_p1 " +
+		"mean_fit_p2 " + "sd_fit_p2 " + "mean_pheno_p2 " + "sd_pheno_p2 " + "\n";
+	writeFile(paste(c(path, "/", my_seed, "_outputPhenFit.txt"), sep = ""), out_head);
 
 }
 
 1: early(){ 
 
-	//out = "Generation " + "number_of_mutations " + "mean_fitness_p1 " + "sd_fitness_p1 " + "mean_phenotype_p1 " + "sd_phenotype_p1 " +
-		//"mean_fitness_p2 " + "sd_fitness_p2 " + "mean_phenotype_p2 " + "sd_phenotype_p2 ";
-		
 	// output fitness and phenotypes every 200 generations
 	if (sim.generation % 200 == 0){
 	
@@ -110,52 +112,63 @@ initialize(){
 		// unique mutations sorted by position
 		m = sortBy(unique(c(g.mutationsOfType(m2))), "position");
 		
-		
+		// create output file with summary stats every 200 generations
 		out = paste(c(sim.generation, size(m), mean(p1.cachedFitness(NULL)), sd(p1.cachedFitness(NULL)), mean(p1.individuals.tag), sd(p1.individuals.tag),
 						  mean(p2.cachedFitness(NULL)), sd(p2.cachedFitness(NULL)), mean(p2.individuals.tag), sd(p2.individuals.tag)), sep = " ");		
-		writeFile(paste(c(path, my_seed, "_outputPhenFit.txt"), sep = ""), out, append = T);
+		writeFile(paste(c(path, "/", my_seed, "_outputPhenFit.txt"), sep = ""), out, append = T);
 	}	
 	
 }
 
-
 1: late(){
+
 	// construct phenotypes for the additive effects of QTLs
-	inds = sim.subpopulations.individuals;														
-	phenotype = asInteger(inds.sumOfMutationsOfType(m2)); //count the number of mutations at QTLs = phenotype
+	inds = sim.subpopulations.individuals;				
+	
+	// count the number of mutations at QTLs and store them as the tag values for every individual	
+	// using the tagF so that there is no rounding when mutation is pulled from the normal distribution 									
+	inds.tagF = asInteger(inds.sumOfMutationsOfType(m2)); 
+	
+	// store all the genomes in the population in a variable g
 	g = sim.subpopulations.genomes;
-	// unique mutations sorted by position
+	
+	// step through genomes, find unique mutations and sort by position
 	m = sortBy(unique(c(g.mutationsOfType(m2))), "position");
-	// cat("number of mutations" + size(m) + "\n");
+	cat("number of mutations" + size(m) + "\n"); // output to look at how many mutations arise in each generation
 } 
+
+
 
  ///////////////////////////////////////////
  // X X X X X Fitness Callbacks X X X X X //
  ///////////////////////////////////////////
 
-	// Run phenotype under stabilizing selection for 4Ne generations
+	// Run phenotype under stabilizing selection for 10Ne generations
 	// Then implement landscape and run for 2000 more generations
 	fitness(m2){
 		//makes m2 mutations neutral
 		return 1.0;
 	}
 
-
+	// should we let the QTNs evolve during the neutral burn in or not?
+	// yes they could drift to fixation - problem with smaller number of QTNs
+	// no then they are evolving from standing genetic varation whereas the neutral background had burn in
+	
 	fitness(NULL, p1){
 		if (sim.generation < 4000){
-			return 1.0 + dnorm(0 - individual.tagF, 0.0, 5.0);
+			return 1.0; // + dnorm(0 - individual.tagF, 0.0, 5.0);
 		} else {
 			// optimum of +1 distribution of effect sizes vs the same effect sizes
-			return 1.0 + dnorm(1.0 - individual.tag, 0.0, 5.0);
+			return 1.0 + dnorm(1.0 - individual.tagF, 0.0, 5.0);
 		}
 	}
 	
 	fitness(NULL, p2){
 		if (sim.generation < 4000){
-			return 1.0 + dnorm(0 - individual.tagF, 0.0, 5.0);
+			return 1.0; // + dnorm(0 - individual.tagF, 0.0, 5.0);
 		} else {
 			// optimum of -1
-			return 1.0 + dnorm(-1.0 - individual.tag, 0.0, 5.0);
+			return 1.0 + dnorm(-1.0 - individual.tagF, 0.0, 5.0);
 		}
 	}
 
@@ -172,7 +185,9 @@ initialize(){
 	"pop 2 migration rate " + mig2 + "\n" +
 	"pop 1 N " + p1.individualCount + "\n" + 
 	"pop 2 N " + p2.individualCount + "\n" + 
-	"mutation_rate" + mu + "\n";
+	"mutation_rate " + mu + "\n";
+	
+	writeFile(paste(c(path, "/", my_seed, "_outputSimStats.txt"), sep = ""), output_sim);
 	
   //////////////////////////////////////////////////
   // X X X X X Individual Level Outputs X X X X X //
@@ -181,27 +196,27 @@ initialize(){
   // X X Individual genomes 
 	
 	inds = sim.subpopulations.individuals;
-	p1.individuals.genomes.outputVCF(paste(c(path, my_seed, "_CoreSimQTL_sim1pop1.vcf"), sep= ""));
-	p2.individuals.genomes.outputVCF(paste(c(path, my_seed, "_CoreSimQTL_sim1pop2.vcf"), sep= ""));
+	p1.individuals.genomes.outputVCF(paste(c(path, "/", my_seed, "_CoreSimQTL_sim1pop1.vcf"), sep= ""));
+	p2.individuals.genomes.outputVCF(paste(c(path, "/", my_seed, "_CoreSimQTL_sim1pop2.vcf"), sep= ""));
 	
 	
   // X X Phenotypes 
   
-	phenotype = inds.sumOfMutationsOfType(m2);
+	//phenotype = inds.sumOfMutationsOfType(m2);
 	
-	output_ind = "id " +  "subpop" + "phenotype " + "\n"; // create header for file
+	output_ind = "id " +  "subpop " + "phenotype " + "\n"; // create header for file
 	
-	i = 0; // counter to step through phenotype object
+	//i = 0; // counter to step through phenotype object
 	
 	// for loop to step through individuals and pull first the header then append new lines with 
 	// individual index information which subpopulation they are from and their phenotype
 	for(ind in inds){ 
-		output_ind = output_ind + ind.index + " " + ind.subpopulation.id + " " + phenotype[i] + "\n";
-		i = i + 1;
+		output_ind = output_ind + ind.index + " " + ind.subpopulation.id + " " + ind.tagF + "\n";
+		//i = i + 1;
 	}
 	
-	// write file to working directory ** include seed on the file name
-	writeFile(paste(c(path, my_seed, "_Inv_outputIndPheno.txt"), sep = ""), output_ind);
+	// write file to working directory 
+	writeFile(paste(c(path, "/", my_seed, "_Inv_outputIndPheno.txt"), sep = ""), output_ind);
 
 	
   // X X Mutations
@@ -216,7 +231,7 @@ initialize(){
 	// for loop to step through mutations and pull the header then append new lines with
 	// mutation position, the selection coefficient, the generation the mutation originated from and 
 	// its frequency
-	for(i in 0:size(m)){
+	for(i in 0:(size(m)-1)){
 		out_m = out_m + m.position[i] + " " + m.selectionCoeff[i] + " " + m.originGeneration[i] + " " + "m2 " + m_freqs[i] + "\n";
 	}
 	
@@ -224,6 +239,11 @@ initialize(){
 	
 	// write TreeSeq file
 	sim.treeSeqOutput(paste(c(path, "/", my_seed, "_IndQTNmodel.trees"), sep = "")); 
+}
+
+1:6000 {
+	if (sim.generation%50==0)
+		sim.treeSeqSimplify();
 }
 
 6001 late() {
