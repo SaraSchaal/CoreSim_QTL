@@ -20,5 +20,4 @@ Each genomic chunck is 1000 bases containing 500 bp neutral buffer on either siz
 # Flexible QTN Model 
 
 
-
-## Inversion Evolution 
+# Inversion Evolution 
