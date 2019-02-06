@@ -197,16 +197,18 @@ for(i in seq_along(alpha)){
 
 ```{r}
 # size of loop
-nrow(qtlbase) *
+(nsims <- nrow(qtlbase) *
 nrow(Ne_r_table) *
-nrow(params2)
-# like 200,000 simulations
+nrow(params2))
+# max number of simulations
 
 i = 0
+k = 0
 for (a in 1:nrow(qtlbase)){
   for (b in 1:nrow(Ne_r_table)){
     for (c in 1:nrow(params2)){
-      if(i%%1000==0){print(i)}
+      k = k+ 1
+      if(k%%1000==0){print(c(k, "of," ,nsims))}
       mc <- m_crit(qtlbase$alpha_levels[a], theta.1, theta.2, params2$sel.strength[c], Ne_r_table$Ne[b])
       m <- mc*params2$mc_mult[c]
       if(m > 0 & m < 0.5){
@@ -214,12 +216,29 @@ for (a in 1:nrow(qtlbase)){
         if(i==1){
           final_df <- data.frame(qtlbase[a,], Ne_r_table[b,], params2[c,], mc=mc, m=m)
         }else{
-          final_df[i,] <- data.frame(qtlbase[a,], Ne_r_table[b,], params2[c,], mc=mc, m=m)
+          final_df[i,] <- cbind(qtlbase[a,], Ne_r_table[b,], params2[c,], mc=mc, m=m)
         }
       }# end if m
     }# end c
   }# end b
 }# end a
+
+dim(final_df)
+
+final_dfreps <- rbind(cbind(final_df, rep=1),
+                      cbind(final_df, rep=2),
+                      cbind(final_df, rep=3),
+                      cbind(final_df, rep=4),
+                      cbind(final_df, rep=5)
+)
+
+dim(final_dfreps)
+
+seed_start <- 100000
+final_dfreps$seed <- seed_start:(seed_start+nrow(final_dfreps)-1)
+```
+```{r}
+write.table(final_dfreps, "/Users/katie/Desktop/Repos/TestTheTests/CoreSim_QTL/src/simparams.txt", row.names=FALSE, col.names = TRUE)
 ```
 
 
