@@ -5,14 +5,21 @@ initialize(){
 	
 	//setSeed(1528533727450); // to make code reproducible need to define a seed that will be used 
 	seed = getSeed();
-	setwd("~/Documents/Northeastern/LotterhosLab/Coding/SLiM/CoreSim_QTL/results/Independent/");
+	setwd("/media/kevin/TOSHIBA_EXT/CoreSim_QTL/simfiles");
 	mypath = getwd();
+	
+
 	defineConstant("my_seed", seed);
 	defineConstant("path", mypath); 
-	defineConstant("mu", 1e-04); // mutation rate
-	defineConstant("N", 1000); // population size
-	defineConstant("mig1", 0.01); // pop 1 migration rate
-	defineConstant("mig2", 0.01); // pop 2 migration rate
+	
+	// if running in command line mode, these will be set on the command line instead
+	if (exists("slimgui")){
+		defineConstant("mu", 1e-04); // mutation rate
+		defineConstant("N", 1000); // population size
+		defineConstant("mig1", 0.01); // pop 1 migration rate
+		defineConstant("mig2", 0.01); // pop 2 migration rate
+	}
+
 	initializeMutationRate(mu); //change??
 	
 	// add TreeSeq
