@@ -15,7 +15,6 @@ $$ W_{z_{i,k}}= 1 - \frac{(z_{i,k}-\Theta_k)^2}{\omega_k^2}$$
 As an R function:
 
 ```{r}
-setwd("~/Dropbox/2015_12coresims")
 
 w.zik <- function(zik, theta, omega.sq){
   1 - (zik - theta)^2/omega.sq
@@ -24,7 +23,7 @@ w.zik <- function(zik, theta, omega.sq){
 
 For the 2-patch model, we assume that each patch has an optimum of +1 and -1.  We assume that for a given number of loci that affect the trait(`ntot`) at the lowest level of redundancy, their effect sizes (`alpha`) are $1/(2*ntot)$.  For this, we can use the supplemental equation from Yeaman 2015 Am Nat to calculate the critical migration rate $m_c$.  At $m>m_c$, alleles are prone to swamping by migration.
 
-
+In our SLiM simulation, we can simulate up to 2000 SNPs of equal effect sites.
 
 ```{r}
 theta.1 <- 1
@@ -34,8 +33,6 @@ ntot <- c(1, 2, 10,20,50,100,500)
 alpha <- 1/(2*ntot)
 # alpha is effect size input to SliM
 
-
-N=1000
 m_crit <- function(alpha, theta.1, theta.2, omega.sq, N){
   w1bb <- 1#w.zik(4*alpha,theta.1, omega.sq)/
     #w.zik(4*alpha, theta.1, omega.sq)
@@ -55,7 +52,9 @@ m_crit <- function(alpha, theta.1, theta.2, omega.sq, N){
   w2bb;w2Bb; w2BB
   return(1/(w1Bb/(w1Bb-w1BB*(1+(1/(4*N))))-w2Bb/(w2BB*(1+(1/(4*N)))-w2Bb))
   )
-  }
+}
+
+N=1000
 mc <- m_crit(alpha, theta.1, theta.2, omega.sq, N)
 cbind(ntot, alpha, mc=round(mc,5), lowmc=0.0100*round(mc,5), highmc=100*round(mc,5))
 ```
@@ -66,40 +65,81 @@ Note that for the smallest effect size, alleles will always be prone to swamping
 
 Now, we want to extend this base set to cover redundancy (1.5 ntot, 2 ntot), mutation rate, Ne (1000, 5000), environmental variance (0,2,4), and 9 migration rates (0.01mc to 100mc) spanning the critical threshold, standing variation vs. new mutation, clustered vs. unclustered.   This gives a maximum of :
 ```{r}
+tot <- 
 length(ntot)* #levels polygenicity
-  3* #levels redundancy 1, 2, 4,
+  3* #levels redundancy 1, 2, 4
   2* #levels Ne, 1000, 10000
-  2* #levels envi var, 
-  4* #levels migration, log scale, 1e-03, 1e-02, 1-e01 and mc
-  4* #levels mutation/recombination, sample runif from Ne=0.0001, 0.001, 0.01, 0.1
+  3* #levels envi var, 
+  7* #levels migration, log scale, mc/1000, mc/100, mc/10, and mc, 5mc, 10mc, 50mc
+  4* #levels, sample runif from Ne*mu=0.0001, 0.001, 0.01, 0.1
+  2* # levels recombination
   #2 # standing variation vs. new mutation
   3*  # selection strength omega.sq, sample runif from 5, 25, 50
   5 # replicates per level
 
-20160*3 / 60  # minutes per server
-1000/60 # hours needed
+tot
+(tot*3) # total number of minutes
+min_serv = (tot*3)/70 # total number of minutes per server (60 servers)
+min_serv/(60*24) # days needed
 ```
-levels, although note that some levels will not be possible (e.g. $m_c=0$ for ntot>400 and $m_c$>1.  We will do 3 replicates of each level.  
 
-Eventually we will layer demography, clustered vs. unclustered QTNs, and deleterious mutations onto this framework.
+Note that some levels will not be possible (e.g. $m_c=0$ for ntot>400 and $m_c$>1).   
 
+Note also that the larger Ne simulations will be a subset of the total number.
+
+Eventually we will add more biological realism to the simulations.
 
 ### Mutation and Ne levels
-For mutation, let's assume we want to at least capture $N_e\mu$=1e-04, which would approximate humans.  This gives a per-base pair mutation rate $\mu_1$=1e-07 when $N_e_1=1000$ or $\mu_2$=1e-08 when $N_e_2=10000$, but based on the recombination resolution of our map (a haplotype block of 100 bp/index in humans), this corresponds to $\mu_1$/100=1e-05 and $\mu_2$/100=1e-06.  Assume our artifical increase in mutation is related to the map resolution. In other words, our mutation rate in Nemo is equal to the mutation rate of a haplotype block the size of the resolution of our genetic map.
+For mutation, let's assume we want to at least capture $N_e\mu$=1e-04, which would approximate humans.  
+This gives a per-base pair mutation rate $\mu_1$=1e-07 when $N_e_1=1000$ or $\mu_2$=1e-08 when $N_e_2=10000$. 
 
-Ne  | mu  | r | resolution  | Ne*mu
-----|----|----|-----|-----       
-1000 | $10^{-4}$ | $10^{-4}$ | 0.01 | 0.1
-1000 |  $10^{-5}$ | $10^{-5}$ | 0.001 | 0.01
-1000 |  $10^{-6}$ | $10^{-6}$ | 0.0001 | 0.001
-1000 |  $10^{-7}$ | $10^{-7}$ | 0.00001 | 0.0001
+```{r}
+Ne <- c(1000, 10000)
+Ne_mu <- c(1e-04, 1e-03, 1e-02, 1e-01)
 
-Ne  | mu  | r | resolution  | Ne*mu
-----|----|----|-----|-----       
-10000 | $10^{-4}$ | $10^{-4}$ | 0.01 | 1
-10000 |  $10^{-5}$ | $10^{-5}$ | 0.001 | 0.1
-10000 |  $10^{-6}$ | $10^{-6}$ | 0.0001 | 0.01
-10000 |  $10^{-7}$ | $10^{-7}$ | 0.00001 | 0.001
+Ne_table <- expand.grid(Ne=Ne, Ne_mu=Ne_mu)
+Ne_table$mu <- Ne_table$Ne_mu/Ne_table$Ne
+Ne_table
+
+# Let's take out some of the options for large Ne
+Ne_table <- Ne_table[-c(4, 8),]
+
+Ne_table
+# 7 levels of Ne_mu
+```
+
+### Recombination
+
+
+in humans 50,000 bp would correspond to 0.05 cM
+
+proximate bases with $N_er=0.01$ corresponds to every 10,000 bases in humans
+
+proximate bases with $N_er=0.001$ corresponds to every 1,000 bases in humans
+
+proximate bases with $N_er=0.1$ corresponds to every 100,000 bases in humans
+
+"CgsSNP, the average numbers of SNPs per 10 kb was 8.33, 8.44, and 8.09 in the human genome, in intergenic regions, and in genic regions, respectively."
+
+Each block in the SliM simulation is 1000 bases long with the QTN in the center. A base recombination rate of $N_er=0.01$) gives
+a resolution of 0.001 cM between proximate bases. This mimics the case where the SNPs were collected across a larger
+genetic map than what was simulated. At this resolution, a chromosome would be 50,000 bases long (e.g. 50,000 bases / (r=1e-05) * 100 = 50 cM).
+
+
+We will vary the recombination rate to be an order of magnitude larger and smaller than that:
+
+```{r}
+
+Ne_r_table <- rbind(cbind(Ne_table, Ne_r=0.01),
+                    cbind(Ne_table, Ne_r=0.001),
+                    cbind(Ne_table, Ne_r=0.1)
+)
+
+Ne_r_table$r <- Ne_r_table$Ne_r/ Ne_r_table$Ne
+
+Ne_r_table
+```
+
 
 *From Thornton et al. 2013*
 (Using a simulator similar to SLiM for a 100kB region)
@@ -113,139 +153,83 @@ rate $r$ were assumed to be equal to $10^{-7}$, implying values of $N_eu=N_er=10
 
 A constant unstructured population of size N = Ne = 1000 individuals was run for 10,000 generations. This burn-in period ensured that allele frequencies were close to mutation-selection equilibrium. In the final burn-in generation, the population was expanded to 10,000 individuals to simulate a frequency distribution of genetic variants corresponding to an unscaled population size that was 10 times larger
 
-### What to do about triallelic sites from trait initialization from new mutation
-Note that initialization with `quanti_init_model 0` (from new mutation) can result in 3 possible states at a qtn: 0,-$\alpha$, or $\alpha$ (where $\alpha$ is effect size).  The question becomes how to deal with triallelic sites in genome scans that do not allow them?  Most methods only allow the number of copies of an allele.  We will do what we would do in real life - remove these loci from analysis.
-
-### Simulating a distribution of QTL effect sizes for biallelic data (each locus has one effect size)
-This approach assumes effect size for a SNP is +/-$\alpha$ (no matter size of alpha).
-
-1) Draw qtn effect sizes from a distribution with arbitraily chosen parameters.  This has the limitation of the parameters being criticized.
-
-2) For each value of $N_e\mu$ and total number of qtn, let effect sizes evolve under stabilizing selection in a single population(?) for a long time with mutational variance 0.02-0.04(?).  Sample from this distribution for qtn effect sizes for each replicate.  
-
-2 seems like the best approach, but still have some question on how to implement.
-
-
-### Simulating haplotype data and a distribution of quanti effect sizes at each locus
-The SNP biallelic model may not be representative of human populations.  We would need to increase the resolution of the genetic map 100-fold to get a resolution representative of humans, and this is not computationally feasible if we want to simulate several linkage groups, unless we make the linkage groups 100-fold smaller (0.1cM or 10Mb).  I could try this, but would be too much linkage among qtl.
-
-An alternative would be to simulate each site as a haplotype. This also has the advantage of allowing effect size to evolve for qtn haplotypes. The current version of Nemo has some different mutation models for quanti and ntrl traits. We would simulate quanti with the mutation variance model, which is essentially the infinite sites model.  Unlikely that a random draw from the continuous mutation distribution will result in the same effect size via two modes of mutation.  The options for neutral loci will then be:
-
-1) Simulate as stepwise mutation model, in current implementation of Nemo. Not my preferred method, because will always produce fewer haplotypes for ntrl trait than the the quanti trait.
-
-2) Include an indicator variable for whether or not quanti traits contribution to selection.  Then everything would be quanti but some would be neutral and have the same mutation model as the quanti traits.  Seems relatively simple.
-
-Want to go with 2, but need to talk to Fred.  Seems like Jobran's already implemented this.
-
 
 ### Some core levels
 
 ```{r}
-Ne <- c(1000, 1000, 1000, 1000,         10000, 10000)
-mu <- c(1e-06, 1e-05, 1e-04, 1e-03,     1e-06, 1e-05) # levels??
-nreps <- 5
-cbind(Ne, Ne*mu)
-
-(resolution <- 0.001)
-
-envi_var <- c(0, 2,4)
-redundancy <- c(1, 2, 4)
+envi_var <- c(0, 1, 2)
 sel.strength <- c(5,25,50)
-#set.seed(198)
-#seed <- sample(9999:99999, 3)
-seed <- c(1,2,3)
-expand.grid(envi_var=envi_var, 
-                   resolution=resolution, 
-            redundancy=redundancy, sel.strength=sel.strength)
+mc_mult <- c(1/1000, 1/100, 1/10, 1, 2, 5, 10, 20, 100)
+  
+params2 <- expand.grid(envi_var=envi_var, 
+            sel.strength=sel.strength,
+             mc_mult= mc_mult)
+
+dim(params2)
 ```
-For each of the above levels, we have multiple levels of allele effect sizes and multiple levels of migration rates.
+
+For each of the above levels, we have multiple levels of allele effect sizes.
 
 ### Make qtl input files for each nloc (3 reps)
-For each of the three replicates within a number of qtns (5 levels), we will randomly create three genetic maps for the qtl
 
 ```{r}
 
+ntot
+
+alpha
+redundancy <- c(1, 2, 4, 10, 20, 40)
+
 nqtl_levels <- c()
-nalpha_levels <- c()
+alpha_levels <- c()
 for(i in seq_along(alpha)){
   nqtl_levels <- c(nqtl_levels, ntot[i]*redundancy)
-  nalpha_levels <- c(nalpha_levels, rep(alpha[i],length(redundancy)))
+  alpha_levels <- c(alpha_levels, rep(alpha[i],length(redundancy)))
 }
 
-qtlbase <- data.frame(nqtl_levels, nalpha_levels, redundancy=redundancy)
+(qtlbase <- data.frame(nqtl_levels, alpha_levels, redundancy=redundancy))
 
-# genetic map can't handle more than 800 loci for now
-if (sum(qtlbase$nqtl_levels>800)>0){
-  qtlbase <- qtlbase[-(which(qtlbase$nqtl_levels>800)),]
-}
-  qtlbase
-filename_qtlmap <- c() ; nloc_qtlmap <- c() ; alpha_qtlmap <- c(); redun <- c(); is.neut <- c()
-for (i in seq_along(qtlbase$nqtl_levels)){
-                    filename_qtlmap <- c(filename_qtlmap, paste("nqtl", sprintf("%03s",as.character(nqtl_levels[i])),
-                    "redun",qtlbase$redundancy[i],
-                     "alpha",sprintf("%f",qtlbase$nalpha_levels[i]),
-                                              "rep",1:5,sep="_"))
-  nloc_qtlmap <- c( nloc_qtlmap, rep(nqtl_levels[i],nreps))
-  alpha_qtlmap <- c(alpha_qtlmap, rep(nalpha_levels[i],nreps))
-  redun <- c(redun, rep(qtlbase$redundancy[i], nreps))
-  }
-filename_qtlmap
-set.seed(4001)
-qtlmapseed <- sample(9999:99999,length(alpha_qtlmap), replace=FALSE)
-qtlmap <- data.frame(filename_qtlmap, nloc_qtlmap, qtlmapseed, alpha_qtlmap, 
-                     rep=1:nreps,redun, outtext=NA)
+(qtlbase <- qtlbase[-which(qtlbase$nqtl_levels > 2000),]) # only have 2000 sites in core sim
 
-for (i in seq_along(filename_qtlmap)){
-  #print(filename_qtlmap[i])
-   ### Assign qtns
-  ### Want to sample chromosomes equally
-  locs.df.reduced <- locs.df[locs.df$type!="no",]
-  locs.df.reduced$is.neut <- TRUE
-  locs.df.reduced$col="grey"
-  locs.df.reduced$col[locs.df.reduced$linkage.group%%2==0] <- "grey60"
-  head(locs.df[locs.df$type=="qtn",])
-  
-  nqtn <- nloc_qtlmap[i]
-  chr.qtn <- sort(rep(1:20, length.out = nqtn)) #assign qtns to chromosome in order
-  locs.df.reduced$effect <- 0
-  #loop through chromosomes and randomly assign qtn position
-      set.seed(qtlmapseed[i])
-      newseed <- sample(999:99999, 800)
-    for (j in seq_along(levels(factor(chr.qtn)))){
-      #print(j)
-      num <- sum(chr.qtn==j)
-      possible.locs <- which(locs.df.reduced$type=="qtn" & locs.df.reduced$linkage.group==j)
-      set.seed(newseed[j])
-      locs <- sample(possible.locs,num)
-      #print(locs)
-      locs.df.reduced$effect[locs] <- alpha_qtlmap[i]
-      locs.df.reduced$col[locs]<-"black"
-      locs.df.reduced$is.neut[locs]<-FALSE
-    } # end loop through j
-  
-    
-  outtext <- paste("{{", 
-               paste(locs.df.reduced$effect[locs.df.reduced$type=="qtn"], collapse=","),
-               "}}")
-  qtlmap$outtext[i] <- outtext
-    write(outtext, paste("filesForNemoIni/",filename_qtlmap[i], sep=""))
-    write.table(locs.df.reduced[order(locs.df.reduced$type),], file = paste("geneticMaps/",filename_qtlmap[i],".GeneticMap", sep=""), row.names=FALSE) 
-} # this loop only takes a minute
-
-names(qtlmap)
-dim(qtlmap)
-qtlmap[,1:6]
-write.table(qtlmap,"geneticMaps/qtlmapdata.txt", row.names = FALSE)
 ```
+
 
 ### Expand grid to include levels of migration
 
 ```{r}
-qtlmap$filename_qtlmap2 <- paste("filesForNemoIni/",filename_qtlmap, sep="") 
-mig_levels <- c(1e-05, 1e-04, 1e-03, 1e-02, 1e-01)
-omega.sq_levels <- c(5, 25, 50)
-names(qtlmap)
+# size of loop
+nrow(qtlbase) *
+nrow(Ne_r_table) *
+nrow(params2)
+# like 200,000 simulations
 
+i = 0
+for (a in 1:nrow(qtlbase)){
+  for (b in 1:nrow(Ne_r_table)){
+    for (c in 1:nrow(params2)){
+      if(i%%1000==0){print(i)}
+      mc <- m_crit(qtlbase$alpha_levels[a], theta.1, theta.2, params2$sel.strength[c], Ne_r_table$Ne[b])
+      m <- mc*params2$mc_mult[c]
+      if(m > 0 & m < 0.5){
+        i = i+1
+        if(i==1){
+          final_df <- data.frame(qtlbase[a,], Ne_r_table[b,], params2[c,], mc=mc, m=m)
+        }else{
+          final_df[i,] <- data.frame(qtlbase[a,], Ne_r_table[b,], params2[c,], mc=mc, m=m)
+        }
+      }# end if m
+    }# end c
+  }# end b
+}# end a
+```
+
+
+
+
+
+
+
+
+```{r old}
 i=0;params <- c()
 for (a in 1:nrow(qtlmap)){  # each row is a replicate
   for (b in seq_along(Ne)){ # Ne and mu have the same length
