@@ -30,7 +30,8 @@ initialize(){
 	//initializeGenomicElementType("g1", m1, 1.0); // TreeSeq
 	
 	// adaptive mutations in coding regions
-	initializeMutationType("m2", 0.5, "n", 0.0, 0.7); // give a value from the normal distribution with a mean of 0 and SD of 0.7
+	// scriptForQTLs - can we make this take the alpha value we define at the top?
+	initializeMutationType("m2", 0.5, "n", 0.0, 0.7); // give a value from the normal distribution with a mean of 0 and SD of 0.7 //# make this + - our alpha value
 	initializeGenomicElementType("g2", m2, 1.0);
 	
 	///////////////////////////////////////
@@ -163,7 +164,7 @@ initialize(){
 	
 	fitness(NULL, p1){
 		if (sim.generation < 4000){
-			return 1.0; // + dnorm(0 - individual.tagF, 0.0, 5.0);
+			return 1.0; // + dnorm(0 - individual.tagF, 0.0, 5.0); // optimum should be zero during the burn-in period
 		} else {
 			// optimum of +1 distribution of effect sizes vs the same effect sizes
 			return 1.0 + dnorm(1.0 - individual.tagF, 0.0, 5.0);
@@ -172,7 +173,7 @@ initialize(){
 	
 	fitness(NULL, p2){
 		if (sim.generation < 4000){
-			return 1.0; // + dnorm(0 - individual.tagF, 0.0, 5.0);
+			return 1.0; // + dnorm(0 - individual.tagF, 0.0, 5.0); // optimum should be zero during the burn-in period
 		} else {
 			// optimum of -1
 			return 1.0 + dnorm(-1.0 - individual.tagF, 0.0, 5.0);
