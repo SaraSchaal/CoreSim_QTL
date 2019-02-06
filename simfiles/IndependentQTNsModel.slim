@@ -164,16 +164,17 @@ initialize(){
 	
 	fitness(NULL, p1){
 		if (sim.generation < 4000){
-			return 1.0; // + dnorm(0 - individual.tagF, 0.0, 5.0); // optimum should be zero during the burn-in period
+			// 1.0 represents the relative fitness of the individual and 
+			//the second element beginning with dnorm is the Selection Coefficient (zero is neutral)
+			return 1.0 + dnorm(0 - individual.tagF, 0.0, 5.0); // optimum should be zero during the burn-in period
 		} else {
-			// optimum of +1 distribution of effect sizes vs the same effect sizes
-			return 1.0 + dnorm(1.0 - individual.tagF, 0.0, 5.0);
+			return 1.0 + dnorm(1.0 - individual.tagF, 0.0, 5.0); // optimum of +1 (add in distribution of effect sizes vs the same effect sizes)
 		}
 	}
 	
 	fitness(NULL, p2){
 		if (sim.generation < 4000){
-			return 1.0; // + dnorm(0 - individual.tagF, 0.0, 5.0); // optimum should be zero during the burn-in period
+			return 1.0 + dnorm(0 - individual.tagF, 0.0, 5.0); // optimum should be zero during the burn-in period
 		} else {
 			// optimum of -1
 			return 1.0 + dnorm(-1.0 - individual.tagF, 0.0, 5.0);
