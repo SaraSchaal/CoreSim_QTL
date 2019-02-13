@@ -140,7 +140,7 @@ initialize(){
 	// construct phenotypes for the additive effects of QTLs
 	inds = sim.subpopulations.individuals;				
 	
-	// count the number of mutations at QTLs and store them as the tag values for every individual	
+	// count the number of mutations at QTLs and store them as the tag values for every individual then add some randomness due to the environment
 	// NEEDED: using the tagF so that there is no rounding when mutation is pulled from the normal distribution 									
 	inds.tagF = asInteger(inds.sumOfMutationsOfType(m2)) + rnorm(1, mean = 0, sd = 1); 
 	
@@ -210,7 +210,7 @@ initialize(){
 	"mutation_rate " + mu + "\n" + 
 	"number of QTLs " + nqtls + "\n" + 
 	"recombination rate " + r + "\n" + 
-	"optima " + alpha + "\n" + 
+	"optima " + alpha + " " + -alpha + "\n" + 
 	"selection strength " + sigma_K + "\n" + 
 	"burn in period " + burnin + "\n";
 	
