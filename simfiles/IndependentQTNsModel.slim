@@ -3,22 +3,22 @@ initialize(){
 	// X X X X X Define Constants and Initialize Elements X X X X X //
 	//////////////////////////////////////////////////////////////////
 	
-	//setSeed(1528533727450); // to make code reproducible need to define a seed that will be used 
-	seed = getSeed();
-	setwd("/media/kevin/TOSHIBA_EXT/CoreSim_QTL/simfiles");
-	mypath = getwd();
-	
-
-	defineConstant("my_seed", seed);
-	defineConstant("path", mypath); 
-	
-	// if running in command line mode, these will be set on the command line instead
 	if (exists("slimgui")){
+		seed = getSeed();
+		defineConstant("my_seed", seed);
+		
+		setwd("~/Documents/Northeastern/LotterhosLab/Coding/SLiM/CoreSim_QTL/results/Independent");
+        	mypath = getwd();
+		
+		defineConstant("path", mypath); 
 		defineConstant("mu", 1e-04); // mutation rate
 		defineConstant("N", 1000); // population size
-		defineConstant("mig1", 0.01); // pop 1 migration rate
-		defineConstant("mig2", 0.01); // pop 2 migration rate
+		defineConstant("mig", 0.01); // pop 1 migration rate
+		defineConstant("r" , 1e-6); // recombination rate
+		
 	}
+	setSeed(my_seed);
+	setwd(mypath);
 
 	initializeMutationRate(mu); //change??
 	
@@ -82,7 +82,7 @@ initialize(){
 		defineConstant("NLG", nlg);
 
 		// set up recombination map
-		rates = c(rep(c(1e-6, 0.5), C), 1e-6);
+		rates = c(rep(c(r, 0.5), C), r);
 		ends = c(repEach(Q + NB, 2) + rep(c(0,1), C), nlg); //do not need last two ends
 		initializeRecombinationRate(rates, ends);
 		// as long as your recombination map indicates the end points of certain regions you do not need to track the neutral mutations. 
@@ -97,8 +97,8 @@ initialize(){
 	sim.addSubpop("p2", N); 
 
 	// set up migration rates 
-	p1.setMigrationRates(p2, mig1);
-	p2.setMigrationRates(p1, mig2);
+	p1.setMigrationRates(p2, mig);
+	p2.setMigrationRates(p1, mig);
 	
 	// header for every 200 generations output file
 	out_head = "Gen " + "muts " + "mean_fit_p1 " + "sd_fit_p1 " + "mean_pheno_p1 " + "sd_pheno_p1 " +
@@ -188,8 +188,8 @@ initialize(){
   /////////////////////////////////////////
 	
 	output_sim = "seed " + getSeed() + "\n" + 
-	"pop 1 migration rate " + mig1 + "\n" +
-	"pop 2 migration rate " + mig2 + "\n" +
+	"pop 1 migration rate " + mig + "\n" +
+	"pop 2 migration rate " + mig + "\n" +
 	"pop 1 N " + p1.individualCount + "\n" + 
 	"pop 2 N " + p2.individualCount + "\n" + 
 	"mutation_rate " + mu + "\n";
