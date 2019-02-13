@@ -2,6 +2,7 @@
 
 * Develop a list of simulation parameters - *Katie*
     * have 200K simulations that we want to run
+    * CURRENT LIST IS NOT FINAL. Some of these parameters I need to think about more.
 
 * Develop a script to call a simulation from the command line with different parameters - *Kevin*
 
