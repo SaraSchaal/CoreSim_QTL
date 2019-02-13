@@ -1,11 +1,17 @@
 ---
 title: "Core Sims"
 author: "Katie Lotterhos"
-date: "December 13, 2015"
+date: "Feb 2019"
 output: html_document
 ---
 
-In this document, I will make the dataframe for the core Nemo Simulations.
+## To Do
+- think about redundancy calculation when each new mutation is positive or negative
+- we would need at least 1+ and 1- mutation for a two-optimum model
+- think about parameters for stabilizing selection - would be good to visualize a plot here
+- think about parameters for environmental variance on phenotype - also would be good to visualize
+
+In this document, I will make the dataframe for the Core Simulations.
 
 ### Fitness function
 We are using a Gaussian (quadratic) function to describe stabilizing selection on the phenotype ($z$) of individual ($i$) in population ($k$) with phenotypic optimum $\Theta$, and selection variance $\omega_k^2$:
