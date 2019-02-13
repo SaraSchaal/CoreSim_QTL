@@ -7,3 +7,9 @@
 - To do on Rscript: implement paralellization, add additional parameters (coordinate with Sara)
 	- current parameters: mu, Ne, m, seed, r
         - to do: nqtl, alpha, envi_var, sel_strenght/sigma_k
+
+## 20190213 SMS'
+- finished adjusting simulation to calculate everything properly and included constants for all the parameters that we want to be able to call from the command line
+- sent Kevin a tree seq output file to play around with for the machine learning
+- simulation is running slow for 2000 QTLs have it running on my computer tonight to see how long it actually takes
+- question: I noticed one of your comments for Bodie is that we need to consider the data either as a single population or as two populations with the same migration rate. Does this mean we can't have varying migration rates between the populations?
