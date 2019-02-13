@@ -1,11 +1,4 @@
 initialize(){
-
-// input alpha values
-// think about burn-in
-// think about recombination rate within chunk- same or vary? 
-// think about stacking mutations
-// defineConstants for parameters designated on the command line
-
 	//////////////////////////////////////////////////////////////////
 	// X X X X X Define Constants and Initialize Elements X X X X X //
 	//////////////////////////////////////////////////////////////////
@@ -20,13 +13,11 @@ initialize(){
 	defineConstant("Ne", 1000); // population size change to Ne below
 	defineConstant("mig1", 0.01); // pop 1 migration rate
 	defineConstant("mig2", 0.01); // pop 2 migration rate
-	defineConstant("sigma_K", 0.05); // selection Coeff
+	defineConstant("sigma_K", 5); // selection Coeff
+	defineConstant("burnin", 4000); // set number of generations for burnin period 
 	initializeMutationRate(mu); // initialize the mutation rate which set above
-	defineConstant("alpha", 1);// additive effect of the phenotype alpha value..
-	//defineConstant() // random normal addition mean of 0 and an sd of maybe 1 or 2 might be too high
-	// Ne
-	// recombination rate
-	// number of QTLs 
+	defineConstant("alpha", 1); // additive effect of the phenotype alpha value..
+	defineConstant("r", 1e-6); // recombination rate inside chunks
 	
 	// add TreeSeq
 	initializeTreeSeq();
@@ -48,7 +39,7 @@ initialize(){
 	
 	// add QTL constant
 	// 2000 linkage groups (LGs)
-	defineConstant("C", 20);
+	defineConstant("nqtls", 20);
 	// netural buffer on both sides of QTN
 	defineConstant("NB", 499);
 	
@@ -59,7 +50,7 @@ initialize(){
 	q = NULL;
 	
 	// set up linkage groups
-	for (i in 1:C) // creates 2000 LGs with QTN + neutral buffer
+	for (i in 1:nqtls) // creates 2000 LGs with QTN + neutral buffer
 		{
 		
 			//initializeGenomicElement(g1, pos, pos + NB); // Neutral buffer // TreeSeq
@@ -92,8 +83,8 @@ initialize(){
 		defineConstant("NLG", nlg);
 
 		// set up recombination map
-		rates = c(rep(c(1e-6, 0.5), C), 1e-6);
-		ends = c(repEach(Q + NB, 2) + rep(c(0,1), C), nlg); //do not need last two ends
+		rates = c(rep(c(r, 0.5), nqtls), r);
+		ends = c(repEach(Q + NB, 2) + rep(c(0,1), nqtls), nlg); //do not need last two ends
 		initializeRecombinationRate(rates, ends);
 		// as long as your recombination map indicates the end points of certain regions you do not need to track the neutral mutations. 
 		// TreeSeq will do this.
@@ -111,14 +102,14 @@ initialize(){
 	sim.addSubpop("p1", Ne); 
 	sim.addSubpop("p2", Ne); 
 
-	// set up migration rates 
+	// set migration rates between populations
 	p1.setMigrationRates(p2, mig1);
 	p2.setMigrationRates(p1, mig2);
 	
 	// header for every 200 generations output file only need to produce this once so in this 1 early() event 
 	// notice no ':' that would make it occur every generation we will append data to this header in other event loops
-	out_head = "Gen " + "unique_muts " + "mean_fit_p1 " + "sd_fit_p1 " + "mean_pheno_p1 " + "sd_pheno_p1 " +
-		"mean_fit_p2 " + "sd_fit_p2 " + "mean_pheno_p2 " + "sd_pheno_p2 " + "\n";
+	out_head = "Gen " + "uniqueMuts " + "meanFitP1 " + "sdFitP1 " + "meanPhenoP1 " + "sdPhenoP1 " +
+		"meanFitP2 " + "sdFitP2 " + "meanPhenoP2 " + "sdPhenoP2 " + "\n";
 	writeFile(paste(c(path, "/", my_seed, "_outputPhenFit.txt"), sep = ""), out_head);
 
 }
@@ -150,8 +141,8 @@ initialize(){
 	inds = sim.subpopulations.individuals;				
 	
 	// count the number of mutations at QTLs and store them as the tag values for every individual	
-	// NOT NEEDED: using the tagF so that there is no rounding when mutation is pulled from the normal distribution 									
-	inds.tag = asInteger(inds.sumOfMutationsOfType(m2)); 
+	// NEEDED: using the tagF so that there is no rounding when mutation is pulled from the normal distribution 									
+	inds.tagF = asInteger(inds.sumOfMutationsOfType(m2)) + rnorm(1, mean = 0, sd = 1); 
 	
 	// store all the genomes in the population in a variable g
 	g = sim.subpopulations.genomes;
@@ -166,7 +157,7 @@ initialize(){
  // X X X X X Fitness Callbacks X X X X X //
  ///////////////////////////////////////////
 
-	// Run phenotype under stabilizing selection for 10Ne generations
+	// Run phenotype under stabilizing selection for 10Ne generations?
 	// Then implement landscape and run for 2000 more generations
 
 	fitness(m2){
@@ -183,25 +174,23 @@ initialize(){
 	// particular mutation type, but rather, provides a fitness effect for the individual as a whole
 	
 	fitness(NULL, p1){
-		if (sim.generation < 4000){
-			// 1.0 represents the relative fitness of the individual and 
-			//the second element beginning with dnorm is the Selection Coefficient (zero is neutral)
-			return 1.0 + individual.tag + ; //+ rnorm(); // optimum should be zero during the burn-in period what should sd be??
-			
+		if (sim.generation < burnin){
+			return 1.0; 
+						
 		} else {
 			// 1.0 represents the relative fitness of the individual and 
-			//the second element beginning with dnorm is the Selection Coefficient (zero would be neutral)
+			//the second element beginning with dnorm is the Selection Coefficient 
 			// optimum of +1
-			return 1.0 + dnorm(1.0 - individual.tag, 0.0, sigma_K); // optimum of +1 (add in distribution of effect sizes vs the same effect sizes)
+			return 1.0 + dnorm(alpha - individual.tagF, 0.0, sigma_K); 
 		}
 	}
 	
 	fitness(NULL, p2){
-		if (sim.generation < 4000){
-			return 1.0 + individual.tag; //+ rnorm(); // optimum should be zero during the burn-in period
+		if (sim.generation < burnin){
+			return 1.0;  
 		} else {
 			// optimum of -1
-			return 1.0 + dnorm(-1.0 - individual.tag, 0.0, sigma_K);
+			return 1.0 + dnorm(-alpha - individual.tagF, 0.0, sigma_K);
 		}
 	}
 
@@ -216,9 +205,14 @@ initialize(){
 	output_sim = "seed " + getSeed() + "\n" + 
 	"pop 1 migration rate " + mig1 + "\n" +
 	"pop 2 migration rate " + mig2 + "\n" +
-	"pop 1 N " + p1.individualCount + "\n" + 
-	"pop 2 N " + p2.individualCount + "\n" + 
-	"mutation_rate " + mu + "\n";
+	"pop 1 Ne " + p1.individualCount + "\n" + 
+	"pop 2 Ne " + p2.individualCount + "\n" + 
+	"mutation_rate " + mu + "\n" + 
+	"number of QTLs " + nqtls + "\n" + 
+	"recombination rate " + r + "\n" + 
+	"optima " + alpha + "\n" + 
+	"selection strength " + sigma_K + "\n" + 
+	"burn in period " + burnin + "\n";
 	
 	writeFile(paste(c(path, "/", my_seed, "_outputSimStats.txt"), sep = ""), output_sim);
 	
@@ -238,14 +232,11 @@ initialize(){
 	//phenotype = inds.sumOfMutationsOfType(m2);
 	
 	output_ind = "id " +  "subpop " + "phenotype " + "\n"; // create header for file
-	
-	//i = 0; // counter to step through phenotype object
-	
+		
 	// for loop to step through individuals and pull first the header then append new lines with 
 	// individual index information which subpopulation they are from and their phenotype
 	for(ind in inds){ 
-		output_ind = output_ind + ind.index + " " + ind.subpopulation.id + " " + ind.tag + "\n";
-		//i = i + 1;
+		output_ind = output_ind + ind.index + " " + ind.subpopulation.id + " " + ind.tagF + "\n";
 	}
 	
 	// write file to working directory 
