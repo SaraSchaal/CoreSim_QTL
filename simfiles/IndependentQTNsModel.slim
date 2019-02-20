@@ -1,24 +1,30 @@
 initialize(){
+
 	//////////////////////////////////////////////////////////////////
 	// X X X X X Define Constants and Initialize Elements X X X X X //
 	//////////////////////////////////////////////////////////////////
 	
-	//setSeed(1528533727450); // to make code reproducible need to define a seed that will be used 
-	seed = getSeed();
-	setwd("~/Documents/Northeastern/LotterhosLab/Coding/SLiM/CoreSim_QTL/results/Independent/");
-	mypath = getwd();
-	defineConstant("my_seed", seed);
-	defineConstant("path", mypath); 
-	defineConstant("mu", 1e-04); // mutation rate
-	defineConstant("Ne", 1000); // population size change to Ne below
-	defineConstant("mig1", 0.01); // pop 1 migration rate
-	defineConstant("mig2", 0.01); // pop 2 migration rate
-	defineConstant("sigma_K", 5); // selection Coeff
-	defineConstant("burnin", 4000); // set number of generations for burnin period 
-	initializeMutationRate(mu); // initialize the mutation rate which set above
-	defineConstant("alpha", 1); // additive effect of the phenotype alpha value..
-	defineConstant("r", 1e-6); // recombination rate inside chunks
+	//setSeed(1528533727450);  // to make code reproducible need to define a seed that will be used 
 	
+	if(exists("slimgui")){     // if used in gui, should still work as expected 
+		seed = getSeed();
+		setwd("~/Documents/Northeastern/LotterhosLab/Coding/SLiM/CoreSim_QTL/results/Independent/");
+		mypath = getwd();
+		defineConstant("my_seed", seed);
+		defineConstant("path", mypath); 
+		defineConstant("mu", 1e-04); // mutation rate
+		defineConstant("Ne", 1000); // population size change to Ne below
+		defineConstant("mig1", 0.01); // pop 1 migration rate
+		defineConstant("mig2", 0.01); // pop 2 migration rate
+		defineConstant("sigma_K", 0.05); // selection Coeff
+		defineConstant("burnin", 4000); // set number of generations for burnin period 
+		defineConstant("alpha", 1);// additive effect of the phenotype alpha value..
+		defineConstant("r", 1e-6);
+	}
+	
+	initializeMutationRate(mu); // initialize the mutation rate which set above
+	setSeed(my_seed);
+	setwd(path);
 	// add TreeSeq
 	initializeTreeSeq();
 	
@@ -143,7 +149,7 @@ initialize(){
 	// count the number of mutations at QTLs and store them as the tag values for every individual then add some randomness due to the environment
 	// NEEDED: using the tagF so that there is no rounding when mutation is pulled from the normal distribution 									
 	inds.tagF = asInteger(inds.sumOfMutationsOfType(m2)) + rnorm(1, mean = 0, sd = 1); 
-	
+d	
 	// store all the genomes in the population in a variable g
 	g = sim.subpopulations.genomes;
 	
