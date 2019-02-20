@@ -15,13 +15,14 @@ library(parallel)
 #
 ########################################################################################
 burnin <- 4000   # use standard burnin
+ncores <- 4
 
 ### Parse arguments or set to default
 args = commandArgs(trailingOnly=TRUE)
 if (length(args) == 0){
   path       <- "/media/kevin/TOSHIBA_EXT/CoreSim_QTL/results"
-  param_path <- "simparams.txt"
-  script     <- "../simfiles/IndependentQTNsModel.slim"
+  param_path <- "/media/kevin/TOSHIBA_EXT/CoreSim_QTL/src/simparams.txt"
+  script     <- "/media/kevin/TOSHIBA_EXT/CoreSim_QTL/simfiles/IndependentQTNsModel.slim"
 } else if (length(args) == 3){
   path       <- args[1]
   path       <- normalizePath(path)     # strip trailing / and expand relative path
@@ -62,6 +63,8 @@ sim_params <- read.csv(param_path, header = TRUE, sep = " ")
 # the script using the given parameters
 #-------------------------------------------------------------------------
 callSlim <- function(param_row, path, script){
+  print(param_row)
+  param_row <- as.list(param_row)
   # extract params from the given row
   seed    <- param_row$seed                # seed
   mu      <- param_row$mu                  # mutation rate
@@ -80,5 +83,12 @@ callSlim <- function(param_row, path, script){
   print(cmd)
   system(cmd)
 }
-
-callSlim(param_row = sim_params[1,], path = path, script = script)
+print("5 sims serial:\n")
+system.time(apply(sim_params[1:5, ], 1, callSlim, path=path, script=script))
+print("5 sims parallel:\n")
+system.time({
+  cl <- makeCluster(ncores)
+  parApply(cl, sim_params, 1, callSlim, path = path, script = script) 
+  stopCluster(cl)
+})
+# callSlim(param_row = sim_params[1,], path = path, script = script)
