@@ -149,7 +149,7 @@ initialize(){
 	// count the number of mutations at QTLs and store them as the tag values for every individual then add some randomness due to the environment
 	// NEEDED: using the tagF so that there is no rounding when mutation is pulled from the normal distribution 									
 	inds.tagF = asInteger(inds.sumOfMutationsOfType(m2)) + rnorm(1, mean = 0, sd = 1); 
-d	
+	
 	// store all the genomes in the population in a variable g
 	g = sim.subpopulations.genomes;
 	
