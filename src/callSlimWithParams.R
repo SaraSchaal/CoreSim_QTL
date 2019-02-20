@@ -88,7 +88,7 @@ system.time(apply(sim_params[1:5, ], 1, callSlim, path=path, script=script))
 print("5 sims parallel:\n")
 system.time({
   cl <- makeCluster(ncores)
-  parApply(cl, sim_params, 1, callSlim, path = path, script = script) 
+  parApply(cl, sim_params[1:5, ], 1, callSlim, path = path, script = script) 
   stopCluster(cl)
 })
 # callSlim(param_row = sim_params[1,], path = path, script = script)
