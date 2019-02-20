@@ -13,3 +13,10 @@
 - sent Kevin a tree seq output file to play around with for the machine learning
 - simulation is running slow for 2000 QTLs have it running on my computer tonight to see how long it actually takes
 - question: I noticed one of your comments for Bodie is that we need to consider the data either as a single population or as two populations with the same migration rate. Does this mean we can't have varying migration rates between the populations?
+
+## 20190220 KSF
+
+- merged cli_params branch with master on github
+- added parallelization to Rscript callSlimWithParams.R
+- Worked with Bodie to update SLiM on comp5 from v 2.6 -> 3.2.1
+- to do: test script on small subset of simulations
