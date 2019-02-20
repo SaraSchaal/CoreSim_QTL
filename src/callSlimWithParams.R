@@ -23,6 +23,7 @@ if (length(args) == 0){
   script     <- "../simfiles/IndependentQTNsModel.slim"
 } else if (length(args) == 3){
   path       <- args[1]
+  path       <- normalizePath(path)     # strip trailing / and expand relative path
   param_path <- args[2]
   script     <- args[3]
 } else {
@@ -72,7 +73,9 @@ callSlim <- function(param_row, path, script){
   r       <- param_row$r                   # recombination rate
   
   ## construct the command and call it with system()
-  cmd <- paste0("slim -l -d mu=", mu, " -d N=", Ne, " -d mig=", mig," -d my_seed=", seed, " -d \"path='", path, "'\" -d r=", r, " ", script)
+  cmd <- paste0("slim -l -d mu=", mu, " -d Ne=", Ne, " -d mig1=", mig," -d mig2=", mig,
+                " -d sigma_K=", sigma_k, " -d alpha=", alpha,
+                " -d my_seed=", seed, " -d \"path='", path, "'\" -d r=", r, " ", script)
   print(cmd)
   system(cmd)
 }
