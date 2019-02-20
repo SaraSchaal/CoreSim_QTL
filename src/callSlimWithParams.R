@@ -14,6 +14,7 @@ library(parallel)
 # and runs the given script with the given params in parallel.
 #
 ########################################################################################
+burnin <- 4000   # use standard burnin
 
 ### Parse arguments or set to default
 args = commandArgs(trailingOnly=TRUE)
@@ -74,7 +75,7 @@ callSlim <- function(param_row, path, script){
   
   ## construct the command and call it with system()
   cmd <- paste0("slim -l -d mu=", mu, " -d Ne=", Ne, " -d mig1=", mig," -d mig2=", mig,
-                " -d sigma_K=", sigma_k, " -d alpha=", alpha,
+                " -d sigma_K=", sigma_k, " -d alpha=", alpha, " -d burnin=", burnin,
                 " -d my_seed=", seed, " -d \"path='", path, "'\" -d r=", r, " ", script)
   print(cmd)
   system(cmd)
