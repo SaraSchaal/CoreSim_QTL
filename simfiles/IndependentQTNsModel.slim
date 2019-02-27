@@ -19,7 +19,10 @@ initialize(){
 		defineConstant("sigma_K", 0.05); // selection Coeff
 		defineConstant("burnin", 4000); // set number of generations for burnin period 
 		defineConstant("alpha", 1);// additive effect of the phenotype alpha value..
-		defineConstant("r", 1e-6);
+		defineConstant("r", 1e-6); // recombination rate 
+		defineConstant("envVar", 1); // environmental variance
+		defineConstant("nqtls", 2000); // number of QTLs
+
 	}
 	
 	initializeMutationRate(mu); // initialize the mutation rate which set above
@@ -45,7 +48,7 @@ initialize(){
 	
 	// add QTL constant
 	// 2000 linkage groups (LGs)
-	defineConstant("nqtls", 2000);
+	//defineConstant("nqtls", 2000); moved to top
 	// netural buffer on both sides of QTN
 	defineConstant("NB", 499);
 	
@@ -148,7 +151,7 @@ initialize(){
 	
 	// count the number of mutations at QTLs and store them as the tag values for every individual then add some randomness due to the environment
 	// NEEDED: using the tagF so that there is no rounding when mutation is pulled from the normal distribution 									
-	inds.tagF = asInteger(inds.sumOfMutationsOfType(m2)) + rnorm(1, mean = 0, sd = 1); 
+	inds.tagF = asInteger(inds.sumOfMutationsOfType(m2)) + rnorm(1, mean = 0, sd = envVar); 
 	
 	// store all the genomes in the population in a variable g
 	g = sim.subpopulations.genomes;
