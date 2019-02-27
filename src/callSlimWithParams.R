@@ -14,7 +14,7 @@ library(parallel)
 # and runs the given script with the given params in parallel.
 #
 ########################################################################################
-burnin <- 4000   # use standard burnin
+
 ncores <- 4
 
 ### Parse arguments or set to default
@@ -25,7 +25,7 @@ if (length(args) == 0){
   script     <- "/media/kevin/TOSHIBA_EXT/CoreSim_QTL/simfiles/IndependentQTNsModel.slim"
 } else if (length(args) == 3){
   path       <- args[1]
-  path       <- normalizePath(path)     # strip trailing / and expand relative path
+  path       <- normalizePath(path)     # strip trailing '/' and expand relative path
   param_path <- args[2]
   script     <- args[3]
 } else {
@@ -64,6 +64,7 @@ sim_params <- read.csv(param_path, header = TRUE, sep = " ")
 #-------------------------------------------------------------------------
 callSlim <- function(param_row, path, script){
   print(param_row)
+  burnin <- 4000                      # number of burn in generations, standard across sims
   param_row <- as.list(param_row)
   # extract params from the given row
   seed    <- param_row$seed                # seed
@@ -79,16 +80,14 @@ callSlim <- function(param_row, path, script){
   ## construct the command and call it with system()
   cmd <- paste0("slim -l -d mu=", mu, " -d Ne=", Ne, " -d mig1=", mig," -d mig2=", mig,
                 " -d sigma_K=", sigma_k, " -d alpha=", alpha, " -d burnin=", burnin,
-                " -d my_seed=", seed, " -d \"path='", path, "'\" -d r=", r, " ", script)
+                " -d my_seed=", seed, " -d nqtls=", qtls, " -d envVar=", envVar,
+                " -d \"path='", path, "'\" -d r=", r, " ", script)
   print(cmd)
   system(cmd)
 }
-print("5 sims serial:\n")
-system.time(apply(sim_params[1:5, ], 1, callSlim, path=path, script=script))
-print("5 sims parallel:\n")
+print("Starting simulations, will run ", nrow(sim_params), " simulations", ncpu, " at a time")
 system.time({
   cl <- makeCluster(ncores)
-  parApply(cl, sim_params[1:5, ], 1, callSlim, path = path, script = script) 
+  parApply(cl, sim_params, 1, callSlim, path = path, script = script) 
   stopCluster(cl)
 })
-# callSlim(param_row = sim_params[1,], path = path, script = script)
