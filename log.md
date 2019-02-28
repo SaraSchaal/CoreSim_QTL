@@ -20,3 +20,7 @@
 - added parallelization to Rscript callSlimWithParams.R
 - Worked with Bodie to update SLiM on comp5 from v 2.6 -> 3.2.1
 - to do: test script on small subset of simulations
+
+## 20190228 KSF
+
+- Tested script on cluster - took 8.5hrs to run a batch of sims with 2000 qtls in parallel
