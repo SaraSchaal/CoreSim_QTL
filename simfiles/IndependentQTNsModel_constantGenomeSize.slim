@@ -23,12 +23,14 @@ initialize(){
 		defineConstant("r", 1e-6); // recombination rate 
 		defineConstant("envVar", 1); // environmental variance
 		defineConstant("nqtls", 2000); // number of QTLs
+		defineConstant("chunks", 2000); // number of chunks in the genome
 
 	}
 	
 	initializeMutationRate(mu); // initialize the mutation rate which set above
 	setSeed(my_seed);
 	setwd(path);
+	
 	// add TreeSeq
 	initializeTreeSeq();
 	
@@ -60,8 +62,7 @@ initialize(){
 	q = NULL;
 	
 	// set up linkage groups
-	for (i in 1:nqtls) // creates 2000 LGs with QTN + neutral buffer
-		{
+	for(i in 1:nqtls){ // creates 2000 LGs with QTN + neutral buffer
 		
 			//initializeGenomicElement(g1, pos, pos + NB); // Neutral buffer // TreeSeq
 			pos = pos + NB + 1; 
@@ -78,26 +79,64 @@ initialize(){
 				
 			//initializeGenomicElement(g1, pos, pos + NB - 1); // Neutral buffer // TreeSeq
 			pos = pos + NB; 
-			//step 1: 501 + 499 - 1 = 999
-			//step 2: 1501 + 499 - 1 = 1999
-			//step 3: 2501 + 499 = 2999
+			//step 1: 501 + 499 = 1000
+			//step 2: 1501 + 499 = 2000
+			//step 3: 2501 + 499 = 3000
 		
 		}	
 		
 		defineConstant("Q", q); // QTN positions within each chunk 
 		// first three: c(500, 1500, 2500, ....)
 
-		// set up 21st LG as neutral
-		//initializeGenomicElement(g1, pos, pos + 99999); // TreeSeq
-		nlg = pos + 999; // final location in the genome
-		defineConstant("NLG", nlg);
+		// initialize neutral QTL end points for loading in if statement
+		neuQTLends = NULL;
 
-		// set up recombination map
-		rates = c(rep(c(r, 0.5), nqtls), r);
-		ends = c(repEach(Q + NB, 2) + rep(c(0,1), nqtls), nlg); //do not need last two ends
+		// if statement to add additional neutral chunks to keep genome the same size across simulations
+		if(nqtls < chunks){
+		
+			pos = pos + 999;
+			neuQTL = chunks - nqtls;
+			
+			for(i in 1:neuQTL){
+			
+				if (i == 1){
+					neuQTLends = c(neuQTLends, pos);
+				}else{
+					pos = pos + 1000;
+					neuQTLends = c(neuQTLends, pos);
+				
+				} // close if else
+			} // close for loop
+			
+			// set up final LG as neutral 100,000 neutral bases
+			// need different rules due to variation between how pos is calculated
+			// when there are neutral chunks vs. when there aren't
+			nlg = pos + 100000;
+		
+		}else{
+			nlg = pos + 99999; // final location in the genome
+		
+		} // close if statement
+		
+		//initializeGenomicElement(g1, pos, nlg); // TreeSeq	 
+		defineConstant("NLG", nlg);
+		
+		
+	//////////////////////////////////////////////////
+	// X X X X X Set Up Recombination Map X X X X X //
+	//////////////////////////////////////////////////
+	
+		// creates recombination rates set by r within chunks and 
+		// a 0.5 break between chunks (i.e. no recombination)
+		rates = c(rep(c(r, 0.5), chunks), r);
+		if(nqtls == chunks){
+			ends = c(repEach(Q + NB, 2) + rep(c(0,1), nqtls), nlg);
+			print(ends);
+		}else{
+			ends = c(repEach(Q + NB, 2) + rep(c(0,1), nqtls), repEach(neuQTLends, 2) + rep(c(0,1), neuQTL), nlg);
+		}
 		initializeRecombinationRate(rates, ends);
-		// as long as your recombination map indicates the end points of certain regions you do not need to track the neutral mutations. 
-		// TreeSeq will do this.
+	
 	}
 
 
