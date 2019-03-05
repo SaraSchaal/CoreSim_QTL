@@ -82,10 +82,10 @@ callSlim <- function(param_row, path, script){
                 " -d sigma_K=", sigma_k, " -d alpha=", alpha, " -d burnin=", burnin,
                 " -d my_seed=", seed, " -d nqtls=", qtls, " -d envVar=", envVar,
                 " -d \"path='", path, "'\" -d r=", r, " ", script)
-  print(cmd)
+  write(cmd, stderr())
   system(cmd)
 }
-print("Starting simulations, will run ", nrow(sim_params), " simulations", ncpu, " at a time")
+print(paste0("Starting simulations, will run ", nrow(sim_params), " simulations", ncores, " at a time"))
 system.time({
   cl <- makeCluster(ncores)
   parApply(cl, sim_params, 1, callSlim, path = path, script = script) 
