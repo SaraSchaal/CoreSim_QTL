@@ -24,6 +24,7 @@ initialize(){
 		defineConstant("envVar", 1); // environmental variance
 		defineConstant("nqtls", 2000); // number of QTLs
 		defineConstant("chunks", 2000); // number of chunks in the genome
+		defineConstant("TreeSim", 500);
 
 	}
 	
@@ -161,7 +162,7 @@ initialize(){
 
 	// output fitness and phenotypes every 200 generations
 	if (sim.generation % 200 == 0){
-	
+		print(clock());
 		//////////////////////////////////////////////////
 		// X X X X X Population Level Outputs X X X X X //
 		//////////////////////////////////////////////////
@@ -332,7 +333,7 @@ initialize(){
 }
 
 1:6000 {
-	if (sim.generation%500==0)
+	if (sim.generation%treeSim==0)
 		sim.treeSeqSimplify();
 }
 

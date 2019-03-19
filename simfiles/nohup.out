@@ -1,0 +1,11 @@
+// Initial random seed:
+1576805703989
+
+// RunInitializeCallbacks():
+initializeMutationRate(0.0001);
+ERROR (Eidos_ExecuteFunction_setwd): the working directory could not be set (error 2)
+
+Error on script line 31, character 1:
+
+   setwd(path);
+   ^^^^^
