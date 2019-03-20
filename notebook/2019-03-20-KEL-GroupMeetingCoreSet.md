@@ -1,6 +1,9 @@
 # Core set with independent linkage groups
 
 - Sara’s simulations - one sim using 50-70% of the memory on the cluster and taking 5-6 hours of time
+    - Sim simplifying every 1000 generations: peak memory 169 GB, quickly drops to about 45 GB then climbs again
+    - Sim simplifying every 500 generations: varies between 35 GB and 45 GB memory use
+    - Cluster has 256 GB total memory
 - Aki compared to memory his sims use:
     - SLiM TSR sim:
     - Parameters: 100 pops, 10,000 inds. total, each genome 500,000 nts, 10 linkage groups, one allele in one linkage group, default simplification ratio
@@ -13,5 +16,4 @@
 
 [Neutral mutations overlay and "move" selected mutations](https://github.com/tskit-dev/tskit/issues/30)
 [Neutral mutations overlay and "move" selected mutations AND numbering of subsequent mutations at same site](https://github.com/tskit-dev/msprime/issues/663)
-
 
