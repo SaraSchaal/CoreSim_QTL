@@ -1,0 +1,341 @@
+initialize(){
+
+	//////////////////////////////////////////////////////////////////
+	// X X X X X Define Constants and Initialize Elements X X X X X //
+	//////////////////////////////////////////////////////////////////
+	
+	//setSeed(1528533727450);  // to make code reproducible need to define a seed that will be used 
+	
+	if(exists("slimgui")){     // if used in gui, should still work as expected 
+		seed = getSeed();
+		setwd("~/Documents/Northeastern/LotterhosLab/Coding/SLiM/CoreSim_QTL/results/Independent/");
+		mypath = getwd();
+		defineConstant("my_seed", seed);
+		defineConstant("path", mypath); 
+		defineConstant("mu", 1e-04); // mutation rate
+		defineConstant("Ne", 1000); // population size change to Ne below
+		defineConstant("mig1", 0.01); // pop 1 migration rate
+		defineConstant("mig2", 0.01); // pop 2 migration rate
+		defineConstant("sigma_K", 0.05); // selection Coeff
+		defineConstant("burnin", 4000); // set number of generations for burnin period 
+		defineConstant("alpha", 0.1);// effect size
+		defineConstant("theta", 1); // optimum in each patch
+		defineConstant("r", 1e-6); // recombination rate 
+		defineConstant("envVar", 1); // environmental variance
+		defineConstant("nqtls", 2000); // number of QTLs
+		defineConstant("chunks", 2000); // number of chunks in the genome
+
+	}
+	
+	initializeMutationRate(mu); // initialize the mutation rate which set above
+	setSeed(my_seed);
+	setwd(path);
+	
+	// add TreeSeq - make sure to shut off automatic simplification
+	initializeTreeSeq(simplificationRatio=INF);
+	
+	// neutral mutations in non-coding regions
+	//initializeMutationType("m1", 0.5, "f", 0.0); // do not need for TreeSeq
+	//initializeGenomicElementType("g1", m1, 1.0); // TreeSeq
+	
+	// adaptive mutations in coding regions
+	scriptForQTLs = "if (runif(1) < 0.5) -alpha; else alpha;"; 
+	initializeMutationType("m2", 0.5, "s", scriptForQTLs); //# make this + - our alpha value
+	// ^mutation type "s" for script
+	initializeGenomicElementType("g2", m2, 1.0);
+	
+	///////////////////////////////////////
+	// X X X X X Set up Genome X X X X X //
+	///////////////////////////////////////
+	
+	// netural buffer on both sides of QTN
+	defineConstant("NB", 499);
+	
+	// bp position counter for a LG
+	pos = 0;
+	
+	// initialize q for loading QTN positions
+	q = NULL;
+	
+	// set up linkage groups
+	for(i in 1:nqtls){ // creates 2000 LGs with QTN + neutral buffer
+		
+			//initializeGenomicElement(g1, pos, pos + NB); // Neutral buffer // TreeSeq
+			pos = pos + NB + 1; 
+			//step 1: 0 + 499 + 1 = 500
+			//step 2: 1000 + 499 + 1 = 1500
+			//step 3: 2000 + 499 + 1 = 2500
+				
+			initializeGenomicElement(g2, pos, pos); // QTN
+			q = c(q, pos); // building a vector of QTN positions
+			pos = pos + 1; 
+			//step 1: 500 + 1 = 501
+			//step 2: 1500 + 1 = 1501
+			//step 3: 2500 + 1 = 2501
+				
+			//initializeGenomicElement(g1, pos, pos + NB - 1); // Neutral buffer // TreeSeq
+			pos = pos + NB; 
+			//step 1: 501 + 499 = 1000
+			//step 2: 1501 + 499 = 2000
+			//step 3: 2501 + 499 = 3000
+		
+		}	
+		
+		defineConstant("Q", q); // QTN positions within each chunk 
+		// first three: c(500, 1500, 2500, ....)
+
+		// initialize neutral QTL end points for loading in if statement
+		neuQTLends = NULL;
+
+		// if statement to add additional neutral chunks to keep genome the same size across simulations
+		if(nqtls < chunks){
+		
+			pos = pos + 999;
+			neuQTL = chunks - nqtls;
+			
+			for(i in 1:neuQTL){
+			
+				if (i == 1){
+					neuQTLends = c(neuQTLends, pos);
+				}else{
+					pos = pos + 1000;
+					neuQTLends = c(neuQTLends, pos);
+				
+				} // close if else
+			} // close for loop
+			
+			// set up final LG as neutral 100,000 neutral bases
+			// need different rules due to variation between how pos is calculated
+			// when there are neutral chunks vs. when there aren't
+			nlg = pos + 100000;
+		
+		}else{
+			nlg = pos + 99999; // final location in the genome
+		
+		} // close if statement
+		
+		//initializeGenomicElement(g1, pos, nlg); // TreeSeq	 
+		defineConstant("NLG", nlg);
+		
+		
+	//////////////////////////////////////////////////
+	// X X X X X Set Up Recombination Map X X X X X //
+	//////////////////////////////////////////////////
+	
+		// creates recombination rates set by r within chunks and 
+		// a 0.5 break between chunks (i.e. no recombination)
+		rates = c(rep(c(r, 0.5), chunks), r);
+		if(nqtls == chunks){
+			ends = c(repEach(Q + NB, 2) + rep(c(0,1), nqtls), nlg);
+		}else{
+			ends = c(repEach(Q + NB, 2) + rep(c(0,1), nqtls), repEach(neuQTLends, 2) + rep(c(0,1), neuQTL), nlg);
+		}
+		initializeRecombinationRate(rates, ends);	
+	}
+
+
+1 early(){
+	
+	////////////////////////////////////////////////
+	// X X X X X Initialize Populations X X X X X //
+	////////////////////////////////////////////////
+	
+	
+	// set up initial population sizes
+	sim.addSubpop("p1", Ne); 
+	sim.addSubpop("p2", Ne); 
+
+	// set migration rates between populations
+	p1.setMigrationRates(p2, mig1);
+	p2.setMigrationRates(p1, mig2);
+	
+	// header for every 200 generations output file only need to produce this once so in this 1 early() event 
+	// notice no ':' that would make it occur every generation we will append data to this header in other event loops
+	out_head = "Gen " + "uniqueMuts " + "localAdaptP1 " + "localAdaptP2 " + "meanFitP1 " + "sdFitP1 " + "meanPhenoP1 " + "sdPhenoP1 " +
+		"meanFitP2 " + "sdFitP2 " + "meanPhenoP2 " + "sdPhenoP2 " + "\n";
+	writeFile(paste(c(path, "/", my_seed, "_outputPhenFit.txt"), sep = ""), out_head);
+
+}
+
+1: early(){ 
+
+	// output fitness and phenotypes every 200 generations
+	if (sim.generation % 200 == 0){
+	
+		//////////////////////////////////////////////////
+		// X X X X X Population Level Outputs X X X X X //
+		//////////////////////////////////////////////////
+		
+		g = sim.subpopulations.genomes;
+		// unique mutations sorted by position
+		m = sortBy(unique(sim.mutationsOfType(m2)), "position");
+		
+	
+		////////////////////////////////////////////////
+		// X X X X Calculate Local Adaptation X X X X //
+		////////////////////////////////////////////////
+				
+		awayP1 = NULL;
+		homeP1 = NULL;
+		for(i in 0:(p1.individualCount-1)){
+			awayP1 = c(awayP1, 1.0 + dnorm(theta - p1.individuals.tagF[i], 0.0, sigma_K)); 
+			homeP1 = c(homeP1, 1.0 + dnorm(-theta - p1.individuals.tagF[i], 0.0, sigma_K));
+		}
+		
+		awayP2 = NULL; 
+		homeP2 = NULL;
+		for(i in 0:(p2.individualCount-1)){
+			awayP2 = c(awayP2, 1.0 + dnorm(-theta - p2.individuals.tagF[i], 0.0, sigma_K));
+			homeP2 = c(homeP2, 1.0 + dnorm(theta - p1.individuals.tagF[i], 0.0, sigma_K));
+		}
+		
+		locAdaptP1 = mean(homeP1) - mean(awayP1);
+		locAdaptP2 = mean(homeP2) - mean(awayP2);
+		
+		// create output file with summary stats every 200 generations
+		out = paste(c(sim.generation, size(m), locAdaptP1, locAdaptP2, mean(p1.cachedFitness(NULL)), sd(p1.cachedFitness(NULL)), 
+						  mean(p1.individuals.tagF), sd(p1.individuals.tagF), mean(p2.cachedFitness(NULL)), sd(p2.cachedFitness(NULL)), 
+						  mean(p2.individuals.tagF), sd(p2.individuals.tagF)), sep = " ");		
+		writeFile(paste(c(path, "/", my_seed, "_outputPhenFit.txt"), sep = ""), out, append = T);
+	}	
+	
+}
+
+1: late(){
+
+	// construct phenotypes for the additive effects of QTLs
+	inds = sim.subpopulations.individuals;				
+	
+	// count the number of mutations at QTLs and store them as the tag values for every individual 
+	// then add some randomness due to the environment
+	// NEEDED: using the tagF so that there is no rounding when mutation is pulled from the normal distribution 									
+	inds.tagF = (inds.sumOfMutationsOfType(m2) + rnorm(1, mean = 0, sd = envVar)); 
+	
+} 
+
+
+ ///////////////////////////////////////////
+ // X X X X X Fitness Callbacks X X X X X //
+ ///////////////////////////////////////////
+
+	// Run phenotype under stabilizing selection for 10Ne generations?
+	// Then implement landscape and run for 2000 more generations
+
+	fitness(m2){
+		//makes m2 mutations neutral (1 is relative fitness and is neutral in the slim models)
+		return 1.0;
+	}
+
+	// should we let the QTNs evolve during the neutral burn in or not?
+	// yes they could drift to fixation - problem with smaller number of QTNs
+	// no then they are evolving from standing genetic varation whereas the neutral background had burn in
+	
+	
+	// NULL identifier indicates that the callback is not intended to modify the fitness effects of mutations of a 
+	// particular mutation type, but rather, provides a fitness effect for the individual as a whole
+	
+	fitness(NULL, p1){
+		if (sim.generation < burnin){
+			return 1.0; 
+						
+		} else {
+			// 1.0 represents the relative fitness of the individual and 
+			// the second element beginning with dnorm is the Selection Coefficient 
+			// optimum of -1
+			return 1.0 + dnorm(-theta - individual.tagF, 0.0, sigma_K); 
+		}
+	}
+	
+	fitness(NULL, p2){
+		if (sim.generation < burnin){
+			return 1.0;  
+		} else {
+			// optimum of +1
+			return 1.0 + dnorm(theta - individual.tagF, 0.0, sigma_K);
+		}
+	}
+
+
+
+6000 late() {
+
+  //////////////////////////////////////////
+  // X X X X X Simulation Stats X X X X X //
+  /////////////////////////////////////////
+	
+	output_sim = "seed " + getSeed() + "\n" + 
+	"pop 1 migration rate " + mig1 + "\n" +
+	"pop 2 migration rate " + mig2 + "\n" +
+	"pop 1 Ne " + p1.individualCount + "\n" + 
+	"pop 2 Ne " + p2.individualCount + "\n" + 
+	"mutation_rate " + mu + "\n" + 
+	"number of QTLs " + nqtls + "\n" + 
+	"recombination rate " + r + "\n" + 
+	"optima " + alpha + " " + -alpha + "\n" + 
+	"selection strength " + sigma_K + "\n" + 
+	"burn in period " + burnin + "\n";
+	
+	writeFile(paste(c(path, "/", my_seed, "_outputSimStats.txt"), sep = ""), output_sim);
+	
+  //////////////////////////////////////////////////
+  // X X X X X Individual Level Outputs X X X X X //
+  //////////////////////////////////////////////////
+	
+  // X X Individual genomes 
+	
+	inds = sim.subpopulations.individuals;
+	p1.individuals.genomes.outputVCF(paste(c(path, "/", my_seed, "_CoreSimQTL_sim1pop1.vcf"), sep= ""));
+	p2.individuals.genomes.outputVCF(paste(c(path, "/", my_seed, "_CoreSimQTL_sim1pop2.vcf"), sep= ""));
+	
+	
+  // X X Phenotypes 
+ 	
+	output_ind = "id " +  "subpop " + "phenotype " + "\n"; // create header for file
+		
+	// for loop to step through individuals and pull first the header then append new lines with 
+	// individual index information which subpopulation they are from and their phenotype
+	for(ind in inds){ 
+		output_ind = output_ind + ind.index + " " + ind.subpopulation.id + " " + ind.tagF + "\n";
+	}
+	
+	// write file to working directory 
+	writeFile(paste(c(path, "/", my_seed, "_Inv_outputIndPheno.txt"), sep = ""), output_ind);
+
+	
+  // X X Mutations
+	
+	g = sim.subpopulations.genomes;
+	// unique mutations sorted by position
+	m = sortBy(unique(sim.mutationsOfType(m2)), "position");
+	// overall frequency of mutation
+	m_freqs = sim.mutationFrequencies(NULL, m);
+	// frequency of mutation in P1
+	m_p1freqs = sim.mutationFrequencies(p1, m);
+	// frequency of mutation in P2
+	m_p2freqs = sim.mutationFrequencies(p2, m);
+	// adaptive phenotypic divergence per locus
+	adapPhenoDiv = 2*alpha*(m_p2freqs - m_p1freqs);
+	
+	out_m = "position " + "selCoef " + "originGen " + "type " + "freq " + "p1freq " + "p2freq " + "adapPhenoDiv " + "\n"; //create header for file
+	// for loop to step through mutations and pull the header then append new lines with
+	// mutation position, the selection coefficient, the generation the mutation originated from and 
+	// its frequency
+	for(i in 0:(size(m)-1)){
+		out_m = out_m + m.position[i] + " " + m.selectionCoeff[i] + " " + m.originGeneration[i] + " " + "m2 " + m_freqs[i] + " " +
+		m_p1freqs[i] + " " + m_p2freqs[i] + " " + adapPhenoDiv[i] + "\n";
+	}
+	
+	writeFile(paste(c(path, "/", my_seed, "_outputMutations.txt"), sep = ""), out_m);	
+	
+	// write TreeSeq file
+	sim.treeSeqOutput(paste(c(path, "/", my_seed, "_IndQTNmodel.trees"), sep = "")); 
+}
+
+1:6000 {
+	if (sim.generation%100==0)
+		sim.treeSeqSimplify();
+}
+
+6001 late() {
+	sim.simulationFinished();
+}
