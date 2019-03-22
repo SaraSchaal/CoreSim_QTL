@@ -24,6 +24,7 @@ initialize(){
 		defineConstant("envVar", 1); // environmental variance
 		defineConstant("nqtls", 2000); // number of QTLs
 		defineConstant("chunks", 2000); // number of chunks in the genome
+		defineConstant("TreeSim", 500); // generation increment for TreeSeq simplification
 
 	}
 	
@@ -332,7 +333,7 @@ initialize(){
 }
 
 1:6000 {
-	if (sim.generation%500==0)
+	if (sim.generation%TreeSim==0)
 		sim.treeSeqSimplify();
 }
 
