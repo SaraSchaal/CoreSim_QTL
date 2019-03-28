@@ -35,8 +35,8 @@ In our SLiM simulation, we can simulate up to 2000 SNPs of equal effect sites.
 theta.1 <- 1
 theta.2 <- -1
 omega.sq <- 25
-ntot <- c(1, 2, 10,20,50,100,500)
-alpha <- 1/(2*ntot)
+ntot <- c(2, 10,20,50,100,500)
+alpha <- 1/(ntot) # removed 2* due to movement of the phenotype to the optimum because the mutuation model in slim is a 0/- alpha model or 0/+ alpha model not a +/- alpha model
 # alpha is effect size input to SliM
 
 m_crit <- function(alpha, theta.1, theta.2, omega.sq, N){
@@ -74,18 +74,18 @@ Now, we want to extend this base set to cover redundancy (1.5 ntot, 2 ntot), mut
 tot <- 
 length(ntot)* #levels polygenicity
   3* #levels redundancy 1, 2, 4
-  2* #levels Ne, 1000, 10000
-  3* #levels envi var, 
-  7* #levels migration, log scale, mc/1000, mc/100, mc/10, and mc, 5mc, 10mc, 50mc
+  1* #levels Ne, 1000
+  2* #levels envi var,  
+  5* #levels migration, 0.5, 0.9, 1.5, 1, 1.1, 2
   4* #levels, sample runif from Ne*mu=0.0001, 0.001, 0.01, 0.1
   2* # levels recombination
   #2 # standing variation vs. new mutation
-  3*  # selection strength omega.sq, sample runif from 5, 25, 50
+  5*  # selection strength omega.sq, sample runif from 0.9, 1.5, 5, 25, 50
   5 # replicates per level
 
 tot
-(tot*3) # total number of minutes
-min_serv = (tot*3)/70 # total number of minutes per server (60 servers)
+(tot*300) # total number of minutes
+min_serv = (tot*300)/70 # total number of minutes per server (60 servers)
 min_serv/(60*24) # days needed
 ```
 
@@ -100,7 +100,7 @@ For mutation, let's assume we want to at least capture $N_e\mu$=1e-04, which wou
 This gives a per-base pair mutation rate $\mu_1$=1e-07 when $N_e_1=1000$ or $\mu_2$=1e-08 when $N_e_2=10000$. 
 
 ```{r}
-Ne <- c(1000, 10000)
+Ne <- 1000
 Ne_mu <- c(1e-04, 1e-03, 1e-02, 1e-01)
 
 Ne_table <- expand.grid(Ne=Ne, Ne_mu=Ne_mu)
@@ -108,9 +108,9 @@ Ne_table$mu <- Ne_table$Ne_mu/Ne_table$Ne
 Ne_table
 
 # Let's take out some of the options for large Ne
-Ne_table <- Ne_table[-c(4, 8),]
+#Ne_table <- Ne_table[-c(4, 8),]
 
-Ne_table
+#Ne_table
 # 7 levels of Ne_mu
 ```
 
@@ -136,10 +136,11 @@ We will vary the recombination rate to be an order of magnitude larger and small
 
 ```{r}
 
-Ne_r_table <- rbind(cbind(Ne_table, Ne_r=0.01),
-                    cbind(Ne_table, Ne_r=0.001),
-                    cbind(Ne_table, Ne_r=0.1)
+Ne_r_table <- rbind(cbind(Ne_table, Ne_r=0.01)
+                    #cbind(Ne_table, Ne_r=0.001),
+                   # cbind(Ne_table, Ne_r=0.1)
 )
+# For our first set of runs we are just focusing on one recombination level because computational reasons and the linkage groups are independent in this simulation
 
 Ne_r_table$r <- Ne_r_table$Ne_r/ Ne_r_table$Ne
 
@@ -163,9 +164,9 @@ A constant unstructured population of size N = Ne = 1000 individuals was run for
 ### Some core levels
 
 ```{r}
-envi_var <- c(0, 1, 2)
-sel.strength <- c(5,25,50)
-mc_mult <- c(1/1000, 1/100, 1/10, 1, 2, 5, 10, 20, 100)
+envi_var <- c(0, 0.15)
+sel.strength <- c(0.9, 1.5, 5, 25, 50)
+mc_mult <- c(0.5, 0.9, 1.5, 1, 1.1, 2)
   
 params2 <- expand.grid(envi_var=envi_var, 
             sel.strength=sel.strength,
@@ -217,7 +218,7 @@ for (a in 1:nrow(qtlbase)){
       if(k%%1000==0){print(c(k, "of," ,nsims))}
       mc <- m_crit(qtlbase$alpha_levels[a], theta.1, theta.2, params2$sel.strength[c], Ne_r_table$Ne[b])
       m <- mc*params2$mc_mult[c]
-      if(m > 0 & m < 0.5){
+      if(m > 0 & m <= 0.5){
         i = i+1
         if(i==1){
           final_df <- data.frame(qtlbase[a,], Ne_r_table[b,], params2[c,], mc=mc, m=m)
