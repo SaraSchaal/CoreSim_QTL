@@ -10,7 +10,7 @@ output: html_document
 ### Upload Data and Subset ###
   df.simTimeMem <- read.csv("/Users/saraschaal/Documents/Northeastern/LotterhosLab/Coding/SLiM/CoreSim_QTL/src/TreeSeqCompTime.csv", header = TRUE)
   str(df.simTimeMem)
-  (df.simTimeMem <- df.simTimeMem[1:9, 1:4])
+  (df.simTimeMem <- df.simTimeMem[1:11, ])
 
 ### Calculate Number of Simulations at One Time on Our Cluster ###
   df.simTimeMem$NumSim <- floor(250/df.simTimeMem$Peak.Memory_GB)
@@ -28,15 +28,15 @@ output: html_document
   peakMem.bp <- barplot(df.simTimeMem$Peak.Memory_GB, names = df.simTimeMem$TreeSeqSimp,
                          ylim = c(0,100), ylab = "Peak Memory Usage (GB)")
   abline(10, 0, lty = 2)
-  text(x = peakMem.bp, y = df.simTimeMem$Peak.Memory_GB + 8, labels = df.simTimeMem$NumSim)
-  text(x = peakMem.bp[3,1], y = 90, labels = "Number of Sims at One Time")
+  text(x = peakMem.bp, y = df.simTimeMem$Peak.Memory_GB + 10, labels = df.simTimeMem$NumSim)
+  text(x = peakMem.bp[3,1], y = 90, labels = "Number of Sims at One Time \n on comp5")
 
 #####################
 ### Run Time Plot ###
   time.bp <- barplot(df.simTimeMem$Hours, names = df.simTimeMem$TreeSeqSimp,
-                      ylab = "Run Time (hours)", ylim = c(0, 10.3), 
+                      ylab = "Run Time (hours)", ylim = c(0, 16), 
                       xlab = "Tree Seq Simplification Increments")
-  text(x = time.bp, y = df.simTimeMem$Hours + 0.6, labels = df.simTimeMem$NumSimPerDay)
-  text(x = time.bp[7,1], y = 9.5, labels = "Number of Sims Per Day")
+  text(x = time.bp, y = df.simTimeMem$Hours + 0.8, labels = df.simTimeMem$NumSimPerDay)
+  text(x = time.bp[9,1], y = 13.5, labels = "Number of Sims Per Day \n on comp5")
 
 ```

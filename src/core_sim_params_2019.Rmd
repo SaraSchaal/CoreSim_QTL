@@ -71,21 +71,22 @@ Note that for the smallest effect size, alleles will always be prone to swamping
 
 Now, we want to extend this base set to cover redundancy (1.5 ntot, 2 ntot), mutation rate, Ne (1000, 5000), environmental variance (0,2,4), and 9 migration rates (0.01mc to 100mc) spanning the critical threshold, standing variation vs. new mutation, clustered vs. unclustered.   This gives a maximum of :
 ```{r}
+# produce a table of 
 tot <- 
-length(ntot)* #levels polygenicity
-  3* #levels redundancy 1, 2, 4
+#levels polygenicity
   1* #levels Ne, 1000
-  2* #levels envi var,  
-  5* #levels migration, 0.5, 0.9, 1.5, 1, 1.1, 2
+  3* #levels envi var,  0,1, visualize normal distributions of the envir variance on the phenotypes compared to the optima (play with some values)
+  3* #levels migration, log scale 0.005 - 0.5 regression design in migration values and less replicates?
   4* #levels, sample runif from Ne*mu=0.0001, 0.001, 0.01, 0.1
-  2* # levels recombination
-  #2 # standing variation vs. new mutation
-  5*  # selection strength omega.sq, sample runif from 0.9, 1.5, 5, 25, 50
+  1* # levels recombination
+  5* # mu_QTN_prop log scale 0, 0.0001, 0.001, 0.01, 0.1
+  2* # alpha (preliminary set for determining best levels of alpha); (visualize) 0.007, 0.7 
+  5*  # selection strength omega.sq, sample runif from 0.9, 1.5, 5, 25, (visualize first then decide to keep in or not 50)
   5 # replicates per level
 
 tot
-(tot*300) # total number of minutes
-min_serv = (tot*300)/70 # total number of minutes per server (60 servers)
+(tot*10) # total number of minutes
+min_serv = (tot*10)/70 # total number of minutes per server (60 servers)
 min_serv/(60*24) # days needed
 ```
 
