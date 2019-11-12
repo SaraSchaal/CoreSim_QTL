@@ -385,6 +385,7 @@ early(){
 	homLoci = NULL;
 	hetLoci = NULL;
 	allLoci = NULL;
+	
 	for(ind in inds){ 
 	
 		// output phenotypes
@@ -430,7 +431,8 @@ early(){
 			
 	}				
 
-	// X X Mutations
+  //// X X Mutations X X ////
+  
 	//////////
 	// QTNS //
 	//////////
@@ -488,17 +490,39 @@ early(){
 	// FST
 	inv_FST = 1 - (inv_HS/inv_HT);
 	
-	out_m = "position " + "mutID " + "selCoef " + "originGen " + "type " + "freq " + "p1freq " + "p2freq " + "adapPhenoDiv " + "\n"; 
+	//////////////////////////////
+	// output for QTN mutations //
+	//////////////////////////////
+	out_m = "position " + "mutID " + "selCoef " + "originGen " + "type " + "freq " + "p1freq " + "p2freq " + 
+	"adapPhenoDiv " + "FST" + "\n"; 
+		
+	// for loop to step through mutations and pull the header then append new lines with
+	// mutation position, the selection coefficient, the generation the mutation originated from and 
+	// its frequency
+	for(i in 0:(size(m)-1)){
+		out_m = out_m + m.position[i] + " " + m.id[i] + " " + m.selectionCoeff[i] + " " + m.originGeneration[i] + " " + "m2 " + 
+		m_freqs[i] + " " + m_p1freqs[i] + " " + m_p2freqs[i] + " " + adapPhenoDiv[i] + FST[i] + "\n";
+	}
+
+ 	writeFile(paste(c(MYPATH, "/", MYSEED, "_outputMutations.txt"), sep = ""), out_m);	
+
+	//////////////////////////////////////
+	/// output for inversion mutations ///
+	//////////////////////////////////////
+
+	out_inv_m = "position " + "mutID " + "selCoef " + "originGen " + "type " + "freq " + "p1freq " + "p2freq " + 
+	"adapPhenoDiv " + "FST"+ "\n"; 
 		
 	// for loop to step through mutations and pull the header then append new lines with
 	// mutation position, the selection coefficient, the generation the mutation originated from and 
 	// its frequency
 	for(i in 0:(size(m)-1)){
 		out_m = out_m + m.position[i] + " " + m.id[i] + " " + m.selectionCoeff[i] + " " + m.originGeneration[i] + " " + "m2 " + m_freqs[i] + " " +
-		m_p1freqs[i] + " " + m_p2freqs[i] + " " + adapPhenoDiv[i] + "\n";
+		m_p1freqs[i] + " " + m_p2freqs[i] + " " + adapPhenoDiv[i] + inv_FST[i] + "\n";
 	}
-	
+
  	writeFile(paste(c(MYPATH, "/", MYSEED, "_outputMutations.txt"), sep = ""), out_m);	
+
 }
 
 
