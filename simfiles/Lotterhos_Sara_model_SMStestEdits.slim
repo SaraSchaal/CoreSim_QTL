@@ -379,13 +379,14 @@ early(){
 		
 		// filter out minor allele frequencies < 0.05 before calculating FST
 		MAF = NULL;
+		filteredQTNs = NULL;
 		for(i in 1:length(m_freqs)){
 			MAF = min(m_freqs[i], wtype_freqs[i]);
 			if(MAF < 0.05){
 				filteredQTNs = c(filteredQTNs, m.id[i]);
 			}
 		}
-		m_filt = m.id[!filteredneut];
+		m_filt = m.id[!filteredQTNs];
 		
 		// frequency of mutation in P1
 		m_p1freqs = sim.mutationFrequencies(p1, m_filt);
@@ -422,6 +423,7 @@ early(){
 		
 		// filter out minor allele frequencies < 0.05 before calculating FST
 		inv_MAF = NULL;
+		filteredinvs = NULL;
 		for(i in 1:length(m_inv_freqs)){
 			inv_MAF = min(m_inv_freqs[i], wtype_inv_freqs[i]);
 			if(inv_MAF < 0.05){
@@ -464,6 +466,7 @@ early(){
 		
 		// filter out minor allele frequencies < 0.05 before calculating FST
 		neut_MAF = NULL;
+		filterednet = NULL;
 		for(i in 1:length(m_neut_freqs)){
 			neut_MAF = min(m_neut_freqs[i], wtype_neut_freqs[i]);
 			if(neut_MAF < 0.05){
@@ -627,15 +630,16 @@ early(){
 	wtype_freqs = 1 - m_p1freqs;
 	
 	// filter out minor allele frequencies < 0.05 before calculating FST
-		MAF = NULL;
-		for(i in 1:length(m_freqs)){
-			MAF = min(m_freqs[i], wtype_freqs[i]);
-			if(MAF < 0.05){
-				filteredQTNs = c(filteredQTNs, m.id[i]);
-			}
+	MAF = NULL;
+	filteredQTNs = NULL;
+	for(i in 1:length(m_freqs)){
+		MAF = min(m_freqs[i], wtype_freqs[i]);
+		if(MAF < 0.05){
+			filteredQTNs = c(filteredQTNs, m.id[i]);
 		}
-
-	// filter out minor allele frequencies < 0.05 //
+	}
+	m_filt = m.id[!filteredQTNs];
+	
 	
 	// frequency of mutation in P1
 	m_p1freqs = sim.mutationFrequencies(p1, m);
@@ -659,39 +663,11 @@ early(){
 	HT = 2 * pBar * qBar;
 	// FST
 	FST = 1 - (HS/HT);
-	
-	
-	////////////////
-	// Inversions //
-	////////////////
-	m_inv = sortBy(unique(c(g.mutationsOfType(m3))), "position");
-	m_freqs = sim.mutationFrequencies(NULL, m_inv);
-	// frequency of inversion mutation in P1
-	m_inv_p1freqs = sim.mutationFrequencies(p1, m_inv);
-	// frequency of inversion mutation in P2
-	m_inv_p2freqs = sim.mutationFrequencies(p2, m_inv);
-	
-	////////////////////////////////
-	// FST Calculation Inversions //
-	////////////////////////////////
-	// expected Heterozygosity
-	inv_expH_p1 = m_inv_p1freqs * (1 - m_inv_p1freqs) * 2;
-	inv_expH_p2 = m_inv_p2freqs * (1 - m_inv_p2freqs) * 2;
-	// HS
-	inv_HS = (inv_expH_p1 * N + inv_expH_p2 * N)/(N * 2);
-	// HT calculate overall heterozygosity
-	inv_pBar = (m_inv_p1freq * N + m_inv_p2freq * N)/(N * 2);
-	// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
-	inv_qBar = 1 - inv_pBar;
-	inv_HT = 2 * inv_pBar * inv_qBar;
-	// FST
-	inv_FST = 1 - (inv_HS/inv_HT);
-	
 		
 	//////////////////////////////
 	// output for QTN mutations //
 	//////////////////////////////
-	out_m_inv = "position " + "mutID " + "selCoef " + "originGen " + "type " + "freq " + "p1freq " + "p2freq " +
+	out_m = "position " + "mutID " + "selCoef " + "originGen " + "type " + "freq " + "p1freq " + "p2freq " +
 		"adapPhenoDiv " + "FST " + "heterozygosity " + "homozygosity " + "\n";
 	
 	// for loop to step through mutations and pull the header then append new lines with
