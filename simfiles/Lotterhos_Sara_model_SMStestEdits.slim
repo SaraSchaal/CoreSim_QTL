@@ -248,30 +248,44 @@ early(){
 			len = mut.tag;																// length of inversion
 			end = pos + len - 1;														// end of inversion
 			mut_genomes = genomes[genomes.containsMutations(mut)];		// genomes with inversion
+			non_mut_genomes = genomes[!genomes.containsmutations(mut)]; // genomes without inversion
 			freq = size(mut_genomes) / size(genomes);							// frequency of inversion
 			freq_p1 = sim.mutationFrequencies(p1, mut);						// frequency of inversion in pop 1
 			freq_p2 = sim.mutationFrequencies(p2, mut);						// frequency of inversion in pop 2
 			
+			// output meta information about the inversion
+			if(mut.originGeneration - sim.generation < 200){ 
+				outINVmeta = paste(c(mut.id, sim.generation, pos, end, len), sep = " ");
+			}
+			writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvMetaInfo.txt"), sep = ""), outINVmeta, append = T);
+			
 			// X X Summary Stats of any QTNs within Inversion
-			QTNs = mut_genomes.mutationsOfType(m2);							// find all m2 mutations within those genomes	
-			QTNs = QTNs[QTNs.position >= pos & QTNs.position <= end];	// all those m2 mutations only inside the inversion
+			QTNsINInvGenomes = mut_genomes.mutationsOfType(m2);				// find all m2 mutations within those genomes with inversion
+			QTNsOtherGenomes = non_mut_genomes.mutationsOfType(m2);			// QTNS in genomes without the inversion
+			QTNsIN = QTNsIn[QTNs.position >= pos & QTNs.position <= end];	// all those m2 mutations only inside the inversion
 			
 			/// step through all QTNs that fall within inversion and get summary info
-			if(size(QTNs) > 0){
-				QTNpositions = QTNs.position;
-				freq_P1_InvQTNsUniq = sim.mutationFrequencies(p1, QTNs); // frequency of inversion QTN pop 1
-				freq_P2_InvQTNsUniq = sim.mutationFrequencies(p2, QTNs);	// frequency of inversion QTN pop 2
-				freq_InvQTNsUniq = sim.mutationFrequencies(NULL, QTNs);	// frequency of inversion QTN overall
-				InvQTNsSelCoeffUniq = QTNs.selectionCoeff;					// selection coefficients of all QTNs
-				InvQTNsDomUniq = QTNs.getValue("dom");							// dominance value of each QTN
-				InvQTNsSubpop = QTNs.subpopID;									// subpop ID for each QTN
-				InvQTNsID = QTNs.id;													// QTN ID
+			if(size(QTNsIN) > 0){
+				QTNsPreInv = setIntersection(QTNsIN, QTNsOtherGenomes);
+				if(length(QTNsPreInv)){
+				for(i in 0:size(QTNsIN)){
+					
+					if(QTNsIN 
+						QTNpositions = QTNsIN.position;
+						freq_P1_InvQTNsUniq = sim.mutationFrequencies(p1, QTNsIN); // frequency of inversion QTN pop 1
+						freq_P2_InvQTNsUniq = sim.mutationFrequencies(p2, QTNsIN);	// frequency of inversion QTN pop 2
+						freq_InvQTNsUniq = sim.mutationFrequencies(NULL, QTNsIN);	// frequency of inversion QTN overall
+						InvQTNsSelCoeffUniq = QTNsIN.selectionCoeff;					// selection coefficients of all QTNs
+						InvQTNsDomUniq = QTNsIN.getValue("dom");						// dominance value of each QTN
+						InvQTNsSubpop = QTNsIN.subpopID;									// subpop ID for each QTN
+						InvQTNsID = QTNsIN.id;												// QTN ID
+			} else {
+				InvQTNsSelCoeffUniq = 0;											// give selection coefficient 0 if no qtns for later calcs
+				InvQTNsDomUniq = 0;													// give dominance value 0 if no qtns for later calcs
 			}
-//			} else {
-//				InvQTNsSelCoeffUniq = 0;											// give selection coefficient 0 if no qtns
-//				InvQTNsDomUniq = 0;													// give dominance value 0 if no qtns
-//			}
-//			
+			
+			
+			QTNsOut = QTNs[!QTNs.position >= pos & QTNs.position <= end]; // find all m2 mutations within
 			
 			// X X output some stats as simulation runs 
 			cat("pos = " + pos + ", len = " + len + "\n" + "freq = " +
@@ -284,37 +298,19 @@ early(){
 			catn("Num genomes w/ INV =" + size(mut_genomes));
 			catn("QTN Position = " + unique(QTNpositions));
 			catn("------" + "\n");
-			
-			if(size(QTNs) > 0){
-				
-				// potential for making a meta data file so you aren't repeating information; however we aren't getting many qtns that persist so not really a data problem right now. If we do have this become a data problem this is where we would write a metadata file for the inversion metadata and qtn metadata then just have another file outputting its frequency. 
-				if(mut.originGeneration - sim.generation < 200){ 
-						outINVfreq = paste(c(sim.generation, pos, end, len, ,
-											), sep = " ");
 											
-						freq, freq_p1, freq_p2, mean(InvQTNsSelCoeff), sd(InvQTNsSelCoeff), mean(InvQTNsDom), sd(InvQTNsDom)
-					for (i in 0:(size(QTNs) - 1)){
-					
-						outINVQTNmetaData = sim.generation + " " + mut.originGeneration + " " + QTNs.originGeneration[i] + " " + pos +
-						" " + QTNpositions[i] + " " + InvQTNsSelCoeffUniq[i] + " " + InvQTNsDomUniq[i] + " " + freq_P1_InvQTNsUniq[i] + 
-						" " + freq_P2_InvQTNsUniq[i] + " " + freq_InvQTNsUniq[i];
-						
-						writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvQTNData.txt"), sep = ""), outINVQTNmetaData, append = T);
-					}
-					
-					} else {
-					
-						
-				}
-	
-				
+			outINV = paste(c(mut.id, sim.generation, freq, freq_p1, freq_p2, size(QTNsIN), mean(InvQTNsSelCoeff), sd(InvQTNsSelCoeff), 
+								  mean(InvQTNsDom), sd(InvQTNsDom)), sep = " ");
 			
-			} else {
-				
-				InvQTNsSelCoeff = 0;
-				InvQTNsDom = 0;
+			for (i in 0:(size(QTNs) - 1)){
+					
+				outINVQTNmetaData = sim.generation + " " + mut.originGeneration + " " + QTNs.originGeneration[i] + " " + pos +
+										  " " + QTNpositions[i] + " " + InvQTNsSelCoeffUniq[i] + " " + InvQTNsDomUniq[i] + " " +
+										   freq_P1_InvQTNsUniq[i] + " " + freq_P2_InvQTNsUniq[i] + " " + freq_InvQTNsUniq[i] + "/n";
+						
+				writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvQTNData.txt"), sep = ""), outINVQTNmetaData, append = T);
 			}
-			
+								
 			outINV = paste(c(sim.generation, pos, end, len, freq, freq_p1, freq_p2, mean(InvQTNsSelCoeff),
 				sd(InvQTNsSelCoeff), mean(InvQTNsDom), sd(InvQTNsDom)), sep = " ");
 				
@@ -564,7 +560,6 @@ early(){
 	
 	// X X X Calculation heterozygosity and homozygosity for inversions
 	InvHeterozygosity = NULL;
-	InvHomozygosity = NULL;
 	InvMutID = NULL;
 	for(InvMut in unique(allInvLoci.id)){
 		
@@ -586,13 +581,11 @@ early(){
 		hetInv = hetInvCount/sum(c(homInvCount,hetInvCount));
 		InvMutID = c(InvMutID, InvMut);
 		InvHeterozygosity = c(InvHeterozygosity, hetInv);
-		InvHomozygosity = c(InvHomozygosity, homInv);
 	
 	}
 	
 	// X X X Calculation heterozygosity and homozygosity for QTNs 
 	heterozygosity = NULL;
-	homozygosity = NULL;
 	MutID = NULL;
 	for(QTNMut in unique(allQTNLoci.id)){
 		
@@ -614,7 +607,6 @@ early(){
 		het = hetCount/sum(c(homCount,hetCount));
 		MutID = c(MutID, QTNMut);
 		heterozygosity = c(heterozygosity, het);
-		homozygosity = c(homozygosity, hom);
 	
 	}
 	
