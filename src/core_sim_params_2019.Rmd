@@ -75,11 +75,11 @@ Now, we want to extend this base set to cover redundancy (1.5 ntot, 2 ntot), mut
 tot <- 
 #levels polygenicity
   1* #levels Ne, 1000
-  3* #levels envi var,  0,1, visualize normal distributions of the envir variance on the phenotypes compared to the optima (play with some values)
+  2* #levels envi var,  0,0.1, visualize normal distributions of the envir variance on the phenotypes compared to the optima (play with some values)
   3* #levels migration, log scale 0.005 - 0.5 regression design in migration values and less replicates?
-  4* #levels, sample runif from Ne*mu=0.0001, 0.001, 0.01, 0.1
+  4* #mu base levels, sample runif from Ne*mu=0.0001, 0.001, 0.01, 0.1
   1* # levels recombination
-  5* # mu_QTN_prop log scale 0, 0.0001, 0.001, 0.01, 0.1
+  5* # mu_QTN_prop log scale 0, 0.001, 0.01, 0.1 (0.0001)
   2* # alpha (preliminary set for determining best levels of alpha); (visualize) 0.007, 0.7 
   5*  # selection strength omega.sq, sample runif from 0.9, 1.5, 5, 25, (visualize first then decide to keep in or not 50)
   5 # replicates per level
@@ -88,6 +88,16 @@ tot
 (tot*10) # total number of minutes
 min_serv = (tot*10)/70 # total number of minutes per server (60 servers)
 min_serv/(60*24) # days needed
+
+
+## Visualization
+ plot(dnorm(x=seq(-5,5,0.01), mean = 0, sd=1))
+ x<- seq(-1,1,0.001)
+ plot(x,dnorm(x, mean = 0, sd=0.07))
+ plot(x,dnorm(x, mean = 0, sd=0.7))
+ plot(x,dnorm(x, mean = 0, sd=0.1), xlim=c(-1,1))
+ y <- seq(-2,2)
+ plot()
 ```
 
 Note that some levels will not be possible (e.g. $m_c=0$ for ntot>400 and $m_c$>1).   

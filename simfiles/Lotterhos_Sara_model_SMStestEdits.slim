@@ -262,12 +262,19 @@ early(){
 			// X X Summary Stats of any QTNs within Inversion
 			QTNsINInvGenomes = mut_genomes.mutationsOfType(m2);				// find all m2 mutations within those genomes with inversion
 			QTNsOtherGenomes = non_mut_genomes.mutationsOfType(m2);			// QTNS in genomes without the inversion
-			QTNsIN = QTNsIn[QTNs.position >= pos & QTNs.position <= end];	// all those m2 mutations only inside the inversion
+			QTNsIN = QTNsIN[QTNs.position >= pos & QTNs.position <= end];	// all those m2 mutations only inside the inversion
 			
 			/// step through all QTNs that fall within inversion and get summary info
 			if(size(QTNsIN) > 0){
+			
 				QTNsPreInv = setIntersection(QTNsIN, QTNsOtherGenomes);
-				if(length(QTNsPreInv)){
+				
+				if(length(QTNsPreInv) > 0){
+					for(j in 0:size(QTNspreInv)){
+						QTNsPreInv[i]
+				
+				} else {
+				
 				for(i in 0:size(QTNsIN)){
 					
 					if(QTNsIN 

@@ -12,22 +12,22 @@ initialize(){
 		mypath = getwd();
 		defineConstant("my_seed", seed);
 		defineConstant("path", mypath); 
-		defineConstant("mu", 1e-04); // mutation rate
-		defineConstant("Ne", 1000); // population size change to Ne below
-		defineConstant("mig1", 0.01); // pop 1 migration rate
-		defineConstant("mig2", 0.01); // pop 2 migration rate
+		defineConstant("mu", 1e-04); 		// mutation rate
+		defineConstant("Ne", 1000); 		// population size change to Ne below
+		defineConstant("mig1", 0.01);		// pop 1 migration rate
+		defineConstant("mig2", 0.01); 	// pop 2 migration rate
 		defineConstant("sigma_K", 0.05); // selection Coeff
-		defineConstant("burnin", 4000); // set number of generations for burnin period 
-		defineConstant("alpha", 0.1);// effect size
-		defineConstant("theta", 1); // optimum in each patch
-		defineConstant("r_wiC", 1e-6); // recombination rate within chunks
-		defineConstant("r_bwC", 2e-5); // recombination rate between chunks
-		defineConstant("envVar", 1); // environmental variance
-		defineConstant("propQTL", 0.1); // proportion of genome QTLs can arise
-		//defineConstant("chunks", ); // number of chunks per chromosome
-		defineConstant("TreeSim", 500); // generation increment for TreeSeq simplification
-		defineConstant("D", 0.9); // Dominance coefficient
-		defineConstant("C", 3); // number of chromosomes
+		defineConstant("burnin", 4000); 	// set number of generations for burnin period 
+		defineConstant("alpha", 0.1);		// effect size
+		defineConstant("theta", 1); 		// optimum in each patch
+		defineConstant("r_wiC", 1e-6); 	// recombination rate within chunks
+		defineConstant("r_bwC", 2e-5); 	// recombination rate between chunks
+		defineConstant("envVar", 1); 		// environmental variance
+		defineConstant("propQTL", 0.1); 	// proportion of genome QTLs can arise
+		//defineConstant("chunks", ); 	// number of chunks per chromosome
+		defineConstant("TreeSim", 500); 	// generation increment for TreeSeq simplification
+		defineConstant("D", 0.9); 			// Dominance coefficient
+		defineConstant("C", 3); 			// number of chromosomes
 		defineConstant("invSize", 1000); // size of inversion in bp // make this a selection from a distribution
 	}
 	
