@@ -274,7 +274,9 @@ early(){
 						genomesWOInvWQTN = QTNsOtherGenomes[containsMutations(QTNsPreInv[i])];
 						freqOutInv = size(genomesWOInvWQTN) / size(genomes);
 						genomesWInvWQTN = QTNsInInvGenomes[containsMutation(QTNsPreInv[i])];
-						freqInInv = size(genomesWInvWQTN);
+						freqInInv = size(genomesWInvWQTN) / size(genomes);
+					}
+					
 				} else {
 				
 				for(i in 0:size(QTNsIN)){
