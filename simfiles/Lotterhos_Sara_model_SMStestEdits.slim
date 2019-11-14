@@ -270,9 +270,11 @@ early(){
 				QTNsPreInv = setIntersection(QTNsIN, QTNsOtherGenomes);
 				
 				if(length(QTNsPreInv) > 0){
-					for(j in 0:size(QTNspreInv)){
-						QTNsPreInv[i]
-				
+					for(j in 0:size(QTNsPreInv)){
+						genomesWOInvWQTN = QTNsOtherGenomes[containsMutations(QTNsPreInv[i])];
+						freqOutInv = size(genomesWOInvWQTN) / size(genomes);
+						genomesWInvWQTN = QTNsInInvGenomes[containsMutation(QTNsPreInv[i])];
+						freqInInv = size(genomesWInvWQTN);
 				} else {
 				
 				for(i in 0:size(QTNsIN)){
@@ -292,7 +294,7 @@ early(){
 			}
 			
 			
-			QTNsOut = QTNs[!QTNs.position >= pos & QTNs.position <= end]; // find all m2 mutations within
+			QTNsOut = QTNs[!QTNs.position >= pos & QTNs.position <= end]; // find all m2 mutations outside inversion
 			
 			// X X output some stats as simulation runs 
 			cat("pos = " + pos + ", len = " + len + "\n" + "freq = " +
