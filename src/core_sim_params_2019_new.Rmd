@@ -81,7 +81,7 @@ tot <-
   1* # levels recombination
   5* # mu_QTN_prop log scale 0, 0.001, 0.01, 0.1 (0.0001)
   2* # alpha (preliminary set for determining best levels of alpha); 0.007, 0.07 
-  5*  # selection strength omega.sq, sample runif from 0.9, 1.5, 5, 25, (visualize first then decide to keep in or not 50)
+  5*  # selection strength omega.sq, sample runif from 0.9, 1.5, 5, 25, (visualize first with simulation then decide to keep in or not 50)
   5 # replicates per level
 
 tot
@@ -96,8 +96,9 @@ min_serv/(60*24) # days needed
  plot(x,dnorm(x, mean = 0, sd=0.07))
  plot(x,dnorm(x, mean = 0, sd=0.7))
  plot(x,dnorm(x, mean = 0, sd=0.1), xlim=c(-1,1))
- plot(x,dnorm(x, mean = 1, sd=0.3), xlim=c(-2,2), col = "cornflowerblue")
- points(x,dnorm(x,mean = -1, sd = 0.3), col = "limegreen")
+ 
+ plot(x,dnorm(x, mean = 1, sd=0.2), xlim=c(-2,2), col = "cornflowerblue")
+ points(x,dnorm(x,mean = -1, sd = 0.2), col = "limegreen")
  
  
  plot(x,dnorm(x, mean = 1, sd = ))
@@ -180,7 +181,7 @@ A constant unstructured population of size N = Ne = 1000 individuals was run for
 ```{r}
 envi_var <- c(0, 0.15)
 sel.strength <- c(0.9, 1.5, 5, 25, 50)
-mc_mult <- c(0.5, 0.9, 1.5, 1, 1.1, 2)
+mc_mult <- c(0.1, 0.5, 0.9, 1, 1.1, 1.5, 2)
   
 params2 <- expand.grid(envi_var=envi_var, 
             sel.strength=sel.strength,
@@ -195,22 +196,44 @@ For each of the above levels, we have multiple levels of allele effect sizes.
 
 ```{r}
 
-ntot
+mu_base = c(1e-07, 1e-06, 1e-05, 1e-04, 1e-03)
+MU_inv = c( 1,  0) #orders of magnitude higher or lower than mu_base
+sigma_k <- c(0.9, 1.5, 5, 25, 50)
+alpha_sd <- c(0.002, 0.2) #sd of effect sizes of QTN mutations
+  # 0.2 because 95% of observations will be <0.4, and a mutation of 0.5 in a homozygote will give 1.0 optimum
 
-alpha
-redundancy <- c(1, 2, 4, 10, 20, 40)
+N = 1000
+prop = 0.1 #proportion of genome where QtNs can arise
+(genome_size = 1e5*20)
+  
+#mutations per generation
+mu_base*prop*2*N*genome_size
 
-nqtl_levels <- c()
+# Can we approximate m_c based on the range of effect sizes we expect to arise?
+alpha_sd/2
+alpha_sd*4
+
 alpha_levels <- c()
-for(i in seq_along(alpha)){
-  nqtl_levels <- c(nqtl_levels, ntot[i]*redundancy)
-  alpha_levels <- c(alpha_levels, rep(alpha[i],length(redundancy)))
-}
 
-(qtlbase <- data.frame(nqtl_levels, alpha_levels, redundancy=redundancy))
+print((alpha_sd[1]/2)) #small effect size
+cbind(alpha=alpha_sd[1]/2, 
+      sigma_k, 
+      m_c = m_crit(alpha_sd[1]/2, theta.1, theta.2, sigma_k, N))
 
-(qtlbase <- qtlbase[-which(qtlbase$nqtl_levels > 2000),]) # only have 2000 sites in core sim
+cbind(alpha=alpha_sd[1]*4, 
+      sigma_k, 
+      m_c = m_crit(alpha_sd[1]*4, theta.1, theta.2, sigma_k, N))
 
+cbind(alpha=alpha_sd[2]/2, 
+      sigma_k, 
+      m_c = m_crit(alpha_sd[2]/2, theta.1, theta.2, sigma_k, N))
+
+cbind(alpha=alpha_sd[2]*4, 
+      sigma_k, 
+      m_c = m_crit(alpha_sd[2]*4, theta.1, theta.2, sigma_k, N))
+
+
+m <- c(0.001, 0.01, 0.1, 0.25, 0.5)
 ```
 
 

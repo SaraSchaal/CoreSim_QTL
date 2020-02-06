@@ -1,0 +1,28 @@
+20191201 - deleted code that would get frequencies of a qtn inside and outside of the inversion
+
+/////// this is only excecuted if there are QTNS that are in the inversion haplotype and a haplotype w/o the inversion ///
+// identify whether the QTNs are found both inside the inversion and in individuals that do not contain //////////////////
+// the inversion mutation to get separate frequencies ////////////////////////////////////////////////////////////////////
+
+//QTNsOtherGenomes = non_mut_genomes.mutationsOfType(m2);			 // QTNS in genomes without the inversion
+// find all qtns that overlap in individuals with and without the inversion  
+QTNsPreInv = setIntersection(QTNsINInv, QTNsOtherGenomes);	 
+
+// per population frequencies of QTNs with or without the inversion 
+subpop1genomesWQTN = p1.genomes[containsMutations(QTNsPreInv[j])]; // pop1 genomes w/ QTN
+subpop2genomesWQTN = p2.genomes[containsMutations(QTNsPreInv[j])]; // pop2 genomes w/ QTN
+pop1QTNWInv = subpop1genomesWQTN[containsMutations(mut)];			 // pop1 genomes w/ INV & QTN
+pop2QTNWInv = subpop2genomesWQTN[containsMutations(mut)];			 // pop2 genomes w/ INV & QTN
+pop1QTNWOInv = subpop1genomesWQTN[!containsMutations(mut)];			 // pop1 genomes w/o INV w/ QTN
+pop2QTNWOInv = subpop2genomesWQTN[!containsMutations(mut)];			 // pop2 genomes w/o INV w/ QTN
+subpop1freqWInv = size(pop1QTNWInv) / size(genomes);					 // pop1 freq of inversion w/ QTN
+subpop2freqWInv = size(pop2QTNWInv) / size(genomes);					 // pop2 freq of inversion w/ QTN
+subpop1freqWOInv = size(pop1QTNWOInv) / size(genomes);					 // pop1 freq of inversion w/o QTN
+subpop2freqWOInv = size(pop2QTNWOInv) / size(genomes);					 // pop2 freq of inversion w/o QTN
+						
+// overall frequencies of QTNs with or without the inversion
+genomesWOInvWQTN = QTNsOtherGenomes[containsMutations(QTNsPreInv[j])]; // overall genomes w/o inversion w/ QTN
+freqOutInv = size(genomesWOInvWQTN) / size(genomes);					 	  // no inversion QTN frequency
+genomesWInvWQTN = QTNsInInvGenomes[containsMutation(QTNsPreInv[j])];   // overall genomes w/ inversion & QTN 
+freqInInv = size(genomesWInvWQTN) / size(genomes);						 	  // inversion & QTN frequency
+InvQTNs = c(QTNs, QTNsPreInv);
