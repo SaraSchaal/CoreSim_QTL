@@ -11,3 +11,5 @@ Other parameters:
   enVar = 0.01  ## low environmental variance added to phenotype  
   mu = 1e-7     ## low qtn mutation rate   
   muInv = 1e-3  ## high inversion mutation rate  
+
+![Prelim Migration Rate Result](../figures/prelimMigData.pdf)
