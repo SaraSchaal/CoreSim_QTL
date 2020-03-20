@@ -5,6 +5,7 @@
  Finding: under moderate levels of migation inversions allow for local adaptation to occur. 
 
  Other parameters:
+ 
   sigmaK = 0.9  ## strong stabilizing selection 
   alpha = 0.002 ## low QTN effect size
   enVar = 0.01  ## low environmental variance added to phenotype
