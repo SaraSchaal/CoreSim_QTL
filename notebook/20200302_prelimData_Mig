@@ -1,0 +1,8 @@
+ ## 20200302
+
+ Ran test simulations to determine whether dynamics were working as expected. Ran two four migration rates 0.001, 0.01, 0.49, and 0.5 with and without inversions. 
+
+ Finding: under moderate levels of migation inversions allow for local adaptation to occur. 
+
+ Other parameters:
+ 
