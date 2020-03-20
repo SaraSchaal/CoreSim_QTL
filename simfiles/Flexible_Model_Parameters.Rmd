@@ -5,26 +5,48 @@ date: "6/13/2019"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+w.zik <- function(zik, theta, omega.sq){
+  1 - (zik - theta)^2/omega.sq
+}
+
 ```
 
-## R Markdown
+For the 2-patch model, we assume that each patch has an optimum of +1 and -1.  We assume that for a given number of loci that affect the trait(`ntot`) at the lowest level of redundancy, their effect sizes (`alpha`) are $1/(2*ntot)$.  For this, we can use the supplemental equation from Yeaman 2015 Am Nat to calculate the critical migration rate $m_c$.  At $m>m_c$, alleles are prone to swamping by migration.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+In our SLiM simulation, we can simulate up to 2000 SNPs of equal effect sites.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r}
 
-```{r cars}
-summary(cars)
+theta.1 <- 1
+theta.2 <- -1
+omega.sq <- 25
+ntot <- c(2,10,20,50,100,500)
+alpha <- 1/(ntot)
+
+m_crit <- function(alpha, theta.1, theta.2, omega.sq, N){
+  w1bb <- 1#w.zik(4*alpha,theta.1, omega.sq)/
+    #w.zik(4*alpha, theta.1, omega.sq)
+  w1Bb <- w.zik(2*alpha,theta.1, omega.sq)/
+    w.zik(4*alpha, theta.1, omega.sq)
+  w1BB <- w.zik(0, theta.1,omega.sq)/
+    w.zik(4*alpha, theta.1, omega.sq)
+  
+  w2bb <- w.zik(4*alpha,theta.2, omega.sq)/
+    w.zik(0, theta.2, omega.sq)
+  w2Bb <- w.zik(2*alpha,theta.2, omega.sq)/
+    w.zik(0, theta.2, omega.sq)
+  w2BB <- 1#w.zik(0, theta.2,omega.sq)/
+    #w.zik(0, theta.2, omega.sq)
+  
+  w1bb;w1Bb; w1BB
+  w2bb;w2Bb; w2BB
+  return(1/(w1Bb/(w1Bb-w1BB*(1+(1/(4*N))))-w2Bb/(w2BB*(1+(1/(4*N)))-w2Bb))
+  )
+}
+
+N=1000
+mc <- m_crit(alpha, theta.1, theta.2, omega.sq, N)
+cbind(ntot, alpha, mc=round(mc,5), lowmc=0.0100*round(mc,5), highmc=100*round(mc,5))
+
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -1,0 +1,125 @@
+---
+title: "Inversion_Sim_Params"
+author: "Sara Michele Schaal"
+date: "2/6/2020"
+output: html_document
+---
+## Create list of parameters for model
+```{r}
+### Number of Parameters that vary
+  num_param <- 14
+  
+## List of Parameters in model
+  first.seed <- 3383282 #runif(1, 0, 10000000)
+  mu_base <- c(1e-07, 1e-06, 1e-05, 1e-04, 1e-03)
+  mu_inv <- c(0, 1e-03, 1e-05, 1e-07) #orders of magnitude higher or lower than mu_base
+  sigmaK <- c(0.9, 1.5, 5, 25, 50) 
+  alpha <- c(0.002, 0.2) #sd of effect sizes of QTN mutations
+    # 0.2 because 95% of observations will be <0.4, and a mutation of 0.5 in a homozygote will give 1.0 optimum
+  reps <- c(1:5)
+  N <- 1000
+  envar <- c(0,0.15)
+  
+  ## note migration rates are set up to take on two different values need to edit 
+  ## for loop and num_sim below if you want to alter migration rates between populations
+  mig1 <- c(0.001, 0.01, 0.1, 0.25, 0.5)
+  mig2 <- c(0.001, 0.01, 0.1, 0.25, 0.5)
+  chrom_num <- 21
+  recom <- 1e-6
+  burnin <- 4000
+  theta1 <- 1
+  theta2 <- -1
+  
+  # mig = 0.5, mu = -3, in = 0, sigmak = 0.9, alpha = 0.002, 0.2
+## Number of total simulations
+  num_sim <- length(mu_base)*length(mu_inv)*length(sigmaK)*length(alpha)*length(reps)*length(N)*length(envar)*length(mig1)*length(recom)*length(burnin)*length(theta1)*length(theta2)*length(chrom_num)
+  
+## colnames vector
+  columns <- c("seed", "mu_base", "mu_inv", "sigmaK", "alpha", "rep", "N", "en_var", "mig1", "mig2", "theta1", "theta2", "burnin", "chrom_num", "r")
+
+## Time per sim varies based on parameters
+  min <- num_sim*15
+  hours <- min/60
+  days <- hours/24
+  
+  params <- matrix(nrow = 0, ncol = num_param)
+  for(b in 1:length(mu_base)){
+    for(i in 1:length(mu_inv)){
+      for(k in 1:length(sigmaK)){
+        for(a in 1:length(alpha)){
+          for(r in 1:length(reps)){
+            for(n in 1:length(N)){
+              for(e in 1:length(envar)){
+                for(m in 1:length(mig1)){
+                  new.row <- c(mu_base[b], mu_inv[i], sigma_k[k], alpha_sd[a],
+                              reps[r], N[n], en_var[e], mig1[m], mig2[m], theta1, 
+                              theta2, burnin, chrom_num, recom)
+                  params <- rbind(params, new.row)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+seeds <- seq(first.seed, (first.seed+nrow(params)-1), by = 1)
+df.params <- cbind(seeds, params)
+colnames(df.params) <- columns
+rownames(df.params) <- NULL
+head(df.params)
+write.csv(df.params, "fullINVparamslist.csv", row.names = FALSE)
+test.data <- head(df.params)
+write.csv(test.data, "testINVparamslist.csv", row.names = FALSE)
+
+```
+
+## Visualization of Parameter's effects
+```{r}
+
+ plot(dnorm(x=seq(-5,5,0.01), mean = 0, sd=1))
+ x<- seq(-2,2,0.001)
+ plot(x,dnorm(x, mean = 0, sd=0.07))
+ plot(x,dnorm(x, mean = 0, sd=0.7))
+ plot(x,dnorm(x, mean = 0, sd=0.1), xlim=c(-1,1))
+ 
+ plot(x,dnorm(x, mean = 1, sd=0.2), xlim=c(-2,2), col = "cornflowerblue")
+ points(x,dnorm(x,mean = -1, sd = 0.2), col = "limegreen")
+ 
+
+```
+
+
+
+```{r}
+N = 1000
+prop = 0.1 #proportion of genome where QtNs can arise
+(genome_size = 1e5*20)
+  
+#mutations per generation
+mu_base*prop*2*N*genome_size
+
+# Can we approximate m_c based on the range of effect sizes we expect to arise?
+alpha_sd/2
+alpha_sd*4
+
+alpha_levels <- c()
+
+print((alpha_sd[1]/2)) #small effect size
+cbind(alpha=alpha_sd[1]/2, 
+      sigma_k, 
+      m_c = m_crit(alpha_sd[1]/2, theta.1, theta.2, sigma_k, N))
+
+cbind(alpha=alpha_sd[1]*4, 
+      sigma_k, 
+      m_c = m_crit(alpha_sd[1]*4, theta.1, theta.2, sigma_k, N))
+
+cbind(alpha=alpha_sd[2]/2, 
+      sigma_k, 
+      m_c = m_crit(alpha_sd[2]/2, theta.1, theta.2, sigma_k, N))
+
+cbind(alpha=alpha_sd[2]*4, 
+      sigma_k, 
+      m_c = m_crit(alpha_sd[2]*4, theta.1, theta.2, sigma_k, N))
+```
