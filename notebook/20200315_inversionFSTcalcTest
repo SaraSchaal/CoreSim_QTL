@@ -1,0 +1,7 @@
+## Tested to make sure that the inversion FST was calculating properly if there is value after filtering then it removes the NAN values and calculates the mean invFST for all those inversions that have MAF > 0.05
+
+## this check shows its working because there are two inversions
+size of meaninvFST = 2
+FSTs =4.2562e-05 FSTs =NAN
+went to if statment
+invFST = 4.2562e-05

@@ -17,7 +17,7 @@ output: html_document
   alpha <- c(0.002, 0.2) #sd of effect sizes of QTN mutations
     # 0.2 because 95% of observations will be <0.4, and a mutation of 0.5 in a homozygote will give 1.0 optimum
   reps <- c(1:5)
-  N <- 1000
+  N <- 1000 # some subset we will do 10,000 interesting cases
   envar <- c(0,0.15)
   
   ## note migration rates are set up to take on two different values need to edit 

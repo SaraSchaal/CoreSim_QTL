@@ -18,7 +18,7 @@ initialize(){
 		defineConstant("C_LENGTHS", rep(1e5, C_NUM));	// lengths for each chromosome
 		defineConstant("MU_base", 1e-7);						// base mutation rate overall
 		defineConstant("MU", MU_base * 0.1);	// 0.02			// mut rate for QTNs specifically
-		defineConstant("MU_INV", 1e-3);		// 2e-4				// inversion generation (ind^-1) (gen^-1)
+		defineConstant("MU_INV", 1e-5);		// 2e-4				// inversion generation (ind^-1) (gen^-1)
 		defineConstant("R", 1e-6);								// recombination rate
 		defineConstant("N", 1000);								// subpop size
 		defineConstant("MIG1", 0.49);							// migration rate into p1
@@ -216,6 +216,7 @@ recombination() {
 	return removed_any;
 }
 
+// fitness calculations
 late(){
 	
 	for (subpop_index in seqAlong(sim.subpopulations)) {
@@ -328,9 +329,9 @@ early(){
 					InvQTNsID = QTNsInInv.id;													// QTN ID
 					InvQTNsGen = QTNsInInv.originGeneration;								// generation origin of inversion QTN
 					
-				 //////////////////////////////////////		
-				 // X X X X FST Calculations X X X X //	
-				 //////////////////////////////////////	
+			//////////////////////////////////////		
+		   // X X X X FST Calculations X X X X //	
+			//////////////////////////////////////	
 		
 	  		  	  //// X X QTNS X X ////
 	  		  	  FSTqtn = NULL;
@@ -357,13 +358,14 @@ early(){
 					}					
 					
 				} else {			
-					// are zeros a problem for downstream calculations? 
+					// are zeros a problem for downstream calculations? yes switch to NAN
 					//////// 
 					NumQTNs = 0;
-					InvQTNsSelCoeff = 0;	// give selection coefficient 0 if no qtns for later calcs
-					InvQTNsDom = NAN;		// give dominance value NAN if no qtns for later calcs			
+					InvQTNsSelCoeff = NAN;	// give selection coefficient NAN if no qtns for later calcs
+					InvQTNsDom = NAN;			// give dominance value NAN if no qtns for later calcs			
 					FSTqtn = NAN;				
 				}
+				
 				
 				// removes NAN's from mean FST calculation to get the FST of QTNs in inversion
 				noNAqtnInvFST = NULL;
@@ -373,9 +375,10 @@ early(){
 							noNAqtnInvFST = c(noNAqtnInvFST, FSTqtn[i]);
 						}
 					}
-					if(size(noNAqtnInvFST) > 0){
-						MEANqtnInvFST = mean(noNAqtnInvFST);
-					} else {
+					
+					if(size(noNAqtnInvFST) > 0){					
+						MEANqtnInvFST = mean(noNAqtnInvFST);						
+					} else {					
 						MEANqtnInvFST = NAN;
 					}
 				} else {
@@ -406,13 +409,15 @@ early(){
 				}
 				
 				
-				// need to calculate the sd outside because if there is no value or only 1 value the sd is NULL 
+				// need to calculate the sd outside because if there is no value or only 1 value the sd needs to be NAN
 				if(size(InvQTNsSelCoeff)>1){
 					sdSel = sd(InvQTNsSelCoeff);
 					sdDom = sd(InvQTNsDom);
+					catn("went to if");
 				} else {
 					sdSel = NAN;
 					sdDom = NAN;
+					catn("went to else");
 				}
 				
 											
@@ -506,58 +511,63 @@ early(){
 		m = unique(c(g.mutationsOfType(m2)));
 		
 		// filter out minor allele frequencies < 0.05 before calculating FST
-		m_filt = NULL;
-		for(i in 0:(length(m)-1)){
-			m_freq = sim.mutationFrequencies(NULL, m[i]);
-			wtype_freq = 1 - m_freq;
-			MAF = min(m_freq, wtype_freq);
-			if(MAF > 0.05){
-				m_filt = c(m_filt, m[i]);
-			} 
-		}
-		
-		if(size(m_filt) > 0){	
-		
-			// frequency of mutation in P1
-			m_p1freqs = sim.mutationFrequencies(p1, m_filt);
-			// frequency of mutation in P2
-			m_p2freqs = sim.mutationFrequencies(p2, m_filt);	
-		
-			//// FST Calculation QTNs
-		
-			// expected Heterozygosity
-			expH_p1 = m_p1freqs * (1 - m_p1freqs) * 2;
-			expH_p2 = m_p2freqs * (1 - m_p2freqs) * 2;
-			// HS
-			HS = (expH_p1 * N + expH_p2 * N)/(N * 2);
-			// HT calculate overall heterozygosity
-			pBar = (m_p1freqs * N + m_p2freqs * N)/(N * 2);
-			// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
-			qBar = 1 - pBar;
-			HT = 2 * pBar * qBar;
-			// FST
-			FST = 1 - (HS/HT);
-						
-			// mean FST and 95% CIs 
-			FSTBar =	mean(FST);
-			if(size(FST) > 1){
-				StErr = sd(FST)/sqrt(length(FST));
-			} else {
-				StErr = 0;
+		if(size(m) > 0){ 
+			m_filt = NULL;
+			for(i in 0:(length(m)-1)){
+				m_freq = sim.mutationFrequencies(NULL, m[i]);
+				wtype_freq = 1 - m_freq;
+				MAF = min(m_freq, wtype_freq);
+				if(MAF > 0.05){
+					m_filt = c(m_filt, m[i]);
+				} 
 			}
-			upCI = FSTBar + (StErr*1.96);
-			lowCI = FSTBar - (StErr*1.96);
 		
-		} else {
-			FSTBar = NAN;
-			StErr = NAN;
-			upCI = NAN;
-			lowCI = NAN;
-		}
-	
+			if(size(m_filt) > 0){	
+		
+				// frequency of mutation in P1
+				m_p1freqs = sim.mutationFrequencies(p1, m_filt);
+				// frequency of mutation in P2
+				m_p2freqs = sim.mutationFrequencies(p2, m_filt);	
+		
+				//// FST Calculation QTNs
+		
+				// expected Heterozygosity
+				expH_p1 = m_p1freqs * (1 - m_p1freqs) * 2;
+				expH_p2 = m_p2freqs * (1 - m_p2freqs) * 2;
+				// HS
+				HS = (expH_p1 * N + expH_p2 * N)/(N * 2);
+				// HT calculate overall heterozygosity
+				pBar = (m_p1freqs * N + m_p2freqs * N)/(N * 2);
+				// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
+				qBar = 1 - pBar;
+				HT = 2 * pBar * qBar;
+				// FST
+				FST = 1 - (HS/HT);
+						
+				// mean FST and 95% CIs 
+				FSTBar =	mean(FST);
+				if(size(FST) > 1){
+					StErr = sd(FST)/sqrt(length(FST));
+				} else {
+					StErr = 0;
+				}
+				upCI = FSTBar + (StErr*1.96);
+				lowCI = FSTBar - (StErr*1.96);
+		
+			} else {
+			
+				FSTBar = NAN;
+				StErr = NAN;
+				upCI = NAN;
+				lowCI = NAN;
+				
+			}
+		} // close if statement for all m mutation FST calculations
+		
 		//// X X Inversions mean FST (individual FST calculated above) X X ////
 		catn("size of meaninvFST = " + size(meaninvFST));
-		catn("FSTs =" + meaninvFST); 
+		
+		//catn("FSTs =" + meaninvFST); 
 		noNAinvFST = NULL;
 		if(size(meaninvFST) > 0){	
 			for(i in 0:(size(meaninvFST)-1)){		
@@ -577,7 +587,7 @@ early(){
 			}
 			inv_upCI = inv_FSTBar + (inv_StErr * 1.96);
 			inv_lowCI = inv_FSTBar - (inv_StErr * 1.96);
-			catn("went to if statment");
+			//catn("went to if statment");
 				
 		} else {
 				// if no loci pass filter
@@ -585,9 +595,9 @@ early(){
 			inv_StErr = NAN;
 			inv_upCI = NAN;
 			inv_lowCI = NAN;
-			catn("went to else statement");
+			//catn("went to else statement");
 		}
-		catn("invFST = " + inv_FSTBar);
+		//catn("invFST = " + inv_FSTBar);
 			
 		//// X X Neutral X X ////
 		
@@ -642,7 +652,10 @@ early(){
 			neut_upCI = NAN;
 			neut_lowCI = NAN;
 		}
-		
+		print(inv_FSTBar);
+		// FSTBar = all QTNs (includes inversion QTNs)
+		// inv_FSTBar = loci in inversions FST 
+		// neut_FSTBar = loci in the neutral chromosome
 		outIndSum = paste(c(sim.generation, size(sim.mutationsOfType(m3)), locAdaptSA, locAdaptHAP1, locAdaptHAP2, locAdaptLFP1,
 								  locAdaptLFP2, FSTBar, upCI, lowCI, inv_FSTBar, inv_upCI, inv_lowCI, neut_FSTBar, neut_upCI, neut_lowCI, 
 								  mean(p1.cachedFitness(NULL)), sd(p1.cachedFitness(NULL)), mean(p1.individuals.tagF), sd(p1.individuals.tagF), 

@@ -8,52 +8,59 @@ output: html_document
 
 ```{r}
 ## Low Migration Low Mutation - Inversions 
-popDynLMLMuR1 <- read.csv("../results/Inversion/20200302withInvLowMigLowMut/1751568804886_outputPopDynam.csv")
-popDynLMLMuR2 <- read.csv("../results/Inversion/20200302withInvLowMigLowMut/1751570485992_outputPopDynam.csv")
-invQTNsLMLMuR1 <- read.csv("../results/Inversion/20200302withInvLowMigLowMut/1751568804886_outputInvTime.csv")
-invQTNsLMLMuR2 <- read.csv("../results/Inversion/20200302withInvLowMigLowMut/1751570485992_outputInvTime.csv")
+popDynLMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751568804886_outputPopDynam.csv")
+popDynLMLMuR2 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751570485992_outputPopDynam.csv")
+invQTNsLMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751568804886_outputInvTime.csv")
+invQTNsLMLMuR2 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751570485992_outputInvTime.csv")
 
 # Low Migration Low Mutation -No Inversions
-popDynNoInLMLMuR1 <- read.csv("../results/Inversion/20200302withoutInvLowMigLowMut/1751566183207_outputPopDynam.csv")
-popDynNoInLMLMuR2 <- read.csv("../results/Inversion/20200302withoutInvLowMigLowMut/1751626452845_outputPopDynam.csv")
+popDynNoInLMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200302withoutInvLowMigLowMut/1751566183207_outputPopDynam.csv")
+popDynNoInLMLMuR2 <- read.csv("../results/Inversion/20200302PrelimData/20200302withoutInvLowMigLowMut/1751626452845_outputPopDynam.csv")
 
 
 #### Medium Migration Low Mutation ####
 ## Inversions
 #popDynMMLMuR1 <- read.csv("../results/Inversion/20200302withInvMedMigLowMut/1751572690982_outputPopDynam.csv")
-popDynMMLMuR1 <- read.csv("../results/Inversion/20200303withInvMedMigLowMut/2065972841416_outputPopDynam.csv")
-invQTNsMMLMuR1 <- read.csv("../results/Inversion/20200303withInvMedMigLowMut/2065972841416_outputInvTime.csv")
+popDynMMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200303withInvMedMigLowMut/2065972841416_outputPopDynam.csv")
+invQTNsMMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200303withInvMedMigLowMut/2065972841416_outputInvTime.csv")
 #invQTNsMMLMuR2 <- read.csv("../results/Inversion/20200302withInvMedMigLowMut/1751582301417_outputInvTime.csv")
 
 # No Inversions
-popDynNoInMMLMuR1 <- read.csv("../results/Inversion/20200303withoutInvMedMigLowMut/1751629716441_outputPopDynam.csv")
-popDynNoInMMLMuR2 <- read.csv("../results/Inversion/20200303withoutInvMedMigLowMut/1751630159938_outputPopDynam.csv")
+popDynNoInMMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200303withoutInvMedMigLowMut/1751629716441_outputPopDynam.csv")
+popDynNoInMMLMuR2 <- read.csv("../results/Inversion/20200302PrelimData/20200303withoutInvMedMigLowMut/1751630159938_outputPopDynam.csv")
 
 
 #### High migration low mutation ####
 ##  Inversions
-popDynHMLMuR1 <- read.csv("../results/Inversion/20200302withInvHighMigLowMut/1751625359138_outputPopDynam.csv")
-popDynHMLMuR2 <- read.csv("../results/Inversion/20200302withInvHighMigLowMut/1751583067058_outputPopDynam.csv")
-invQTNsHMLMuR1 <- read.csv("../results/Inversion/20200302withInvHighMigLowMut/1751625359138_outputInvTime.csv")
-invQTNsHMLMuR2 <- read.csv("../results/Inversion/20200302withInvHighMigLowMut/1751583067058_outputInvTime.csv")
+popDynHMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvHighMigLowMut/1751625359138_outputPopDynam.csv")
+popDynHMLMuR2 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvHighMigLowMut/1751583067058_outputPopDynam.csv")
+invQTNsHMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvHighMigLowMut/1751625359138_outputInvTime.csv")
+invQTNsHMLMuR2 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvHighMigLowMut/1751583067058_outputInvTime.csv")
 
 # No Inversions
-popDynNoInHMLMuR1 <- read.csv("../results/Inversion/20200303withoutInvHighMigLowMut/1751628536499_outputPopDynam.csv")
-popDynNoInHMLMuR2 <- read.csv("../results/Inversion/20200303withoutInvHighMigLowMut/1751629252645_outputPopDynam.csv")
+popDynNoInHMLMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200303withoutInvHighMigLowMut/1751628536499_outputPopDynam.csv")
+popDynNoInHMLMuR2 <- read.csv("../results/Inversion/20200302PrelimData/20200303withoutInvHighMigLowMut/1751629252645_outputPopDynam.csv")
 
 #### High migration high mutation ####
 ##  Inversions
-popDynHMHMuR1 <- read.csv("../results/Inversion/20200302withInvHighMigHighMut/1751583946190_outputPopDynam.csv")
-invQTNsHMHMuR1 <- read.csv("../results/Inversion/20200302withInvHighMigHighMut/1751583946190_outputInvTime.csv")
+popDynHMHMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvHighMigHighMut/1751583946190_outputPopDynam.csv")
+invQTNsHMHMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200302withInvHighMigHighMut/1751583946190_outputInvTime.csv")
 
 # No Inversions
-popDynNoInHMHMuR1 <- read.csv("../results/Inversion/20200303withoutInvHighMigHighMu/1751616892960_outputPopDynam.csv")
-popDynNoInHMHMuR2 <- read.csv("../results/Inversion/20200303withoutInvHighMigHighMu/1751620201657_outputPopDynam.csv")
+popDynNoInHMHMuR1 <- read.csv("../results/Inversion/20200302PrelimData/20200303withoutInvHighMigHighMu/1751616892960_outputPopDynam.csv")
+popDynNoInHMHMuR2 <- read.csv("../results/Inversion/20200302PrelimData/20200303withoutInvHighMigHighMu/1751620201657_outputPopDynam.csv")
 
 
+#### High migration low mutation ####
+# Inversions
+popDynHMLMu49 <- read.csv("../results/Inversion/1752787654626_outputPopDynam.csv")
+# no Inversions
+popDynNoInHMLMu49 <- read.csv("../results/Inversion/1752788564317_outputPopDynam.csv")
+
+```
 
 
-
+```{r}
 ## Mean LA and FST
 par(mfrow = c(1,3))
 
@@ -81,12 +88,14 @@ par(mfrow = c(1,2))
 plot(as.numeric(as.character(popDynLMLMuR1$localAdaptSA))~popDynLMLMuR1$sim_gen, type = "l", data = popDynLMLMuR1, ylab = "Local Adaptation", xlab = "Generation", ylim = c(0,1), main = "With Inversions")
 lines(as.numeric(as.character(popDynMMLMuR1$localAdaptSA))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
 lines(as.numeric(as.character(popDynHMLMuR1$localAdaptSA))~popDynHMLMuR1$sim_gen, type = "l", col = "red", data = popDynHMLMuR1)
-legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+lines(as.numeric(as.character(popDynHMLMu49$localAdaptSA))~popDynHMLMu49$sim_gen, type = "l", col = "green", data = popDynHMLMu49)
+legend("topleft", legend = c("0.001", "0.01", "0.49","0.5"), lty = 1, col = c("black", "blue", "green","red"), cex = 0.7, title = "Migration")
 ## no inversions
 plot(as.numeric(as.character(popDynNoInLMLMuR1$localAdaptSA))~popDynHMLMuR1$sim_gen, type = "l", data = popDynHMLMuR1, ylab = "Local Adaptation", xlab = "Generation", ylim = c(0,1), main = "Without Inversions")
 lines(as.numeric(as.character(popDynNoInMMLMuR1$localAdaptSA))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
 lines(as.numeric(as.character(popDynNoInHMLMuR1$localAdaptSA))~popDynLMLMuR1$sim_gen, type = "l", col = "red", data = popDynLMLMuR1)
-legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+lines(as.numeric(as.character(popDynHMLMu49$localAdaptSA))~popDynHMLMu49$sim_gen, type = "l", col = "green", data = popDynNoInHMLMu49)
+legend("topleft", legend = c("0.001", "0.01", "0.49","0.5"), lty = 1, col = c("black", "blue", "green","red"), cex = 0.7, title = "Migration")
 
 par(mfrow = c(1,2))
 # Mean Fitness
