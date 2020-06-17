@@ -1,0 +1,207 @@
+---
+title: "inversion Analysis"
+author: "Sara Michele Schaal"
+date: "6/8/2020"
+output: html_document
+---
+
+```{r}
+### Load Libraries ###
+library(vcfR)
+
+### Read in datafiles ###
+df.fullParams <- read.csv("fullINVparamslist.csv")
+df.testParams <- read.csv("testINVparamslist.csv")
+#seed <- df.testParams$seeds
+
+seed <- c(1751625359138) #, 1751583067058) #just for practice
+#seed <- c(123,345,567) #just for practice
+
+### read files ###
+folder <- "results/Inversion/"
+
+#### This is for looping through files 
+## VCF files
+for(i in 1:length(seed)){
+  varNameVCF <- paste("vcf", seed[i])
+  assign(varNameVCF, read.vcfR(paste(folder, seed[i], "_InversionVCF.vcf", sep="")))
+}
+
+## Population Dynamics files
+for(i in 1:length(seed)){
+  varNamePD <- paste("popDyn", seed[i], sep="")
+  assign(varNamePD, read.table(paste(folder, seed[i], "_outputPopDynam.txt", sep="")))
+}
+
+## Inversion Timing
+for(i in 1:length(seed)){
+  varNameInvT <- paste("invTime", seed[i], sep="")
+  assign(varNameInvT, read.table(paste(folder, seed[i], "_outputInvTime.txt", sep="")))
+}
+
+## Summary stats
+for(i in 1:length(seed)){
+  varNameSimStats <- paste(folder, seed[i], "_outputSimStats.txt", sep="")
+}
+
+### SINGLE FILES FOR CLUSTER ###
+invTime <- read.table(paste(folder, seed, "_outputInvTime.txt", sep=""), header = TRUE)
+popDyn <- read.table(paste(folder,seed,"_outputPopDynam.txt", sep=""), header = TRUE)
+vcf <- read.vcfR(paste(folder, seed, "_InversionVCF.vcf", sep=""))
+simStats <- read.table(paste(folder, seed, "_outputSimStats.txt", sep=""))  
+invSumInfo <- read.table(paste(folder, seed, "_outputInvSumInfo.txt", sep=""), header = TRUE)
+invQTN <- read.table(paste(folder, seed, "_outputInvQtn.txt", sep=""), header = TRUE)
+invQTNsumInfo <- read.table(paste(folder, seed, "_outputInvQtnSumInfo.txt", sep=""), header = TRUE)
+popPheno <- read.table(paste(folder, seed, "_outputIndPheno.txt", sep=""), header = TRUE)
+mut <- read.table(paste(folder, seed, "_outputMutations.txt", sep=""), header = TRUE)
+
+
+```
+
+## Summary stats
+```{r}
+# MYSEED, MIG1, MIG2, p1.individualCount, p2.individualCount, MU, MU_INV, R, ALPHA, SIGMA_K, BURNIN, DOM, ENVAR
+if(simStats[1] == seed){
+  mig <- simStats[2]
+  N <- simStats[3]
+  mu <- simStats[6]
+  muInv <- simStats[7]
+  R <- simStats[8]
+  alpha <- simStats[9]
+  selCoef <- simstats[10]
+  envar <- simStats[13]
+} else {
+  "error seeds to match"
+}
+
+
+```
+
+# Population Dynamics File
+## Local Adaptation (LA) or Phenotype files or Fitness
+### LA through time for various migration rates
+```{r}
+popDynNoInLMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withoutInvLowMigLowMut/1751566183207_outputPopDynam.csv")
+popDynLMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751568804886_outputPopDynam.csv")
+
+par(mfrow = c(1,2))
+# Local Adaptation
+plot(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", ylab = "Local Adaptation", xlab = "Generation", ylim = c(0,1), main = "With Inversions", data = popDynLMLMuR1[popDynLMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", col = "blue", data = popDynMMLMuR1[popDynMMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", col = "red", data = popDynHMLMuR1[popDynHMLMuR1$sim_gen > 4000, ])
+legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+## no inversions
+plot(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", data = popDynNoInLMLMuR1[popDynNoInLMLMuR1$sim_gen > 4000, ], xlab = "Generation", ylim = c(0,1), main = "Without Inversions", ylab = "")
+lines(as.numeric(as.character(popDynNoInMMLMuR1$localAdaptSA))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynNoInMMLMuR1[popDynNoInMMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(popDynNoInHMLMuR1$localAdaptSA))~popDynLMLMuR1$sim_gen, type = "l", col = "red", data = popDynNoInHMLMuR1[popDynNoInHMLMuR1$sim_gen >4000, ])
+legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+
+```
+
+
+### LA through time for various selection coefficients
+```{r}
+par(mfrow = c(1,2))
+# Local Adaptation
+plot(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", ylab = "Local Adaptation", xlab = "Generation", ylim = c(0,1), main = "With Inversions", data = popDynLMLMuR1[popDynLMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", col = "blue", data = popDynMMLMuR1[popDynMMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", col = "red", data = popDynHMLMuR1[popDynHMLMuR1$sim_gen > 4000, ])
+legend("topleft", legend = c("0.9", "5", "50"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Selection")
+## no inversions
+plot(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", data = popDynNoInLMLMuR1[popDynNoInLMLMuR1$sim_gen > 4000, ], xlab = "Generation", ylim = c(0,1), main = "Without Inversions", ylab = "")
+lines(as.numeric(as.character(popDynNoInMMLMuR1$localAdaptSA))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynNoInMMLMuR1[popDynNoInMMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(popDynNoInHMLMuR1$localAdaptSA))~popDynLMLMuR1$sim_gen, type = "l", col = "red", data = popDynNoInHMLMuR1[popDynNoInHMLMuR1$sim_gen >4000, ])
+legend("topleft", legend = c("0.9", "5", "50"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Selection")
+
+```
+
+### LA through time for inversion mutation rate
+```{r}
+par(mfrow = c(1,2))
+# Local Adaptation
+plot(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", ylab = "Local Adaptation", xlab = "Generation", ylim = c(0,1), main = "With Inversions", data = popDynLMLMuR1[popDynLMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", col = "blue", data = popDynMMLMuR1[popDynMMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", col = "red", data = popDynHMLMuR1[popDynHMLMuR1$sim_gen > 4000, ])
+legend("topleft", legend = c("1e-3", "1e-5", "1e-7"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "InvMut_Rate")
+## no inversions
+plot(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", data = popDynNoInLMLMuR1[popDynNoInLMLMuR1$sim_gen > 4000, ], xlab = "Generation", ylim = c(0,1), main = "Without Inversions", ylab = "")
+lines(as.numeric(as.character(popDynNoInMMLMuR1$localAdaptSA))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynNoInMMLMuR1[popDynNoInMMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(popDynNoInHMLMuR1$localAdaptSA))~popDynLMLMuR1$sim_gen, type = "l", col = "red", data = popDynNoInHMLMuR1[popDynNoInHMLMuR1$sim_gen >4000, ])
+legend("topleft", legend = c("1e-3", "1e-5", "1e-7"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "InvMut_Rate")
+
+
+```
+
+### LA through time for QTN mutation rate 
+```{r}
+par(mfrow = c(1,2))
+# Local Adaptation
+plot(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", ylab = "Local Adaptation", xlab = "Generation", ylim = c(0,1), main = "With Inversions", data = popDynLMLMuR1[popDynLMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", col = "blue", data = popDynMMLMuR1[popDynMMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", col = "red", data = popDynHMLMuR1[popDynHMLMuR1$sim_gen > 4000, ])
+legend("topleft", legend = c("1e-3", "1e-5", "1e-7"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "QTNMut_Rate")
+## no inversions
+plot(as.numeric(as.character(localAdaptSA))~sim_gen, type = "l", data = popDynNoInLMLMuR1[popDynNoInLMLMuR1$sim_gen > 4000, ], xlab = "Generation", ylim = c(0,1), main = "Without Inversions", ylab = "")
+lines(as.numeric(as.character(popDynNoInMMLMuR1$localAdaptSA))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynNoInMMLMuR1[popDynNoInMMLMuR1$sim_gen > 4000, ])
+lines(as.numeric(as.character(popDynNoInHMLMuR1$localAdaptSA))~popDynLMLMuR1$sim_gen, type = "l", col = "red", data = popDynNoInHMLMuR1[popDynNoInHMLMuR1$sim_gen >4000, ])
+legend("topleft", legend = c("1e-3", "1e-5", "1e-7"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "QTNMut_Rate")
+
+
+```
+
+## Outside and inside inversions 
+### number of qtns & effect sizes
+```{r}
+inside <- 30
+outside <- 60
+  
+#alpha_in <- rnorm(1, mean = 0, sd=0.7)
+#alpha_out <- rnorm(1, mean = 0, sd = 0.7)
+
+df.play <- data.frame(qtns = c(inside,outside), alpha = c(alpha_in, alpha_out))
+
+bp1 <- barplot(df.play$qtns, ylab = "mean number of qtns", names = c("Inside Inv", "Outside Inv"), col = c("cornflowerblue", "firebrick"), ylim = c(0,70))
+arrows(x0= bp1, x1=bp1, y0=df.play$qtns + 2.3, y1 = df.play$qtns - 2.3, code = 3, angle = 90)
+bp2 <- barplot(df.play$alpha, ylab = "mean qtn effect size", names = c("Inside Inv", "Outside Inv"), col = c("cornflowerblue", "firebrick"), ylim = c(-1, 1))
+arrows(x0=bp2, x1=bp2, y0=df.play$alpha + .13, y1 = df.play$alpha - .13, code = 3, angle = 90)
+```
+
+
+## FST of qtns
+```{r}
+
+df.play2 <- data.frame(FST = c(0.1,0.003), dom = c(0.02, 0.001))
+df.playFST <- data.frame(FST = c(0.07, 0.13, 0.008))
+
+bp3 <- barplot(df.play2$FST, ylab = "mean FST", names = c("Inside Inv", "Outside Inv"), col = c("cornflowerblue", "firebrick"), ylim = c(0, 0.2))
+arrows(x0= bp3, x1=bp3, y0=c(df.play2$FST[1] + 0.01, df.play2$FST[2] + .001), y1 = c(df.play2$FST[1] - 0.01, df.play2$FST[2] - .001), code = 3, angle = 90)
+
+bp4 <- barplot(df.play2$dom, ylab = "mean dominance", names = c("Inside Inv", "Outside Inv"), col = c("cornflowerblue", "firebrick"), ylim = c(0, .1))
+arrows(x0=bp4, x1=bp4, c(df.play2$dom[1] + 0.008, df.play2$dom[2] + .001), y1 = c(df.play2$dom[1] - 0.008, df.play2$dom[2] - .001), code = 3, angle = 90)
+par(mfrow= c(1,1))
+bp5 <- barplot(df.playFST$FST, ylab = "mean FST", names = c("QTNs", "Inversions", "Neutral"), col = c("firebrick", "cornflowerblue", "goldenrod"), ylim = c(0, 0.3))
+arrows(x0=bp5, x1=bp5, y0 = c(df.playFST$FST[1] + 0.01, df.playFST$FST[2] + .03, df.playFST$FST[3] + .001), y1 = c(df.playFST$FST[1] - 0.01, df.playFST$FST[2] - .03, df.playFST$FST[3] - .001), code = 3, angle = 90)
+
+```
+
+## Length of Inv
+```{r}
+
+df.playLen <- data.frame(len = c(1000, 15000, 30000), muQTN = c(1e-3, 1e-5, 1e-7))
+
+bp6 <- barplot(df.playLen$len, ylab = "mean inv length", names = c("1e-3", "1e-5", "1e-7"), col = c("cornflowerblue", "firebrick", "Goldenrod"), ylim = c(0, 40000), main = "Inversion Length by\n QTN Mutation Rate")
+arrows(x0=bp6, x1=bp6, y0 = c(df.playLen$len[1] + 100, df.playLen$len[2] + 700, df.playLen$len[3] + 2500), y1 = c(df.playLen$len[1] - 100, df.playLen$len[2] - 700, df.playLen$len[3] - 2500), code = 3, angle = 90)
+par(mfrow= c(1,1))
+
+```
+
+
+##
+```{r}
+# high mut high inv forms with qtns
+df.playInvArise <- matrix(c(0.7, 0.12, 0.18, 0.6, 0.2, 0.2, 0.3, 0.1, 0.6), ncol = 3, nrow = 3)
+bp6 <- barplot(df.playInvArise, ylab = "proportion", names = c("1e-3", "1e-5", "1e-7"), col = c("cornflowerblue", "firebrick", "Goldenrod"), main = "How did inversions gain QTNs?", ylim = c(0,1.5))
+legend("topright", fill = c("cornflowerblue", "firebrick", "Goldenrod"), legend = c("Captured", "Mutated", "Neutral"))
+
+
+```
