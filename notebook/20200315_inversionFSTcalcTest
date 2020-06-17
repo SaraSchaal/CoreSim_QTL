@@ -3,5 +3,5 @@
 ## this check shows its working because there are two inversions
 size of meaninvFST = 2
 FSTs =4.2562e-05 FSTs =NAN
-went to if statment
+went to if statement
 invFST = 4.2562e-05
