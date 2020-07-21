@@ -1,0 +1,4 @@
+## README for simulation scripts
+
+20200719 - model that has all mean FST calculations and convertToSubstitution = F for m2 mutations. 
+20200720 - removed mean FST calculations and changed convertToSubsitution = T
