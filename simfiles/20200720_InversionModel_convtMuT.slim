@@ -16,7 +16,7 @@ initialize(){
 		defineConstant("MYSEED", seed);						// set random number generator can be fixed at earlier argument for reproducibility
 		defineConstant("C_NUM", 21);							// number of chromosomes
 		defineConstant("C_LENGTHS", rep(1e5, C_NUM));	// lengths for each chromosome
-		defineConstant("MU_base", 1e-7);						// base mutation rate overall
+		defineConstant("MU_base", 1e-5);						// base mutation rate overall
 		defineConstant("MU", MU_base * 0.1);	// 0.02			// mut rate for QTNs specifically
 		defineConstant("MU_INV", 1e-3);		// 2e-4				// inversion generation (ind^-1) (gen^-1)
 		defineConstant("R", 1e-6);								// recombination rate
@@ -29,7 +29,7 @@ initialize(){
 		defineConstant("ENVAR", 0.01);							// environmental variance 
 		defineConstant("ALPHA", 0.002);							// SD of the normal distribution of effect sizes
 		defineConstant("TREESIM", 500); 						// generation increment for TreeSeq simplification
-		defineConstant("DOM", 1);								// Turn on/off dominance
+		defineConstant("DOM", 2);								// Turn on/off dominance
 	
 	} else {
 		setwd("/scratch/schaal.s/InversionSimulations/results");
@@ -58,7 +58,7 @@ initialize(){
 	
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeMutationType("m2", 0.5, "n", 0.0, ALPHA);	// QTNs, can alter ALPHA for different SD of the normal distribution
-	m2.convertToSubstitution = F;
+	m2.convertToSubstitution = T;
 	initializeMutationType("m3", 0.5, "f", 0.0);			// inversions
 	m3.convertToSubstitution = T;								// allow inversion muts to fix
 	m3.color = "yellow";
@@ -95,14 +95,13 @@ initialize(){
 	
 	// header for population dynamics output every 200 generations
 	outPopDynam_head = "sim_gen " + "uniqueInvMuts " + "localAdaptSA " + "localAdaptHA_P1 " + "localAdaptHA_P2 " + "localAdaptLF_P1 " +
-			  	  "localAdaptLF_P2 " + "meanFST_QTNs " + "upCI_FST_QTNs " + "lowCI_FST_QTNs " + "meanFST_invs " + "upCI_FST_invs " + 
-			  	  "lowCI_FST_invs " + "meanFST_neut " + "upCI_FST_neut " + "lowCI_FST_neut " + "meanFitP1 " + "sdFitP1 " +
+			  	  "localAdaptLF_P2 " + "meanFitP1 " + "sdFitP1 " +
 					"meanPhenoP1 " + "sdPhenoP1 " + "meanFitP2 " + "sdFitP2 " + "meanPhenoP2 " + "sdPhenoP2 ";
 	writeFile(paste(c(MYPATH, "/", MYSEED, "_outputPopDynam.txt"), sep = ""), outPopDynam_head);
 	
 	// header for inversion dynamics info every 200 generations 
 	outInv_head = "sim_gen " + "inv_id " + "freq " + "freq_p1 " + "freq_p2 " + "num_qtns " + "mean_qtnSelCoef " + "sd_qtnSelCoef " + 
-					  "mean_qtnDom " + "sd_qtnDom " + "mean_INVQTNFST " + "inv_FST ";
+					  "mean_qtnDom " + "sd_qtnDom " + "inv_FST ";
 	writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvTime.txt"), sep = ""), outInv_head);		
 	
 	// header for inversion summary info
@@ -147,20 +146,23 @@ late() {
 			ind = inds[index];
 		
 			// draw the inversion position / length
-			chrom_index = rdunif(1, min=0, max=C_NUM-1);
-			inv_length = rdunif(1, min=100, max=integerDiv(C_LENGTHS[chrom_index], 2));
-			chrom_start = sum(C_LENGTHS[seqLen(chrom_index)]);
-			inv_start = rdunif(1, min=chrom_start, max=chrom_start + C_LENGTHS[chrom_index] - inv_length);
+			chrom_index = rdunif(1, min=0, max=C_NUM-1); // which chromosome index 0:19 (chrom 1:20)
+			inv_length = rdunif(1, min=100, max=integerDiv(C_LENGTHS[chrom_index], 2)); // size min 100 bp to half chromosome
+			chrom_start = sum(C_LENGTHS[seqLen(chrom_index)]); // get the chromosome start bp 
+			inv_start = rdunif(1, min=chrom_start, max=chrom_start + C_LENGTHS[chrom_index] - inv_length); 
+			// find a random location min of the start of chromosome and a max of the length of chromosome minus inv length
 		
 			// check for overlap with existing inversions
-			genome = sample(ind.genomes, 1);
-			existing = genome.mutationsOfType(m3);
+			genome = sample(ind.genomes, 1); // sample an individual for mutation
+			existing = genome.mutationsOfType(m3); // look at that individuals existing inv mutations
 			overlaps = F;
 			for (e in existing){
 			
 				e_start = e.position;
 				e_end = e_start + e.tag;
-			
+				
+				// if inv start location is less than existing end and the inv end location is greater than exisiting start
+				// make overlap = true and move onto next? so it fails to establish 
 				if ((inv_start <= e_end) & (inv_start + inv_length - 1 >= e_start)){
 				
 					overlaps = T;
@@ -285,7 +287,7 @@ early(){
 		catn("m3 mutations segregating: " + size(sim.mutationsOfType(m3)));
 		
 		// create an empty variable for all the FST values of all inversions
-		meaninvFST = NULL;
+		//meaninvFST = NULL;
 		
 		/// X X Summary Info for Inversions X X X ///
 		for (mut in sim.mutationsOfType(m3)) {
@@ -329,12 +331,7 @@ early(){
 					InvQTNsID = QTNsInInv.id;													// QTN ID
 					InvQTNsGen = QTNsInInv.originGeneration;								// generation origin of inversion QTN
 					
-			//////////////////////////////////////		
-		   // X X X X FST Calculations X X X X //	
-			//////////////////////////////////////	
-		
-	  		  	//// X X mean Fst of QTNs inside inversion[m] X X ////
-	  		  	  FSTqtn = NULL;
+				  FSTqtn = NULL;
 	  		  	  for(i in 0:(size(QTNsInInv)-1)){
 				  		InvQTN_wtype_freq = 1 - freq_InvQTNs[i];							// get wildtype freq
 						MAF = min(freq_InvQTNs[i], InvQTN_wtype_freq);					// get minior allele freq
@@ -353,39 +350,19 @@ early(){
 							// FST
 							FSTqtn = c(FSTqtn, 1 - (HS/HT));
 						} else {
-							FSTqtn = c(FSTqtn, NAN);				
+							FSTqtn = c(FSTqtn, 0);				
 						}
 					}					
 					
 				} else {			
 					 
 					NumQTNs = 0;
-					InvQTNsSelCoeff = NAN;	// give selection coefficient NAN if no qtns for later calcs
-					InvQTNsDom = NAN;			// give dominance value NAN if no qtns for later calcs			
-					FSTqtn = NAN;				
+					InvQTNsSelCoeff = 0;	// give selection coefficient 0 if no qtns for later calcs
+					InvQTNsDom = 0;			// give dominance value 0 if no qtns for later calcs			
+					FSTqtn = 0;				
 				}
 				
-				
-				// removes NAN's from mean FST calculation to get the mean FST of QTNs in inversion
-				noNAqtnInvFST = NULL;
-				if(size(FSTqtn) > 0){	
-					for(i in 0:(size(FSTqtn)-1)){		
-						if(FSTqtn[i] > 0){
-							noNAqtnInvFST = c(noNAqtnInvFST, FSTqtn[i]);
-						}
-					}
-					
-					if(size(noNAqtnInvFST) > 0){					
-						MEANqtnInvFST = mean(noNAqtnInvFST);						
-					} else {					
-						MEANqtnInvFST = NAN;
-					}
-				} else {
-					MEANqtnInvFST = NAN;
-				}
-			 //// X X finish mean Fst of QTNs inside inversion[m] X X ////
-			 
-			 //// X X mean FST of Inversion Mutations X X ////
+				 //// X X mean FST of Inversion Mutations X X ////
 				inv_wtype_freq = 1 - freq;
 				MAF = min(freq, inv_wtype_freq);
 				
@@ -402,27 +379,23 @@ early(){
 					HT = 2 * pBar * qBar;
 					// FST
 					invFST = 1 - (HS/HT);
-					meaninvFST = c(meaninvFST, invFST);
 				} else {
-					invFST = NAN;	
-					meaninvFST = c(meaninvFST, invFST);	
+					invFST = 0;	
 				}
 				
-				
-				// need to calculate the sd outside because if there is no value or only 1 value the sd needs to be NAN
+				// need to calculate the sd outside because if there is no value or only 1 value the sd needs to be 0
 				if(size(InvQTNsSelCoeff)>1){
 					sdSel = sd(InvQTNsSelCoeff);
 					sdDom = sd(InvQTNsDom);
 				} else {
-					sdSel = NAN;
-					sdDom = NAN;
+					sdSel = 0;
+					sdDom = 0;
 				}
-			//// finish mean FST of Inversion Mutations ////	
-			
+
 			//// X X output inversion information X X ////								
 			  // output inversion dynamics info (SECOND OUTPUT FILE IN SPREADSHEET)
 				outINV = paste(c(sim.generation, mut.id, freq, freq_p1, freq_p2, NumQTNs, mean(InvQTNsSelCoeff), sdSel, 
-								  	  mean(InvQTNsDom), sdDom, MEANqtnInvFST, invFST), sep = " ");
+								  	  mean(InvQTNsDom), sdDom, invFST), sep = " ");
 											
 				writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvTime.txt"), sep = ""), outINV, append = T);
 				
@@ -496,163 +469,8 @@ early(){
 		locAdaptLFP1 = mean(p1.cachedFitness(NULL)) - mean(opPopFitnessP2); // pop1 in pop1 vs pop2 in pop1
 		locAdaptLFP2 = mean(p2.cachedFitness(NULL)) - mean(opPopFitnessP1); // pop2 in pop2 vs pop1 in pop2
 		
-		//////////////////////////////////////		
-		// X X X X FST Calculations X X X X //	
-		//////////////////////////////////////	
-		
-	  	//// X X All QTNs X X ////
-		
-		g = sim.subpopulations.genomes;
-		// unique mutations sorted by position
-		m = unique(c(g.mutationsOfType(m2)));
-		
-		// filter out minor allele frequencies < 0.05 before calculating FST
-		if(size(m) > 0){ 
-			m_filt = NULL;
-			for(i in 0:(length(m)-1)){
-				m_freq = sim.mutationFrequencies(NULL, m[i]);
-				wtype_freq = 1 - m_freq;
-				MAF = min(m_freq, wtype_freq);
-				if(MAF > 0.05){
-					m_filt = c(m_filt, m[i]);
-				} 
-			}
-		
-			if(size(m_filt) > 0){	
-		
-				// frequency of mutation in P1
-				m_p1freqs = sim.mutationFrequencies(p1, m_filt);
-				// frequency of mutation in P2
-				m_p2freqs = sim.mutationFrequencies(p2, m_filt);	
-		
-				//// FST Calculation QTNs
-		
-				// expected Heterozygosity
-				expH_p1 = m_p1freqs * (1 - m_p1freqs) * 2;
-				expH_p2 = m_p2freqs * (1 - m_p2freqs) * 2;
-				// HS
-				HS = (expH_p1 * N + expH_p2 * N)/(N * 2);
-				// HT calculate overall heterozygosity
-				pBar = (m_p1freqs * N + m_p2freqs * N)/(N * 2);
-				// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
-				qBar = 1 - pBar;
-				HT = 2 * pBar * qBar;
-				// FST
-				FST = 1 - (HS/HT);
-						
-				// mean FST and 95% CIs 
-				FSTBar =	mean(FST);
-				if(size(FST) > 1){
-					StErr = sd(FST)/sqrt(length(FST));
-				} else {
-					StErr = 0;
-				}
-				upCI = FSTBar + (StErr*1.96);
-				lowCI = FSTBar - (StErr*1.96);
-		
-			} else {
-			
-				FSTBar = 0;
-				StErr = 0;
-				upCI = 0;
-				lowCI = 0;
-				
-			}
-		} // close if statement for all m mutation FST calculations
-		
-		//// X X Inversions mean FST (individual FST calculated above) X X ////
-		catn("size of meaninvFST = " + size(meaninvFST));
-		
-		//catn("FSTs =" + meaninvFST); 
-		noNAinvFST = NULL;
-		if(size(meaninvFST) > 0){	
-			for(i in 0:(size(meaninvFST)-1)){		
-				if(meaninvFST[i] > 0){
-					noNAinvFST = c(noNAinvFST, meaninvFST[i]);
-				}
-			}
-		}	
-		
-		if(size(noNAinvFST) > 0){
-			// mean FST and 95% CIs 
-			inv_FSTBar = mean(noNAinvFST);
-			if(size(noNAinvFST) > 1){
-				inv_StErr = sd(meaninvFST)/sqrt(length(meaninvFST));
-			} else {
-				inv_StErr = 0;
-			}
-			inv_upCI = inv_FSTBar + (inv_StErr * 1.96);
-			inv_lowCI = inv_FSTBar - (inv_StErr * 1.96);
-			//catn("went to if statment");
-				
-		} else {
-				// if no loci pass filter
-			inv_FSTBar = 0;
-			inv_StErr = 0;
-			inv_upCI = 0;
-			inv_lowCI = 0;
-			//catn("went to else statement");
-		}
-		//catn("invFST = " + inv_FSTBar);
-			
-		//// X X Neutral X X ////		
-		m_neut = unique(c(g.mutationsOfType(m1)));
-		m_neut_filt = NULL;
-		if(size(m_neut)){
-			for(i in 0:(length(m_neut)-1)){
-				m_neut_freq = sim.mutationFrequencies(NULL, m_neut[i]);
-				neut_wtype_freq = 1 - m_neut_freq;
-				MAFneu = min(m_neut_freq, neut_wtype_freq);
-				if(MAFneu > 0.05){
-					m_neut_filt = c(m_neut_filt, m_neut[i]);
-				} 
-			}
-		}
-		
-		if(size(m_neut_filt) > 0){	
-				
-			// frequency of neutral mutation in P1
-			m_neut_p1freqs = sim.mutationFrequencies(p1, m_neut_filt);
-			// frequency of neutral mutation in P2
-			m_neut_p2freqs = sim.mutationFrequencies(p2, m_neut_filt);
-		
-			//// FST Calculation Neutral Loci 
-		
-			// expected Heterozygosity
-			neut_expH_p1 = m_neut_p1freqs * (1 - m_neut_p1freqs) * 2;
-			neut_expH_p2 = m_neut_p2freqs * (1 - m_neut_p2freqs) * 2;
-			// HS
-			neut_HS = (neut_expH_p1 * N + neut_expH_p2 * N)/(N * 2);
-			// HT calculate overall heterozygosity
-			neut_pBar = (m_neut_p1freqs * N + m_neut_p2freqs * N)/(N * 2);
-			// adding N in case anyone uses this with unequal pop sizes not needed for my simulation
-			neut_qBar = 1 - neut_pBar;
-			neut_HT = 2 * neut_pBar * neut_qBar;
-			// FST
-			neut_FST = 1 - (neut_HS/neut_HT);
-		
-			// mean FST and 95% CIs 
-			neut_FSTBar =	mean(neut_FST);
-			if(size(neut_FST) > 1){
-				neut_StErr = sd(neut_FST)/sqrt(length(neut_FST));
-			} else {
-				neut_StErr = 0;
-			}		
-			neut_upCI = neut_FSTBar + (neut_StErr * 1.96);
-			neut_lowCI = neut_FSTBar - (neut_StErr * 1.96);
-			
-		} else {
-			neut_FSTBar = 0;
-			neut_StErr = 0;
-			neut_upCI = 0;
-			neut_lowCI = 0;
-		}
-		print(inv_FSTBar);
-		// FSTBar = all QTNs (includes inversion QTNs)
-		// inv_FSTBar = loci in inversions FST 
-		// neut_FSTBar = loci in the neutral chromosome
 		outIndSum = paste(c(sim.generation, size(sim.mutationsOfType(m3)), locAdaptSA, locAdaptHAP1, locAdaptHAP2, locAdaptLFP1,
-								  locAdaptLFP2, FSTBar, upCI, lowCI, inv_FSTBar, inv_upCI, inv_lowCI, neut_FSTBar, neut_upCI, neut_lowCI, 
+								  locAdaptLFP2, // FSTBar, upCI, lowCI, inv_FSTBar, inv_upCI, inv_lowCI, neut_FSTBar, neut_upCI, neut_lowCI, 
 								  mean(p1.cachedFitness(NULL)), sd(p1.cachedFitness(NULL)), mean(p1.individuals.tagF), sd(p1.individuals.tagF), 
 								  mean(p2.cachedFitness(NULL)), sd(p2.cachedFitness(NULL)), mean(p2.individuals.tagF), sd(p2.individuals.tagF)), sep = " ");
 		

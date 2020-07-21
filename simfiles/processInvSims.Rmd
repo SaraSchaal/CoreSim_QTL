@@ -1,0 +1,266 @@
+---
+title: "processInversionSims"
+author: "Sara Michele Schaal"
+date: "6/17/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+options(scipen = 999)
+### Read in datafiles ###
+#df.params <- read.table("fullINVparamslist.txt", header = TRUE)
+#df.params <- read.table("src/testINVparamslist.txt")
+#df.params <- data.frame(seed = c(1751625359138, 1751583067058, 1751620201657, 1751583946190, 1751616892960,
+                              #   1751566183207, 1751570485992, 1751568804886, 1751626452845, 2065972841416,
+                              #   1751582301417, 1751629252645, 1751629716441, 1751572690982, 1751628536499, 
+                              #   1751630159938, 1614479103543, 1614479625159, 1614479993467))
+
+df.params <- read.table("")
+```
+
+
+```{r}
+folder <- "results/Practice/"
+
+## Inversion Through Time3
+df.invTime <- NULL
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invTimeNewFile <- read.table(paste(folder, seed, "_outputInvTime.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(invTimeNewFile) > 0){
+    invTimeNewFile$seed <- seed
+    df.invTime <-  rbind(df.invTime, invTimeNewFile)
+  }
+}
+
+df.invData <- NULL
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invData <- read.table(paste(folder, seed, "_outputInvSumInfo.txt", sep=""), header = TRUE,
+                        stringsAsFactors = FALSE)
+  if(nrow(invData) > 0){
+    invData$seed <- seed
+    df.invData <- rbind(df.invData, invData)
+  }
+}
+
+## Pop Dynamics
+df.popDyn <- NULL
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  popDynNewFile <- read.table(paste(folder, seed, "_outputPopDynam.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(popDynNewFile) > 0){
+   popDynNewFile$seed <- seed
+   df.popDyn <-  rbind(df.popDyn, popDynNewFile)
+  }
+}
+
+#SimStats
+df.simStats <- NULL
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  simStatsNewFile <- read.table(paste(folder, seed, "_outputSimStats.txt", sep=""), stringsAsFactors = FALSE)
+  simStatsNewFile$seed <- seed
+  df.simStats <-  rbind(df.simStats, simStatsNewFile)
+}
+df.simStats <- df.simStats[,2:ncol(df.simStats)]
+colnames(df.simStats) <- c("mig1", "mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar", "Seed")
+
+```
+
+## Unique Parameters
+Subset original parameters dataframe to identify all unique parameter combinations. Then using those parameter values identify the simulation seeds of replicate simulations for each set of parameters.
+```{r}
+
+unique.params <- unique(df.simStats[c("mig1","mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar")])
+reps <- 2
+for(i in 1:reps){
+  seedColName <- paste("Seed", i, sep = "")
+  unique.params[,seedColName] <- NA
+}
+
+for(i in 1:nrow(unique.params)){
+  for(j in 1:nrow(df.simStats)){
+    if(apply(unique.params[i,1:12], 1, paste, collapse = " ") == 
+       apply(df.simStats[j,c("mig1","mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", 
+                             "sigmaK", "burnin", "dom", "enVar")], 1, paste, collapse = " ")){
+      for(k in 1:reps){
+        seedCol <- paste("Seed", k, sep="")
+        if(is.na(unique.params[i, seedCol])){
+          unique.params[i, seedCol] <- df.simStats$Seed[j]
+          break
+        } 
+      }
+    }
+  }
+}
+
+```
+
+### Average Replicate Simulations - Pop dynamics file
+Create a dataframe that has the average of all the replicate parameter values. Then bind the corresponding parameters to the dataframe for ease of plotting and analysis later. 
+```{r}
+##################################
+### convert all "NAN"s to NAs  ### REMOVE WITH NEW SIMs CHANGING TO ZEROS
+#########################################################################
+
+for(i in 1:nrow(df.popDyn)){
+  for(j in 1:ncol(df.popDyn)){
+    if(df.popDyn[i,j] == "NAN"){
+      df.popDyn[i,j] <- 0
+    }
+  }
+}
+# convert every column to numeric ? might still need
+cols <- c(1:ncol(df.popDyn))
+df.popDyn[, cols] <- apply(df.popDyn[,cols], 2, as.numeric)
+###################################################################
+
+
+########################
+### average for loop ###
+###################################################################
+
+df.LA.average <- NULL
+# step through each line of the unique parameters dataframe
+for(i in 1:nrow(unique.params)){
+    # create empty variable for putting each data set that should be average
+    df.average <- NULL
+    av.seeds <- NULL
+    # step through the population dynamics dataframe
+    for(j in 1:nrow(df.popDyn)){
+      # step through the different seeds that have the unique parameters
+      for(k in 1:reps){
+        seedCol <- paste("Seed", k, sep="")
+        # if that seed is not an NA then do the next step
+        if(!is.na(unique.params[i, seedCol])){
+          # if the seed from unique parameters matches the seed of the pop dynam dataset store it
+          if(df.popDyn$seed[j] == unique.params[i, seedCol]){
+            df.average <- rbind(df.average, df.popDyn[j,])
+            av.seeds <- unique(c(av.seeds, unique.params[i, seedCol]))
+          }
+        }
+      }
+    }
+    
+    # ## identify columns with no data -- REMOVE CHANGING TO ZEROS NOT NAs
+    # vect.NAlist <- sapply(df.average, function(x)all(!is.na(x)))
+    # 
+    # vect.aggCols <- NULL
+    # vect.noAggCols <- NULL
+    # for(p in 1:length(vect.NAlist)){
+    #   if(vect.NAlist[p] & names(vect.NAlist[p]) != "seed"){
+    #     vect.aggCols <- c(vect.aggCols, names(vect.NAlist)[p])
+    #   } else if(names(vect.NAlist[p]) != "seed") {
+    #     vect.noAggCols <- c(vect.noAggCols, names(vect.NAlist)[p])
+    #   }
+    # }
+    
+    ## average columns of interest
+   # df.averageSubset <- df.average[,vect.aggCols]
+    new.average <- aggregate(.~sim_gen, data = df.average, FUN = mean)
+    df.simParams <- data.frame(mu_inv = rep(unique.params$mu_inv[i], nrow(new.average)), 
+                               mig = rep(unique.params$mig1[i], nrow(new.average)),
+                               alpha = rep(unique.params$alpha[i], nrow(new.average)), 
+                               sigmaK = rep(unique.params$sigmaK[i], nrow(new.average)), 
+                               enVar = rep(unique.params$enVar[i], nrow(new.average)), 
+                               mu_base = rep(unique.params$mu_base[i], nrow(new.average)))
+   
+    # ## create NA dataframe for columns with no data -- REMOVE CHANGING TO ZEROS NOT NAs
+    # df.NAcols <- matrix(NA, nrow = nrow(new.average), ncol = length(vect.noAggCols))
+    # colnames(df.NAcols) <- vect.noAggCols
+    
+    # create seed columns so we can keep track of relevant seed names
+    df.Seedcolumns <- NULL
+    vect.colNames <- NULL
+    vect.NAseeds <- NULL
+    for(m in 1:reps){
+      seedCol <- paste("Seed", m, sep = "")
+      if(!is.na(av.seeds[m])){
+        df.Seedcolumns <- cbind(df.Seedcolumns, rep(av.seeds[m], nrow(new.average)))
+      } else {
+        df.Seedcolumns <- cbind(df.Seedcolumns, rep(NA, nrow(new.average)))
+      }
+      vect.colNames <- c(vect.colNames, seedCol)
+    }
+    colnames(df.Seedcolumns) <- vect.colNames
+    
+    # finally bind together all the data in the final dataframe
+    df.LA.average <- rbind(df.LA.average, cbind(new.average, df.simParams, df.Seedcolumns))
+    
+} # close average for loop
+###################################################################
+df.LA.average <- subset(df.LA.average, select = -seed)
+
+# this should work I don't understand why it doesn't
+#df.LA.average[,df.LA.average] <- lapply(df.LA.average[,LA.cols], function(x) as.factor(as.character(x)))
+
+# convert every column of parameters data to factor 
+for(i in 25:ncol(df.LA.average)){
+  df.LA.average[,i] <- as.factor(as.character(df.LA.average[,i]))
+}
+
+
+```
+
+### Plot Local Adaptation 
+```{r}
+library(ggplot2)
+inv.labs <- c("0" = "No Inversions", "0.001" = "Inversion Mutation Rate = 0.001")
+ggplot(data = df.LA.average[df.LA.average$sim_gen > 4000,], 
+       aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+    labs(title = "Effect of Inversions on Local Adaptation",
+           y = "Local Adaptation",
+           x = "Generation") +
+ # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(4200, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
+
+```
+
+# Inversion length
+```{r}
+
+
+```
+
+
+## Find Relevant seeds for analysis that you want to do (NOT USING)
+```{r}
+## Use relevant seeds to search other files for the data you want
+
+noInvLowMigSeeds <- NULL
+invLowMigSeeds <- NULL
+noInvMedMigSeeds <- NULL
+invMedMigSeeds <- NULL
+noInvHighMigSeeds <- NULL
+invHighMigSeeds <- NULL
+for(i in 1:nrow(df.params)){
+  if(df.simStats$mu_inv[i] == 0 & df.simStats$mig1[i] == 0.001){
+    noInvLowMigSeeds <- c(noInvLowMigSeeds, df.simStats$Seed[i])
+  } else if(df.simStats$mu_inv[i] > 0 & df.simStats$mig1[i] == 0.001){
+    invLowMigSeeds <- c(invLowMigSeeds, df.simStats$Seed[i])
+  } else if(df.simStats$mu_inv[i] == 0 & df.simStats$mig1[i] == 0.1){
+    noInvMedMigSeeds <- c(noInvMedMigSeeds, df.simStats$Seed[i])
+  } else if(df.simStats$mu_inv[i] > 0 & df.simStats$mig1[i] == 0.1){
+    invMedMigSeeds <- c(invMedMigSeeds, df.simStats$Seed[i])
+  } else if(df.simStats$mu_inv[i] == 0 & df.simStats$mig1[i] == 0.5){
+    noInvHighMigSeeds <- c(noInvHighMigSeeds, df.simStats$Seed[i])
+  } else if(df.simStats$mu_inv[i] > 0 & df.simStats$mig1[i] == 0.5){
+    invHighMigSeeds <- c(invHighMigSeeds, df.simStats$Seed[i])
+  }
+}
+
+```
