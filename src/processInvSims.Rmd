@@ -62,6 +62,18 @@ for(i in 1:nrow(df.params)){
   }
 }
 
+## Pop Dynamics
+df.invQTN <- NULL
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invQTNsNewFile <- read.table(paste(folder, seed, "_outputInvQtnSumInfo.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(invQTNsNewFile) > 0){
+   invQTNsNewFile$seed <- seed
+   df.invQTN <-  rbind(df.invQTN, invQTNsNewFile)
+  }
+}
+
+
 #SimStats
 df.simStats <- NULL
 for(i in 1:nrow(df.params)){
@@ -216,15 +228,15 @@ for(i in 25:ncol(df.LA.average)){
 ### Plot Local Adaptation 
 ```{r}
 library(ggplot2)
-inv.labs <- c("0" = "No Inversions", "0.001" = "Inversion Mutation Rate = 0.001")
+inv.labs <- c("0" = "No Inversions", "0.001" = "Inversion Mu = 0.001")
 high.alpha <- subset(df.LA.average, subset = alpha == 0.2)
 low.alpha <- subset(df.LA.average, subset = alpha == 0.002)
 
-ggplot(data = high.alpha[high.alpha$sim_gen > 10000,], 
+highSigMu.LA <- ggplot(data = high.alpha, 
        aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_base))) + 
     geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
     facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
-    labs(title = "Effect of Inversions on Local Adaptation - high alpha (0.2)",
+    labs(title = "Local Adaptation - high sigma_mu (0.2)",
            y = "Local Adaptation",
            x = "Generation") +
  # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
@@ -233,15 +245,16 @@ ggplot(data = high.alpha[high.alpha$sim_gen > 10000,],
   theme_classic() +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
+  theme(legend.position = "none") +
   scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
-  scale_x_continuous(expand = c(0, 0), limits = c(10200, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(-0.01, 1))
 
-ggplot(data = low.alpha[low.alpha$sim_gen > 10000,], 
+lowSigMu.LA <- ggplot(data = low.alpha, 
        aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_base))) + 
     geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
     facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
-    labs(title = "Effect of Inversions on Local Adaptation - low alpha (0.002)",
+    labs(title = "Local Adaptation",
            y = "Local Adaptation",
            x = "Generation") +
  # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
@@ -250,8 +263,9 @@ ggplot(data = low.alpha[low.alpha$sim_gen > 10000,],
   theme_classic() +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
+  theme(legend.position = "none") +
   scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
-  scale_x_continuous(expand = c(0, 0), limits = c(10200, NA)) + 
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
 
 
@@ -260,67 +274,325 @@ ggplot(data = low.alpha[low.alpha$sim_gen > 10000,],
 # Plot Fitness Fitness
 ```{r}
 
-ggplot(data = high.alpha[high.alpha$sim_gen > 10000,], 
+highSigMu.Fit <- ggplot(data = high.alpha, 
        aes(x = sim_gen, y = meanFitP1, group = interaction(mig, mu_base))) + 
     geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
     facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
-    labs(title = "Effect of Inversions on Fitness - high alpha (0.2)",
+    labs(title = "Fitness",
            y = "Fitness",
            x = "Generation") +
- # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
   guides(color = guide_legend(title = "Migration Rate"), 
          linetype = guide_legend(title = "QTN Mutation Rate")) +
   theme_classic() +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
+  theme(legend.position = "none") +
   scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
-  scale_x_continuous(expand = c(0, 0), limits = c(10200, NA)) + 
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
 
-ggplot(data = low.alpha[low.alpha$sim_gen > 10000,], 
+lowSigMu.Fit <- ggplot(data = low.alpha, 
        aes(x = sim_gen, y = meanFitP1, group = interaction(mig, mu_base))) + 
     geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
     facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
-    labs(title = "Effect of Inversions on Fitness - low alpha (0.002)",
+    labs(title = "Fitness",
            y = "Fitness",
            x = "Generation") +
- # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
   guides(color = guide_legend(title = "Migration Rate"), 
          linetype = guide_legend(title = "QTN Mutation Rate")) +
   theme_classic() +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
+  theme(legend.position = "none") +
   scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
-  scale_x_continuous(expand = c(0, 0), limits = c(10200, NA)) + 
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
 
 ```
 
-
-## Find Relevant seeds for analysis that you want to do (NOT USING)
+## Plot phenotypes
 ```{r}
-## Use relevant seeds to search other files for the data you want
+library(gridExtra)
+highSigMu.phenoP1 <- ggplot(data = high.alpha, 
+       aes(x = sim_gen, y = meanPhenoP1, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+    labs(title = "Phenotype - high sigma_mu (0.2)",
+           y = "Phenotype (Population 1)",
+           x = "Generation") +
+  #guides(color = guide_legend(title = "Migration Rate"), 
+        # linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  theme(legend.position = "none") +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(min(high.alpha$meanPhenoP1)-1, max(high.alpha$meanPhenoP1) +1))
 
-noInvLowMigSeeds <- NULL
-invLowMigSeeds <- NULL
-noInvMedMigSeeds <- NULL
-invMedMigSeeds <- NULL
-noInvHighMigSeeds <- NULL
-invHighMigSeeds <- NULL
-for(i in 1:nrow(df.params)){
-  if(df.simStats$mu_inv[i] == 0 & df.simStats$mig1[i] == 0.001){
-    noInvLowMigSeeds <- c(noInvLowMigSeeds, df.simStats$Seed[i])
-  } else if(df.simStats$mu_inv[i] > 0 & df.simStats$mig1[i] == 0.001){
-    invLowMigSeeds <- c(invLowMigSeeds, df.simStats$Seed[i])
-  } else if(df.simStats$mu_inv[i] == 0 & df.simStats$mig1[i] == 0.1){
-    noInvMedMigSeeds <- c(noInvMedMigSeeds, df.simStats$Seed[i])
-  } else if(df.simStats$mu_inv[i] > 0 & df.simStats$mig1[i] == 0.1){
-    invMedMigSeeds <- c(invMedMigSeeds, df.simStats$Seed[i])
-  } else if(df.simStats$mu_inv[i] == 0 & df.simStats$mig1[i] == 0.5){
-    noInvHighMigSeeds <- c(noInvHighMigSeeds, df.simStats$Seed[i])
-  } else if(df.simStats$mu_inv[i] > 0 & df.simStats$mig1[i] == 0.5){
-    invHighMigSeeds <- c(invHighMigSeeds, df.simStats$Seed[i])
+highSigMu.phenoP1Zoom <- ggplot(data = high.alpha[high.alpha$sim_gen >= 10200,], 
+       aes(x = sim_gen, y = meanPhenoP1, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    geom_hline(yintercept=1, color = "firebrick", size = 1) + 
+    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+    labs(title = " ",
+         y = " ",
+         x = "Generation") +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(10000, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(-1, 2))
+
+lowSigMu.phenoP1 <- ggplot(data = low.alpha, 
+       aes(x = sim_gen, y = meanPhenoP1, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+    labs(title = "Phenotype - low sigma_mu (0.002)",
+           y = "Phenotype (Population 1)",
+           x = "Generation") +
+  #guides(color = guide_legend(title = "Migration Rate"), 
+        # linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  theme(legend.position = "none") +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(min(low.alpha$meanPhenoP1)-0.5, max(low.alpha$meanPhenoP1) +0.5))
+
+lowSigMu.phenoP1Zoom <- ggplot(data = low.alpha[low.alpha$sim_gen >= 10200,], 
+       aes(x = sim_gen, y = meanPhenoP1, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    geom_hline(yintercept=1, color = "firebrick", size = 1) + 
+    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+    labs(title = " ",
+         y = " ",
+         x = "Generation") +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(10000, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(-0.5, 1.2))
+
+grid.arrange(highSigMu.phenoP1, highSigMu.phenoP1Zoom, highSigMu.Fit, highSigMu.LA, nrow = 2, ncol = 2)
+grid.arrange(lowSigMu.phenoP1, lowSigMu.phenoP1Zoom, lowSigMu.Fit, lowSigMu.LA, nrow = 2, ncol = 2)
+
+```
+
+```{r}
+high.alpha$upSD <- high.alpha$meanPhenoP1 + high.alpha$sdPhenoP1
+high.alpha$lowSD <-  high.alpha$meanPhenoP1 - high.alpha$sdPhenoP1
+
+highSigMu.lowMig.phenoP1ZoomSD <- ggplot(data = high.alpha[high.alpha$sim_gen >= 10200 & high.alpha$mig == 0.01,],
+       aes(x = sim_gen, y = meanPhenoP1, group =  mu_base)) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    geom_line(data = high.alpha[high.alpha$sim_gen >= 10200 & high.alpha$mig == 0.01,], 
+              aes(x = sim_gen, y = upSD, linetype = mu_base), 
+              color = "lightgrey", show.legend = FALSE) +
+    geom_line(data = high.alpha[high.alpha$sim_gen >= 10200 & high.alpha$mig == 0.01,], 
+              aes(x = sim_gen, y = lowSD, linetype = mu_base,), 
+              color = "lightgrey", show.legend = FALSE) +
+    geom_hline(yintercept=1, color = "firebrick", size = 0.5) + 
+    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+    labs(title = "",
+         y = "Phenotype",
+         x = "Generation") +
+    guides(color = guide_legend(title = "Migration Rate"), 
+           linetype = guide_legend(title = "QTN Mutation Rate")) +
+    theme_classic() +
+    theme(panel.background = element_blank(), 
+          strip.background = element_rect(colour = "white", fill = "grey92")) +
+    theme(legend.position = "none") +
+    scale_color_manual(values=c("cadetblue3")) +
+    scale_x_continuous(expand = c(0, 0), limits = c(10000, NA),
+                       breaks = c(10000, 15000, 20000)) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(-5, 5))
+
+cols <- c("0.01"="cadetblue3","0.5"="navy", "SD" = "lightgrey")
+highSigMuMig.phenoP1ZoomSD <- ggplot(data = high.alpha[high.alpha$sim_gen >= 10200 & high.alpha$mig == 0.5,],
+       aes(x = sim_gen, y = meanPhenoP1, group =  mu_base)) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    geom_line(data = high.alpha[high.alpha$sim_gen >= 10200 & high.alpha$mig == 0.5,], 
+              aes(x = sim_gen, y = upSD, linetype = mu_base ), 
+              color = "lightgrey", show.legend = FALSE) +
+    geom_line(data = high.alpha[high.alpha$sim_gen >= 10200 & high.alpha$mig == 0.5,], 
+              aes(x = sim_gen, y = lowSD, linetype = mu_base ), 
+              color = "lightgrey", show.legend = FALSE) +
+    geom_hline(yintercept=1, color = "firebrick", size = 0.5) + 
+    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+    labs(title = "",
+         y = "",
+         x = "Generation") +
+    guides(color = guide_legend(title = "Migration Rate"), 
+           linetype = guide_legend(title = "QTN Mutation Rate")) +
+    theme_classic() +
+    theme(panel.background = element_blank(), 
+          strip.background = element_rect(colour = "white", fill = "grey92")) +
+    scale_color_manual(values=cols, limits = c("0.01", "0.5", "SD"),
+                          labels = c("0.01", "0.5",  "SD")) +
+    scale_x_continuous(expand = c(0, 0), limits = c(10000, NA), breaks = c(10000, 15000, 20000)) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(-5, 5))
+
+grid.arrange(highSigMu.lowMig.phenoP1ZoomSD, highSigMuMig.phenoP1ZoomSD, nrow =1)
+ 
+```
+
+
+## Inversion length data manipulation
+```{r}
+df.invTimeFreq <- subset(df.invTime, subset = df.invTime$freq > 0.05)
+count <- 1
+for(i in 1:nrow(df.invTimeFreq)){
+  count <- count+1
+  for(j in 1:nrow(df.invData)){
+    if(df.invData$inv_id[j] == df.invTimeFreq$inv_id[i]){
+      df.invTimeFreq$inv_length[i] <- df.invData$inv_length[j]
+    }
   }
+  print(count)
+}
+df.invLength.average <- NULL
+inv.sims <- subset(unique.params, subset = unique.params$mu_inv > 0)
+for(i in 1:nrow(inv.sims)){
+    # create empty variable for putting each data set that should be average
+    df.length.average <- NULL
+    av.length.seeds <- NULL
+    # step through the population dynamics dataframe
+    for(j in 1:nrow(df.invTimeFreq)){
+      # step through the different seeds that have the unique parameters
+      for(k in 1:reps){
+        seedCol <- paste("Seed", k, sep="")
+        # if that seed is not an NA then do the next step
+        if(!is.na(inv.sims[i, seedCol])){
+          # if the seed from unique parameters matches the seed of the invTime dataset store it
+          if(df.invTimeFreq$seed[j] == inv.sims[i, seedCol]){
+           df.length.average <- rbind(df.length.average, df.invTimeFreq[j,])
+           av.length.seeds <- unique(c(av.length.seeds, inv.sims[i, seedCol]))
+          }
+        }
+      }
+    }
+    
+   
+  ## average columns of interest
+   # df.averageSubset <- df.average[,vect.aggCols]
+    new.length.average <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = mean)
+    new.numQTNs.average <- aggregate(num_qtns~sim_gen, data = df.length.average, FUN = mean)
+    df.average.inv <- cbind(new.length.average, new.numQTNs.average$num_qtns)
+    df.simParams <- data.frame(mu_inv = rep(inv.sims$mu_inv[i], nrow(df.average.inv)), 
+                               mig = rep(inv.sims$mig1[i], nrow(df.average.inv)),
+                               alpha = rep(inv.sims$alpha[i], nrow(df.average.inv)), 
+                               sigmaK = rep(inv.sims$sigmaK[i], nrow(df.average.inv)), 
+                               enVar = rep(inv.sims$enVar[i], nrow(df.average.inv)), 
+                               mu_base = rep(inv.sims$mu_base[i], nrow(df.average.inv)))
+   
+    # ## create NA dataframe for columns with no data -- REMOVE CHANGING TO ZEROS NOT NAs
+    # df.NAcols <- matrix(NA, nrow = nrow(new.average), ncol = length(vect.noAggCols))
+    # colnames(df.NAcols) <- vect.noAggCols
+    
+    # create seed columns so we can keep track of relevant seed names
+    df.Seedcolumns <- NULL
+    vect.colNames <- NULL
+    #vect.NAseeds <- NULL
+    for(m in 1:reps){
+      seedCol <- paste("Seed", m, sep = "")
+      if(!is.na(av.seeds[m])){
+        df.Seedcolumns <- cbind(df.Seedcolumns, rep(av.seeds[m], nrow(df.average.inv)))
+      } else {
+        df.Seedcolumns <- cbind(df.Seedcolumns, rep(NA, nrow(df.average.inv)))
+      }
+      vect.colNames <- c(vect.colNames, seedCol)
+    }
+    colnames(df.Seedcolumns) <- vect.colNames
+    
+    # finally bind together all the data in the final dataframe
+    df.invLength.average <- rbind(df.invLength.average, cbind(df.average.inv, df.simParams, df.Seedcolumns))
+    
+} # close average for loop
+###################################################################
+colnames(df.invLength.average)[3] <- "num_qtns"
+
+# convert every column of parameters data to factor 
+for(i in 4:ncol(df.invLength.average)){
+  df.invLength.average[,i] <- as.factor(as.character(df.invLength.average[,i]))
+}
+```
+
+
+### Plot Inversion size and num of qtns
+```{r}
+## average inversion length 
+ggplot(data = df.invLength.average, 
+       aes(x = sim_gen, y = inv_length, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    facet_wrap(~ alpha) + 
+    labs(title = "Average Inversion Length",
+           y = "Average Inversion Length",
+           x = "Generation") +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(),
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invTimeFreq$inv_length)))
+
+## Number of QTNs in inversions
+ggplot(data = df.invLength.average, 
+       aes(x = sim_gen, y = num_qtns, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+   facet_wrap(~ alpha) + 
+    labs(title = "Average Number of QTNs in Inversions",
+           y = "Average Number of QTNs",
+           x = "Generation") +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invLength.average$num_qtns)))
+
+```
+
+
+```{r}
+final.invQTNs <- subset(df.invQTN[df.invQTN$sim_gen == 20000,])
+final.invFreq <- subset(df.invTimeFreq[df.invTimeFreq$sim_gen == 20000,])
+
+count <- 1
+final.invQTNs$inv_originGen <- NA
+for(i in 1:nrow(final.invQTNs)){
+  count <- count +1
+  for(j in 1:nrow(df.invData)){
+    if(final.invQTNs$inv_id[i] == df.invData$inv_id[j]){
+      final.invQTNs$inv_originGen[i] <- df.invData$inv_originGen[j]
+    }
+  }
+  print(count)
 }
 
+final.invQTNs$BefAft <- NA
+for(i in 1:nrow(final.invQTNs)){
+  if(final.invQTNs$inv_gen > final.invQTNs$qtn_gen_origin){
+    final.invQTNs$BefAft <- "Before"
+  } else {
+    final.invQTNs$BefAft <- "After"
+  }
+}
+  
+beforeAfter <- function(x){
+ sum(x == "Before")/length(x) 
+}
+
+aggregate(befAft~, data = final.invQTNs, FUN = beforeAfter)
 ```

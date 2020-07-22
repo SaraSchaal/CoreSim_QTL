@@ -1,0 +1,12 @@
+### Inverion Simulation Notes
+
+20200701
+# what I did
+ - converted all NANs to NAs so R calculations work properly
+ - created double nested for loop to average replicate simulations
+
+# fun R tricks discovered
+ - to aggregate multiple dependent variables in a dataframe use aggregate(cbind(col1, col2)~ .. )
+ 
+ 
+
