@@ -12,7 +12,7 @@ output: html_document
 ## List of Parameters in model
   first.seed <- 3383282 #runif(1, 0, 10000000)
   mu_base <- c(1e-07, 1e-06, 1e-05, 1e-04, 1e-03)
-  mu_inv <- c(0, 1e-03, 1e-05, 1e-07) #orders of magnitude higher or lower than mu_base
+  mu_inv <- c(0, 1e-03, 1e-06)#1e-05, 1e-07) #orders of magnitude higher or lower than mu_base
   sigmaK <- c(0.9, 1.5, 5, 25, 50) 
   alpha <- c(0.002, 0.2) #sd of effect sizes of QTN mutations
     # 0.2 because 95% of observations will be <0.4, and a mutation of 0.5 in a homozygote will give 1.0 optimum

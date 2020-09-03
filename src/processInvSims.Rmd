@@ -448,6 +448,7 @@ grid.arrange(highSigMu.lowMig.phenoP1ZoomSD, highSigMuMig.phenoP1ZoomSD, nrow =1
 ## Inversion length data manipulation
 ```{r}
 df.invTimeFreq <- subset(df.invTime, subset = df.invTime$freq > 0.05)
+df.invData$inv_id <- as.numeric(df.invData$inv_id)
 count <- 1
 for(i in 1:nrow(df.invTimeFreq)){
   count <- count+1
@@ -458,6 +459,9 @@ for(i in 1:nrow(df.invTimeFreq)){
   }
   print(count)
 }
+
+dim(merge(df.invData, df.invTimeFreq, by.x = c("seed", "inv_id"), by.y = c("seed", "inv_id"), all.y = TRUE))
+
 df.invLength.average <- NULL
 inv.sims <- subset(unique.params, subset = unique.params$mu_inv > 0)
 for(i in 1:nrow(inv.sims)){

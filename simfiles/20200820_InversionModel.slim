@@ -18,16 +18,16 @@ initialize(){
 		defineConstant("C_LENGTHS", rep(1e5, C_NUM));	// lengths for each chromosome
 		defineConstant("MU_base", 1e-7);						// base mutation rate overall
 		defineConstant("MU", MU_base * 0.1);	// 0.02			// mut rate for QTNs specifically
-		defineConstant("MU_INV", 1e-3);		// 2e-4				// inversion generation (ind^-1) (gen^-1)
+		defineConstant("MU_INV", 0);		// 2e-4				// inversion generation (ind^-1) (gen^-1)
 		defineConstant("R", 1e-6);								// recombination rate
 		defineConstant("N", 1000);								// subpop size
-		defineConstant("MIG1", 0.01);							// migration rate into p1
-		defineConstant("MIG2", 0.01);							// migration rate into p2
+		defineConstant("MIG1", 0.4);							// migration rate into p1
+		defineConstant("MIG2", 0.4);							// migration rate into p2
 		defineConstant("THETA", c(1.0, -1.0));				// optima after burn in P1
-		defineConstant("SIGMA_K", 0.9);						// QT selection strength
-		defineConstant("BURNIN", 4000);						// number of burning generations 
+		defineConstant("SIGMA_K", 0.9);						// QTN selection strength
+		defineConstant("BURNIN", 10000);						// number of burning generations 
 		defineConstant("ENVAR", 0.01);							// environmental variance 
-		defineConstant("ALPHA", 0.002);							// SD of the normal distribution of effect sizes
+		defineConstant("ALPHA", 0.2);							// SD of the normal distribution of effect sizes
 		defineConstant("TREESIM", 500); 						// generation increment for TreeSeq simplification
 		defineConstant("DOM", 2);								// Turn on/off dominance
 	
@@ -58,7 +58,7 @@ initialize(){
 	
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeMutationType("m2", 0.5, "n", 0.0, ALPHA);	// QTNs, can alter ALPHA for different SD of the normal distribution
-	m2.convertToSubstitution = T;
+	m2.convertToSubstitution = F;
 	initializeMutationType("m3", 0.5, "f", 0.0);			// inversions
 	m3.convertToSubstitution = T;								// allow inversion muts to fix
 	m3.color = "yellow";
@@ -457,22 +457,49 @@ late(){
 			} // close if/else
 		} // close subpop for loop
 		
+		// X X Fitness in Home Population 
+		homPopOptimumP1 = NULL;
+		homPopOptimumP2 = NULL;
+		homPopFitnessP1 = NULL;
+		homPopFitnessP2 = NULL;
+		for (subpop_index in seqAlong(sim.subpopulations)) {
+			subpop = sim.subpopulations[subpop_index];
+			inds = subpop.individuals;
+			if(subpop == p1) {
+				homPopOptimumP1 = THETA[0];
+				for(ind in inds){
+					homPopFitnessP1 = c(homPopFitnessP1, dnorm(ind.tagF, homPopOptimumP1, sd=SIGMA_K) /
+						dnorm(0.0, 0.0, sd = SIGMA_K));
+				}
+			} else {
+				homPopOptimumP2 = THETA[1];
+				for(ind in inds){
+					homPopFitnessP2 = c(homPopFitnessP2, dnorm(ind.tagF, homPopOptimumP2, sd=SIGMA_K) /
+						dnorm(0.0, 0.0, sd = SIGMA_K));
+				} // close inds for loop
+			} // close if/else
+		} // close subpop for loop
+		
 		// home vs away local adaptation 
-		locAdaptHAP1 = mean(p1.cachedFitness(NULL)) - mean(opPopFitnessP1); // pop1 in pop1 vs pop1 in pop2
-		locAdaptHAP2 = mean(p2.cachedFitness(NULL)) - mean(opPopFitnessP2); // pop2 in pop2 vs pop2 in pop 1
+		//locAdaptHAP1 = mean(p1.cachedFitness(NULL)) - mean(opPopFitnessP1); // pop1 in pop1 vs pop1 in pop2
+		//locAdaptHAP2 = mean(p2.cachedFitness(NULL)) - mean(opPopFitnessP2); // pop2 in pop2 vs pop2 in pop 1
+		locAdaptHAP1 = mean(homPopFitnessP1) - mean(opPopFitnessP1);
+		locAdaptHAP2 = mean(homPopFitnessP2) - mean(opPopFitnessP2);
 		
 		// sympatric vs allopatric
-		locAdaptSA = mean(c(p1.cachedFitness(NULL), p2.cachedFitness(NULL))) -
+		locAdaptSA = mean(c(homPopFitnessP1, homPopFitnessP2)) -
 			mean(c(opPopFitnessP1, opPopFitnessP2));
 		
 		// local vs foreign local adaptation
-		locAdaptLFP1 = mean(p1.cachedFitness(NULL)) - mean(opPopFitnessP2); // pop1 in pop1 vs pop2 in pop1
-		locAdaptLFP2 = mean(p2.cachedFitness(NULL)) - mean(opPopFitnessP1); // pop2 in pop2 vs pop1 in pop2
+		//locAdaptLFP1 = mean(p1.cachedFitness(NULL)) - mean(opPopFitnessP2); // pop1 in pop1 vs pop2 in pop1
+		//locAdaptLFP2 = mean(p2.cachedFitness(NULL)) - mean(opPopFitnessP1); // pop2 in pop2 vs pop1 in pop2
+		locAdaptLFP1 = mean(homPopFitnessP1) - mean(opPopFitnessP2);
+		locAdaptLFP2 = mean(homPopFitnessP2) - mean(opPopFitnessP1);
 		
 		outIndSum = paste(c(sim.generation, size(sim.mutationsOfType(m3)), locAdaptSA, locAdaptHAP1, locAdaptHAP2, locAdaptLFP1,
 								  locAdaptLFP2, // FSTBar, upCI, lowCI, inv_FSTBar, inv_upCI, inv_lowCI, neut_FSTBar, neut_upCI, neut_lowCI, 
-								  mean(p1.cachedFitness(NULL)), sd(p1.cachedFitness(NULL)), mean(p1.individuals.tagF), sd(p1.individuals.tagF), 
-								  mean(p2.cachedFitness(NULL)), sd(p2.cachedFitness(NULL)), mean(p2.individuals.tagF), sd(p2.individuals.tagF)), sep = " ");
+								  mean(homPopFitnessP1), sd(homPopFitnessP1), mean(p1.individuals.tagF), sd(p1.individuals.tagF), 
+								  mean(homPopFitnessP2), sd(homPopFitnessP2), mean(p2.individuals.tagF), sd(p2.individuals.tagF)), sep = " ");
 		
 		writeFile(paste(c(MYPATH, "/", MYSEED, "_outputPopDynam.txt"), sep = ""), outIndSum, append = T);
 
@@ -500,14 +527,20 @@ late(){
 	
 	// X X X X Phenotypes & Number of Heterozygous vs Homozygous Individuals for Each Inversion 
 	
-	output_ind = "id " +  "subpop " + "phenotype " + "\n"; // create header for file
+	output_ind = "id " +  "subpop " + "phenotype " + "fitness" + "\n"; // create header for file
 	
 	// for loop to step through individuals and pull first the header then append new lines with 
 	// individual index information which subpopulation they are from and their phenotype
 	
+	fitness = NULL;
 	for(ind in inds){
+		if(ind.subpopulation.id == 1){
+			fitness = dnorm(ind.tagF, THETA[0], sd=SIGMA_K) / dnorm(0.0, 0.0, sd = SIGMA_K);
+		} else {
+			fitness = dnorm(ind.tagF, THETA[1], sd=SIGMA_K) / dnorm(0.0, 0.0, sd = SIGMA_K);
+		}
 		// output phenotypes
-		output_ind = output_ind + ind.index + " " + ind.subpopulation.id + " " + ind.tagF + "\n";
+		output_ind = output_ind + ind.index + " " + ind.subpopulation.id + " " + ind.tagF + " " + fitness + "\n";
 		
 	}
 	
