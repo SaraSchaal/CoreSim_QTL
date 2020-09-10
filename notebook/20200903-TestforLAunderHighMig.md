@@ -7,6 +7,6 @@ QTN_mutRate = 1e-9
 enVar = 0.1  
 sigmaK = 0.5  
 
-**we get local adaptation!**
+*we get local adaptation!*
 
 ![Test For Local Adaptation](./20200903_testLA.pdf)
