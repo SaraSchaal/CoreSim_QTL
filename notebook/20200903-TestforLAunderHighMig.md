@@ -9,4 +9,4 @@ sigmaK = 0.5
 
 **we get local adaptation!**
 
-![Test For Local Adaptation](20200903_testLA.pdf)
+![Test For Local Adaptation](./20200903_testLA.pdf)
