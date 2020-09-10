@@ -286,11 +286,9 @@ late(){
 		catn("================================ " + sim.generation);
 		catn("m3 mutations segregating: " + size(sim.mutationsOfType(m3)));
 		
-		// create an empty variable for all the FST values of all inversions
-		//meaninvFST = NULL;
-		
 		/// X X Summary Info for Inversions X X X ///
 		for (mut in sim.mutationsOfType(m3)) {
+					// these are not ordered .. not sure what the default order is for mutations
 					
 		  // X X Summary Stats for Each Inversion
 			pos = mut.position;														// start of inversion
@@ -304,7 +302,7 @@ late(){
 			freq_p2 = sim.mutationFrequencies(p2, mut);						// frequency of inversion in pop 2
 			
 		  // output meta information about the inversion if less than 200 generations old (FIRST OUTPUT FILE IN SPREADSHEET)
-			if((sim.generation - originGen) < 200){ 
+			if((sim.generation - originGen) <= 200){ 
 				outINVsum = paste(c(mut.id, sim.generation, originGen, pos, end, len), sep = " ");
 				writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvSumInfo.txt"), sep = ""), outINVsum, append = T);
 			}
@@ -317,7 +315,7 @@ late(){
 		
 				  /// get summary info of all QTNs in inversion
 					QTNpositions = QTNsInInv.position;									// position of qtns 
-					NumQTNs = size(unique(QTNsInInv.position));						// number of unique qtns in inversion
+					NumQTNs = size(unique(QTNsInInv.id));						// number of unique qtns in inversion
 					freq_P1_InvQTNs = sim.mutationFrequencies(p1, QTNsInInv); 	// frequency of inversion QTN pop 1
 					freq_P2_InvQTNs = sim.mutationFrequencies(p2, QTNsInInv);	// frequency of inversion QTN pop 2
 					freq_InvQTNs = sim.mutationFrequencies(NULL, QTNsInInv);		// frequency of inversion QTN overall
@@ -506,7 +504,7 @@ late(){
 	} // close if statement for outputting every X generations
 } // close late event
 
-10000 late(){
+20000 late(){
 	
 	//////////////////////////////////////////
 	// X X X X X Simulation Stats X X X X X //
@@ -614,6 +612,6 @@ late(){
 	
 }
 
-10001 late() {
+20000 late() {
 	sim.outputFixedMutations();
 }

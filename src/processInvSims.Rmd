@@ -12,23 +12,25 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 options(scipen = 999)
 ### Read in datafiles ###
+############################################
 #df.params <- read.table("fullINVparamslist.txt", header = TRUE)
 #df.params <- read.table("src/testINVparamslist.txt")
-#df.params <- data.frame(seed = c(1751625359138, 1751583067058, 1751620201657, 1751583946190, 1751616892960,
-                              #   1751566183207, 1751570485992, 1751568804886, 1751626452845, 2065972841416,
-                              #   1751582301417, 1751629252645, 1751629716441, 1751572690982, 1751628536499, 
-                              #   1751630159938, 1614479103543, 1614479625159, 1614479993467))
+#df.params1 <- read.table("src/testParams.txt", header = TRUE)
+#df.params2 <- read.table("src/testTestParams.txt", header = TRUE)
+#df.params <- rbind(df.params2, df.params1)
 
-df.params1 <- read.table("src/testParams.txt", header = TRUE)
-df.params2 <- read.table("src/testTestParams.txt", header = TRUE)
-df.params <- rbind(df.params2, df.params1)
-not.done.seeds <- NULL#c(3383334, 3383330, 3383318, 3383314)
+# This searches the specified directory for all files that start with 13 digits (i.e., seeds) and
+# only prints those files with unique seeds
+df.params <- as.data.frame(unique(substr(list.files("./results/Inversion/20200720_PrelimSetofSims", pattern = "\\d{7}"), 1, 7)))
+colnames(df.params) <- "seed"
+
+not.done.seeds <- c(3383334, 3383330, 3383318, 3383314)
+############################################
 ```
 
 
 ```{r}
-folder <- "results/PrelimSims/"
-
+folder <- "results/Inversion/20200720_PrelimSetofSims/"
 ## Inversion Through Time3
 df.invTime <- NULL
 for(i in 1:nrow(df.params)){
@@ -109,7 +111,7 @@ for(i in 1:nrow(unique.params)){
       for(k in 1:reps){
         seedCol <- paste("Seed", k, sep="")
         if(is.na(unique.params[i, seedCol])){
-          unique.params[i, seedCol] <- df.simStats$Seed[j]
+          unique.params[i, seedCol] <- as.character(df.simStats$Seed[j])
           break
         } 
       }
@@ -214,9 +216,6 @@ for(i in 1:nrow(unique.params)){
 ###################################################################
 df.LA.average <- subset(df.LA.average, select = -seed)
 
-# this should work I don't understand why it doesn't
-#df.LA.average[,df.LA.average] <- lapply(df.LA.average[,LA.cols], function(x) as.factor(as.character(x)))
-
 # convert every column of parameters data to factor 
 for(i in 25:ncol(df.LA.average)){
   df.LA.average[,i] <- as.factor(as.character(df.LA.average[,i]))
@@ -270,8 +269,18 @@ lowSigMu.LA <- ggplot(data = low.alpha,
 
 
 ```
+## test 20200903
+```{r}
+LAtestplot <- ggplot(data = df.LA.average, 
+       aes(x = sim_gen, y = localAdaptSA)) +
+       geom_line(aes(color = mu_inv, linetype = sigmaK),  size = 0.75) +
+       annotate(geom = "text", x = 2500, y = 0.2, label = "mig = 0.4\nalpha = 0.2\nQTNmut = 1e-9\nenvar = 0.1") +
+       theme_classic() +
+       theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92"))
 
-# Plot Fitness Fitness
+```
+# Plot Fitness 
 ```{r}
 
 highSigMu.Fit <- ggplot(data = high.alpha, 
@@ -309,7 +318,6 @@ lowSigMu.Fit <- ggplot(data = low.alpha,
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
 
 ```
-
 ## Plot phenotypes
 ```{r}
 library(gridExtra)
@@ -385,7 +393,7 @@ grid.arrange(highSigMu.phenoP1, highSigMu.phenoP1Zoom, highSigMu.Fit, highSigMu.
 grid.arrange(lowSigMu.phenoP1, lowSigMu.phenoP1Zoom, lowSigMu.Fit, lowSigMu.LA, nrow = 2, ncol = 2)
 
 ```
-
+## Plot Phenotypes with SD
 ```{r}
 high.alpha$upSD <- high.alpha$meanPhenoP1 + high.alpha$sdPhenoP1
 high.alpha$lowSD <-  high.alpha$meanPhenoP1 - high.alpha$sdPhenoP1
@@ -443,24 +451,13 @@ highSigMuMig.phenoP1ZoomSD <- ggplot(data = high.alpha[high.alpha$sim_gen >= 102
 grid.arrange(highSigMu.lowMig.phenoP1ZoomSD, highSigMuMig.phenoP1ZoomSD, nrow =1)
  
 ```
-
-
 ## Inversion length data manipulation
 ```{r}
+
 df.invTimeFreq <- subset(df.invTime, subset = df.invTime$freq > 0.05)
 df.invData$inv_id <- as.numeric(df.invData$inv_id)
-count <- 1
-for(i in 1:nrow(df.invTimeFreq)){
-  count <- count+1
-  for(j in 1:nrow(df.invData)){
-    if(df.invData$inv_id[j] == df.invTimeFreq$inv_id[i]){
-      df.invTimeFreq$inv_length[i] <- df.invData$inv_length[j]
-    }
-  }
-  print(count)
-}
 
-dim(merge(df.invData, df.invTimeFreq, by.x = c("seed", "inv_id"), by.y = c("seed", "inv_id"), all.y = TRUE))
+df.invAllData <- dim(merge(df.invData, df.invTimeFreq, by.x = c("seed", "inv_id"), by.y = c("seed", "inv_id"), all.y = TRUE))
 
 df.invLength.average <- NULL
 inv.sims <- subset(unique.params, subset = unique.params$mu_inv > 0)
@@ -469,15 +466,15 @@ for(i in 1:nrow(inv.sims)){
     df.length.average <- NULL
     av.length.seeds <- NULL
     # step through the population dynamics dataframe
-    for(j in 1:nrow(df.invTimeFreq)){
+    for(j in 1:nrow(df.invAllData)){
       # step through the different seeds that have the unique parameters
       for(k in 1:reps){
         seedCol <- paste("Seed", k, sep="")
         # if that seed is not an NA then do the next step
         if(!is.na(inv.sims[i, seedCol])){
           # if the seed from unique parameters matches the seed of the invTime dataset store it
-          if(df.invTimeFreq$seed[j] == inv.sims[i, seedCol]){
-           df.length.average <- rbind(df.length.average, df.invTimeFreq[j,])
+          if(df.invAllData$seed[j] == inv.sims[i, seedCol]){
+           df.length.average <- rbind(df.length.average, df.invAllData[j,])
            av.length.seeds <- unique(c(av.length.seeds, inv.sims[i, seedCol]))
           }
         }
@@ -488,6 +485,7 @@ for(i in 1:nrow(inv.sims)){
   ## average columns of interest
    # df.averageSubset <- df.average[,vect.aggCols]
     new.length.average <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = mean)
+    new.length.SD <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = sd)
     new.numQTNs.average <- aggregate(num_qtns~sim_gen, data = df.length.average, FUN = mean)
     df.average.inv <- cbind(new.length.average, new.numQTNs.average$num_qtns)
     df.simParams <- data.frame(mu_inv = rep(inv.sims$mu_inv[i], nrow(df.average.inv)), 
@@ -547,7 +545,7 @@ ggplot(data = df.invLength.average,
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invTimeFreq$inv_length)))
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invAllData$inv_length)))
 
 ## Number of QTNs in inversions
 ggplot(data = df.invLength.average, 
@@ -571,7 +569,7 @@ ggplot(data = df.invLength.average,
 
 ```{r}
 final.invQTNs <- subset(df.invQTN[df.invQTN$sim_gen == 20000,])
-final.invFreq <- subset(df.invTimeFreq[df.invTimeFreq$sim_gen == 20000,])
+final.invFreq <- subset(df.invAllData[df.invAllData$sim_gen == 20000,])
 
 count <- 1
 final.invQTNs$inv_originGen <- NA
@@ -599,4 +597,14 @@ beforeAfter <- function(x){
 }
 
 aggregate(befAft~, data = final.invQTNs, FUN = beforeAfter)
+```
+
+
+## Test Data
+
+```{r}
+read.table()
+
+
+
 ```

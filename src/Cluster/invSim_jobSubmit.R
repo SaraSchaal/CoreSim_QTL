@@ -30,5 +30,4 @@ for(i in 1:nrow(params)){
 
   ), fileConn)
   
-  system(paste("sbatch submissionFiles/",filename))
 }
