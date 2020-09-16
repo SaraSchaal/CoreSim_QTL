@@ -23,7 +23,7 @@ options(scipen = 999)
 # only prints those files with unique seeds
 df.params <- as.data.frame(unique(substr(list.files("./results/Inversion/20200720_PrelimSetofSims", pattern = "\\d{7}"), 1, 7)))
 colnames(df.params) <- "seed"
-
+df.params <- data.frame(seed = 3383332)
 not.done.seeds <- c(3383334, 3383330, 3383318, 3383314)
 ############################################
 ```
@@ -31,7 +31,7 @@ not.done.seeds <- c(3383334, 3383330, 3383318, 3383314)
 
 ```{r}
 folder <- "results/Inversion/20200720_PrelimSetofSims/"
-## Inversion Through Time3
+## Inversion Through Time
 df.invTime <- NULL
 for(i in 1:nrow(df.params)){
   seed <- df.params$seed[i]
@@ -457,7 +457,8 @@ grid.arrange(highSigMu.lowMig.phenoP1ZoomSD, highSigMuMig.phenoP1ZoomSD, nrow =1
 df.invTimeFreq <- subset(df.invTime, subset = df.invTime$freq > 0.05)
 df.invData$inv_id <- as.numeric(df.invData$inv_id)
 
-df.invAllData <- dim(merge(df.invData, df.invTimeFreq, by.x = c("seed", "inv_id"), by.y = c("seed", "inv_id"), all.y = TRUE))
+df.invAllData <- merge( df.invData, df.invTimeFreq, by.x = c("seed", "inv_id"), by.y = c("seed", "inv_id"), all.y = TRUE)
+colnames(df.invAllData)[8] <- "sim_gen"
 
 df.invLength.average <- NULL
 inv.sims <- subset(unique.params, subset = unique.params$mu_inv > 0)
@@ -486,8 +487,10 @@ for(i in 1:nrow(inv.sims)){
    # df.averageSubset <- df.average[,vect.aggCols]
     new.length.average <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = mean)
     new.length.SD <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = sd)
+    new.num.inv <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = length)
     new.numQTNs.average <- aggregate(num_qtns~sim_gen, data = df.length.average, FUN = mean)
-    df.average.inv <- cbind(new.length.average, new.numQTNs.average$num_qtns)
+    df.average.inv <- cbind(new.length.average, new.length.SD[,2],
+                            new.numQTNs.average[,2], new.num.inv[,2])
     df.simParams <- data.frame(mu_inv = rep(inv.sims$mu_inv[i], nrow(df.average.inv)), 
                                mig = rep(inv.sims$mig1[i], nrow(df.average.inv)),
                                alpha = rep(inv.sims$alpha[i], nrow(df.average.inv)), 

@@ -2,20 +2,26 @@
 #### Submit jobs for Inversion Sim ####
 #######################################
 
-params =read.table("testParams.txt", header = TRUE)
+params =read.table("./src/testParams.txt", header = TRUE)
 
 for(i in 1:nrow(params)){
 
   filename <- paste(params$seed[i], "_slimInv.sh",sep="")
   fileConn<-file(print(paste("submissionFiles/", params$seed[i],"_slimInv.sh",sep="")))
-
+  
+  if(params$mu_base[i]>0.000001){
+   time <- "#SBATCH --time=72:00:00"
+  } else {
+   time <- "#SBATCH --time=120:00:00"
+  }
+  
   writeLines(c("#!/bin/bash",
                paste("#SBATCH --job-name=",params$seed[i],"_slimInv.txt",sep=""),
                "#SBATCH --mem=1Gb",
                "#SBATCH --mail-user=schaal.s@northeastern.edu",
                "#SBATCH --mail-type=FAIL",
                "#SBATCH --partition=lotterhos",
-               "#SBATCH --time=72:00:00",
+               time,
                "#SBATCH --nodes=1",
                "#SBATCH --tasks-per-node=1",
                paste0("#SBATCH --output=outFiles/",params$seed[i],".%j.out"),
@@ -26,7 +32,7 @@ for(i in 1:nrow(params)){
                       params$rep[i], " -d muInv=", params$muInv[i]," -d enVar=", params$enVar[i], " -d mig1=",
                       params$mig1[i]," -d mig2=", params$mig2[i]," -d burnin=", params$burnin[i], " -d chromNum=",
                       params$chromNum[i]," -d r=", params$r[i], " -d theta1=", params$theta1[i], " -d theta2=", 
-                      params$theta2[i], " -d dom=", params$dom[i], " -m -t InversionModel.slim")
+                      params$theta2[i], " -d dom=", params$dom[i], " -m -t 20200910_InversionModel.slim")
 
   ), fileConn)
   
