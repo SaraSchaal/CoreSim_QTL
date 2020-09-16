@@ -21,16 +21,16 @@ options(scipen = 999)
 
 # This searches the specified directory for all files that start with 13 digits (i.e., seeds) and
 # only prints those files with unique seeds
-df.params <- as.data.frame(unique(substr(list.files("./results/Inversion/20200720_PrelimSetofSims", pattern = "\\d{7}"), 1, 7)))
+df.params <- as.data.frame(unique(substr(list.files("./results/Inversion/20200911_NewPrelimSetofSims", pattern = "\\d{7}"), 1, 7)))
 colnames(df.params) <- "seed"
-df.params <- data.frame(seed = 3383332)
-not.done.seeds <- c(3383334, 3383330, 3383318, 3383314)
+#df.params <- data.frame(seed = 3383332)
+not.done.seeds <- c(3383330)
 ############################################
 ```
 
 
 ```{r}
-folder <- "results/Inversion/20200720_PrelimSetofSims/"
+folder <- "results/Inversion/20200911_NewPrelimSetofSims/"
 ## Inversion Through Time
 df.invTime <- NULL
 for(i in 1:nrow(df.params)){
@@ -89,7 +89,8 @@ for(i in 1:nrow(df.params)){
 }
 df.simStats <- df.simStats[,2:ncol(df.simStats)]
 colnames(df.simStats) <- c("mig1", "mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar", "Seed")
-
+df.simStats <- rbind(df.simStats, df.simStats[52,])
+df.simStats[52,ncol(df.simStats)] <- "3383330"
 ```
 
 ## Unique Parameters
@@ -217,7 +218,7 @@ for(i in 1:nrow(unique.params)){
 df.LA.average <- subset(df.LA.average, select = -seed)
 
 # convert every column of parameters data to factor 
-for(i in 25:ncol(df.LA.average)){
+for(i in 16:ncol(df.LA.average)){
   df.LA.average[,i] <- as.factor(as.character(df.LA.average[,i]))
 }
 
@@ -231,42 +232,82 @@ inv.labs <- c("0" = "No Inversions", "0.001" = "Inversion Mu = 0.001")
 high.alpha <- subset(df.LA.average, subset = alpha == 0.2)
 low.alpha <- subset(df.LA.average, subset = alpha == 0.002)
 
-highSigMu.LA <- ggplot(data = high.alpha, 
-       aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_base))) + 
-    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
-    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
-    labs(title = "Local Adaptation - high sigma_mu (0.2)",
-           y = "Local Adaptation",
-           x = "Generation") +
- # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
-  guides(color = guide_legend(title = "Migration Rate"), 
-         linetype = guide_legend(title = "QTN Mutation Rate")) +
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  theme(legend.position = "none") +
-  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(-0.01, 1))
 
-lowSigMu.LA <- ggplot(data = low.alpha, 
+### Panels are inversion vs. no inversion ###
+highSigMu.LAinv <- ggplot(data = high.alpha, 
        aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_base))) + 
-    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
-    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
-    labs(title = "Local Adaptation",
-           y = "Local Adaptation",
-           x = "Generation") +
+       geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+       facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+       labs(title = "Local Adaptation - high sigma_mu (0.2)",
+            y = "Local Adaptation",
+            x = "Generation") +
  # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
-  guides(color = guide_legend(title = "Migration Rate"), 
-         linetype = guide_legend(title = "QTN Mutation Rate")) +
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  theme(legend.position = "none") +
-  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
+       guides(color = guide_legend(title = "Migration Rate"), 
+              linetype = guide_legend(title = "QTN Mutation Rate")) +
+       theme_classic() +
+       theme(panel.background = element_blank(), 
+             strip.background = element_rect(colour = "white", fill = "grey92")) +
+#  theme(legend.position = "none") +
+       scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+       scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+       scale_y_continuous(expand = c(0, 0), limits = c(-0.01, 1))
 
+lowSigMu.LAinv <- ggplot(data = low.alpha, 
+       aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_base))) + 
+       geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+       facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+       labs(title = "Local Adaptation",
+            y = "Local Adaptation",
+            x = "Generation") +
+ # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
+       guides(color = guide_legend(title = "Migration Rate"), 
+              linetype = guide_legend(title = "QTN Mutation Rate")) +
+       theme_classic() +
+       theme(panel.background = element_blank(), 
+       strip.background = element_rect(colour = "white", fill = "grey92")) +
+  #theme(legend.position = "none") +
+       scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+       scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+       scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
+
+### Panels are mutation rate ### 
+mut.labs <- c("0.00000001" = "Low Mu_Base", "0.0000001" = "High Mu_Base")
+highSigMu.LA.mubase <- ggplot(data = high.alpha, 
+       aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_inv))) + 
+       geom_line(aes(color = mig, linetype = mu_inv), size = 0.75) + 
+       facet_wrap(~ mu_base, labeller = labeller(mu_base = mut.labs)) + 
+       labs(title = "Local Adaptation - high sigma_mu (0.2)",
+            y = "Local Adaptation",
+            x = "Generation") +
+ # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
+       guides(color = guide_legend(title = "Migration Rate"), 
+              linetype = guide_legend(title = "Inv Mutation Rate")) +
+       theme_classic() +
+       theme(panel.background = element_blank(), 
+             strip.background = element_rect(colour = "white", fill = "grey92")) +
+ # theme(legend.position = "none") +
+       scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+       scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+       scale_y_continuous(expand = c(0, 0), limits = c(-0.01, 1))
+
+
+lowSigMu.LA.mubase <- ggplot(data = low.alpha, 
+       aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_inv))) + 
+       geom_line(aes(color = mig, linetype = mu_inv), size = 0.75) + 
+       facet_wrap(~ mu_base, labeller = labeller(mu_base = mut.labs)) + 
+       labs(title = "Local Adaptation - low sigma_mu (0.002)",
+            y = "Local Adaptation",
+            x = "Generation") +
+ # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
+       guides(color = guide_legend(title = "Migration Rate"), 
+              linetype = guide_legend(title = "Inv Mutation Rate")) +
+       theme_classic() +
+       theme(panel.background = element_blank(), 
+             strip.background = element_rect(colour = "white", fill = "grey92")) +
+ # theme(legend.position = "none") +
+       scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+       scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+       scale_y_continuous(expand = c(0, 0), limits = c(-0.01, 1))
 
 ```
 ## test 20200903
@@ -606,8 +647,9 @@ aggregate(befAft~, data = final.invQTNs, FUN = beforeAfter)
 ## Test Data
 
 ```{r}
-read.table()
 
 
+apply(is.na(high.alpha), 2, which)
+which(is.na(high.alpha$localAdaptSA))
 
 ```

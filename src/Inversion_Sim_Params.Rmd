@@ -145,9 +145,9 @@ df.params <- cbind(seeds, params)
 colnames(df.params) <- columns
 rownames(df.params) <- NULL
 testTestParams <- head(df.params)
-df.paramsPreLim <- df.params[7:nrow(df.params),]
+df.paramsPreLim <- df.params
 write.table(testTestParams, "testTestParams.txt", row.names = FALSE)
-write.table(df.paramsPreLim, "testParams.txt", row.names = FALSE)
+write.table(df.params, "testParams.txt", row.names = FALSE)
 
 ```
 
