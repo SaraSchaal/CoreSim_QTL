@@ -11,6 +11,6 @@ Message from Katie:
   
 However, we have always had this as FALSE because we do NOT want SLiM to remove mutations when fixed because they contribute to the phenotypes. I reran all sims
 with TRUE for m2 mutations, but this changed results and after I reread section in manual we should have this as FALSE. I should have reread before running with TRUE.  
-![Local Adaptation with convertToSubstitution=TRUE](../figures/20200911/invLengthAverage.pdf)
+![Local Adaptation convertToSubstitution Summary](../figures/20200911/summary_ConvToSub.pdf)
 
 	
