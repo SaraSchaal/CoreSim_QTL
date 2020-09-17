@@ -15,3 +15,12 @@ with TRUE for m2 mutations, but this changed results and after I reread section 
 
 Going to confirm with Katie that this all checks out.
 	
+#### KEL notes
+
+If the (m3) inversion dynamics depend on whether m2 mutations are kept in the sim when they are fixed, this is still a bug we need to run by Ben.
+
+covertToSubstitution for m2 QTNs
+* when it is FALSE this means we keep the QTNs in the genome
+* when it is TRUE this means that when QTNs get fixed, they are "removed" from the sim and no longer contribute to the phenotype
+
+We want to keep this as FALSE for m2 mutations, because they contribute to the absolute value of the mean phenotype when they are fixed.
