@@ -1,0 +1,6 @@
+20200912 - Simulation Questions
+
+What is the logic that high mutation rate but low migration rate would have the highest run times? Is that because the QTNs don't get lost due to migration? 
+
+match score value, mismatch score, and gap opening penalty.
+

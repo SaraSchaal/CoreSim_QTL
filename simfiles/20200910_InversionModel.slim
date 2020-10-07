@@ -16,7 +16,7 @@ initialize(){
 		defineConstant("C_LENGTHS", rep(1e5, C_NUM));	// lengths for each chromosome
 		defineConstant("MU_base", 1e-6);						// base mutation rate overall
 		defineConstant("MU", MU_base * 0.1);	// 0.02			// mut rate for QTNs specifically
-		defineConstant("MU_INV", 0);		// 2e-4				// inversion generation (ind^-1) (gen^-1)
+		defineConstant("MU_INV", 1e-3);		// 2e-4				// inversion generation (ind^-1) (gen^-1)
 		defineConstant("R", 1e-6);								// recombination rate
 		defineConstant("N", 1000);								// subpop size
 		defineConstant("MIG1", 0.1);							// migration rate into p1
