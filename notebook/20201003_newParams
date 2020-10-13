@@ -1,13 +1,13 @@
-## Updated list of parameters
-  mu_base <- c(1e-07, 1e-06, 1e-05)
+## Updated list of parameters - Parameter Set 1
+  mu_base <- c(1e-07, 1e-06)
   mu_inv <- c(0, 1e-03, 1e-06) 
-  sigmaK <- c(0.9, 1.5, 5) 
+  sigmaK <- c(0.75, 1.5, 3) 
   alpha <- c(0.002, 0.2) #sd of effect sizes of QTN mutations
   reps <- c(1:5)
   N <- 1000 # some subset we will do 10,000 interesting cases
-  envar <- c(0,0.15) # should we run this? if heritability was less does that impact do a subset! 
-  mig1 <- c(0.001, 0.01, 0.1, 0.25, 0.5)
-  mig2 <- c(0.001, 0.01, 0.1, 0.25, 0.5)
+  envar <- c(0,0.1)  
+  mig1 <- c(0.001, 0.01, 0.1, 0.25, 0.4)
+  mig2 <- c(0.001, 0.01, 0.1, 0.25, 0.4)
   chrom_num <- 21
   recom <- 1e-6
   burnin <- 10000
@@ -16,8 +16,11 @@
   dom <- 2 # 2 is false and 1 is true in the code there is an issue with the letter F converting to FALSE
 
 # run a subset with:
-dom <- 1
-N <- 10,000
-mu_inv <- 1e-5
+1) dom <- 1
+2) N <- 10,000
+3) have qtn adaptation occur but no inversions for burnin (potentially?!?) have a conversation once we have all the results
+4) 200,000 generations on a subset afterwards (definitely do)
+5) mu_base <– 1e-05
+6) add underdominance as a mild fitness cost, a 0.1% reduction, on heterokaryotypic individuals (Feder 2014)
 
-Outstanding question: number of generations total currently 20,000 maybe make it 200,000
+# Outstanding question: 
