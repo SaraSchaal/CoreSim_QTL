@@ -22,5 +22,6 @@
 4) 200,000 generations on a subset afterwards (definitely do)
 5) mu_base <– 1e-05
 6) add underdominance as a mild fitness cost, a 0.1% reduction, on heterokaryotypic individuals (Feder 2014)
+7) run simulations with inversions happening on the neutral chromosome as well.
 
 # Outstanding question: 

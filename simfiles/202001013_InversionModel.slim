@@ -1,5 +1,5 @@
 initialize(){
-	setSeed(1606681713427);
+//	setSeed(1606681713427);
 
 	
 	//////////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@ initialize(){
 		defineConstant("MIG2", 0.1);							// migration rate into p2
 		defineConstant("THETA", c(1.0, -1.0));				// optima after burn in P1
 		defineConstant("SIGMA_K", 0.9);						// QTN selection strength
-		defineConstant("BURNIN", 200);						// number of burning generations 
+		defineConstant("BURNIN", 10000);						// number of burning generations 
 		defineConstant("ENVAR", 0.01);							// environmental variance 
 		defineConstant("ALPHA", 0.002);							// SD of the normal distribution of effect sizes
 		defineConstant("DOM", 2);								// Turn on/off dominance
@@ -53,8 +53,7 @@ initialize(){
 
 	} // end defining constants
 	
-	initializeMutationRate(MU);
-	
+	initializeMutationRate(MU);	
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeMutationType("m2", 0.5, "n", 0.0, ALPHA);	// QTNs, can alter ALPHA for different SD of the normal distribution
 	m2.convertToSubstitution = F;
@@ -317,17 +316,14 @@ late(){
 			
 									
 		  // X X Summary Stats of any QTNs within Inversion
-			QTNs = unique(mut_genomes.mutationsOfType(m2));				 		// find all m2 mutations within those genomes with inversion
-			QTNsInInv = QTNs[QTNs.position >= pos & QTNs.position <= end]; // all those m2 mutations only inside the inversion							
-				print(length(QTNs));
-				print(length(QTNsInInv));
-				print(QTNsInInv.position);
+			QTNs = unique(mut_genomes.mutationsOfType(m2), preserveOrder = F); // find all m2 mutations within those genomes with inversion
+			QTNsInInv = QTNs[QTNs.position >= pos & QTNs.position <= end];		 // all those m2 mutations only inside the inversion	
 				
 			if(size(QTNsInInv) > 0){					
 		
-				 /// get summary info of all QTNs in inversion
+				/// get summary info of all QTNs in inversion
 				QTNpositions = QTNsInInv.position;									// position of qtns 
-				NumQTNs = size(unique(QTNsInInv.id));						// number of unique qtns in inversion
+				NumQTNs = size(unique(QTNsInInv.id));								// number of unique qtns in inversion
 				freq_P1_InvQTNs = sim.mutationFrequencies(p1, QTNsInInv); 	// frequency of inversion QTN pop 1
 				freq_P2_InvQTNs = sim.mutationFrequencies(p2, QTNsInInv);	// frequency of inversion QTN pop 2
 				freq_InvQTNs = sim.mutationFrequencies(NULL, QTNsInInv);		// frequency of inversion QTN overall
@@ -345,15 +341,15 @@ late(){
 	  		  	for(i in 0:(size(QTNsInInv)-1)){
 				  	InvQTN_wtype_freq = 1 - freq_InvQTNs[i];							// get wildtype freq
 					MAF = min(freq_InvQTNs[i], InvQTN_wtype_freq);					// get minior allele freq
-						
+				
 					if(MAF > 0.05){
 						// expected Heterozygosity
-						expH_p1 = freq_P1_InvQTNs * (1 - freq_P1_InvQTNs) * 2;
-						expH_p2 = freq_P2_InvQTNs  * (1 - freq_P2_InvQTNs) * 2;
+						expH_p1 = freq_P1_InvQTNs[i] * (1 - freq_P1_InvQTNs[i]) * 2;
+						expH_p2 = freq_P2_InvQTNs[i]  * (1 - freq_P2_InvQTNs[i]) * 2;
 						// HS
 						HS = (expH_p1 * N + expH_p2 * N)/(N * 2);
 						// HT calculate overall heterozygosity
-						pBar = (freq_P1_InvQTNs * N + freq_P2_InvQTNs  * N)/(N * 2);
+						pBar = (freq_P1_InvQTNs[i] * N + freq_P2_InvQTNs[i]  * N)/(N * 2);
 						// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
 						qBar = 1 - pBar;
 						HT = 2 * pBar * qBar;
@@ -476,8 +472,6 @@ late(){
 		} // close subpop for loop
 		
 		// home vs away local adaptation 
-		//locAdaptHAP1 = mean(p1.cachedFitness(NULL)) - mean(opPopFitnessP1); // pop1 in pop1 vs pop1 in pop2
-		//locAdaptHAP2 = mean(p2.cachedFitness(NULL)) - mean(opPopFitnessP2); // pop2 in pop2 vs pop2 in pop 1
 		locAdaptHAP1 = mean(homPopFitnessP1) - mean(opPopFitnessP1);
 		locAdaptHAP2 = mean(homPopFitnessP2) - mean(opPopFitnessP2);
 		
@@ -486,8 +480,6 @@ late(){
 			mean(c(opPopFitnessP1, opPopFitnessP2));
 		
 		// local vs foreign local adaptation
-		//locAdaptLFP1 = mean(p1.cachedFitness(NULL)) - mean(opPopFitnessP2); // pop1 in pop1 vs pop2 in pop1
-		//locAdaptLFP2 = mean(p2.cachedFitness(NULL)) - mean(opPopFitnessP1); // pop2 in pop2 vs pop1 in pop2
 		locAdaptLFP1 = mean(homPopFitnessP1) - mean(opPopFitnessP2);
 		locAdaptLFP2 = mean(homPopFitnessP2) - mean(opPopFitnessP1);
 		// FSTBar, upCI, lowCI, inv_FSTBar, inv_upCI, inv_lowCI, neut_FSTBar, neut_upCI, neut_lowCI,
@@ -501,7 +493,7 @@ late(){
 	} // close if statement for outputting every X generations
 } // close late event
 
-200 late(){
+50000 late(){
 	
 		
 	//////////////////////////////////////////////////
@@ -529,7 +521,6 @@ late(){
 		}
 		// output phenotypes
 		output_ind = output_ind + ind.index + " " + ind.subpopulation.id + " " + ind.tagF + " " + fitness + "\n";
-		
 	}
 	
 	// write Individual. Phenotype file to working directory 
@@ -542,7 +533,7 @@ late(){
 	//////////
 	g = sim.subpopulations.genomes;
 	// unique mutations sorted by position
-	m = unique(c(g.mutationsOfType(m2)));
+	m = unique(c(g.mutationsOfType(m2)), preserveOrder = F);
 		
 	// filter out minor allele frequencies < 0.05 before calculating FST
 	filteredQTNs = NULL;
@@ -602,6 +593,6 @@ late(){
 	
 }
 
-201 late() {
+50001 late() {
 	sim.outputFixedMutations();
 }
