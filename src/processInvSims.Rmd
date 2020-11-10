@@ -267,7 +267,7 @@ lowSigMu.LAinv <- ggplot(data = low.alpha,
        strip.background = element_rect(colour = "white", fill = "grey92")) +
   #theme(legend.position = "none") +
        scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
-       scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+       scale_x_continuous(expand = c(0, 0), limits = c(10000, NA)) + 
        scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
 
 ### Panels are mutation rate ### 
@@ -494,12 +494,12 @@ grid.arrange(highSigMu.lowMig.phenoP1ZoomSD, highSigMuMig.phenoP1ZoomSD, nrow =1
 ```
 ## Inversion length data manipulation
 ```{r}
-
 df.invTimeFreq <- subset(df.invTime, subset = df.invTime$freq > 0.05)
 df.invData$inv_id <- as.numeric(df.invData$inv_id)
 
 df.invAllData <- merge( df.invData, df.invTimeFreq, by.x = c("seed", "inv_id"), by.y = c("seed", "inv_id"), all.y = TRUE)
 colnames(df.invAllData)[8] <- "sim_gen"
+df.invAllData$inv_age <- df.invAllData$sim_gen - df.invAllData$inv_originGen
 
 df.invLength.average <- NULL
 inv.sims <- subset(unique.params, subset = unique.params$mu_inv > 0)
@@ -526,12 +526,14 @@ for(i in 1:nrow(inv.sims)){
    
   ## average columns of interest
    # df.averageSubset <- df.average[,vect.aggCols]
-    new.length.average <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = mean)
-    new.length.SD <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = sd)
-    new.num.inv <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = length)
-    new.numQTNs.average <- aggregate(num_qtns~sim_gen, data = df.length.average, FUN = mean)
-    df.average.inv <- cbind(new.length.average, new.length.SD[,2],
-                            new.numQTNs.average[,2], new.num.inv[,2])
+    length.average <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = mean)
+    length.SD <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = sd)
+    num.inv <- aggregate(inv_length~sim_gen, data = df.length.average, FUN = length)
+    numQTNs.average <- aggregate(num_qtns~sim_gen, data = df.length.average, FUN = mean)
+    av.inv.age <- aggregate(inv_age~sim_gen, data = df.length.average, FUN = mean)
+    sd.inv.age <- aggregate(inv_age~sim_gen, data = df.length.average, FUN = sd)
+    df.average.inv <- cbind(length.average, length.SD[,2], numQTNs.average[,2], 
+                            num.inv[,2], av.inv.age[,2], sd.inv.age[,2])
     df.simParams <- data.frame(mu_inv = rep(inv.sims$mu_inv[i], nrow(df.average.inv)), 
                                mig = rep(inv.sims$mig1[i], nrow(df.average.inv)),
                                alpha = rep(inv.sims$alpha[i], nrow(df.average.inv)), 
@@ -559,14 +561,16 @@ for(i in 1:nrow(inv.sims)){
     colnames(df.Seedcolumns) <- vect.colNames
     
     # finally bind together all the data in the final dataframe
+   thing <- cbind(df.average.inv, df.simParams, df.Seedcolumns)
+   
     df.invLength.average <- rbind(df.invLength.average, cbind(df.average.inv, df.simParams, df.Seedcolumns))
     
 } # close average for loop
 ###################################################################
-colnames(df.invLength.average)[3] <- "num_qtns"
+colnames(df.invLength.average)[3:7] <- c("SD_length", "ave_num_qtns", "num_inv", "ave_inv_age", "SD_inv_age")
 
 # convert every column of parameters data to factor 
-for(i in 4:ncol(df.invLength.average)){
+for(i in 8:ncol(df.invLength.average)){
   df.invLength.average[,i] <- as.factor(as.character(df.invLength.average[,i]))
 }
 ```
@@ -590,6 +594,24 @@ ggplot(data = df.invLength.average,
   scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
   scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invAllData$inv_length)))
+
+## Standard Deviation of the Inversion Length
+ggplot(data = df.invLength.average, 
+       aes(x = sim_gen, y = , group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    facet_wrap(~ alpha) + 
+    labs(title = "Average Inversion Length",
+           y = "Average Inversion Length",
+           x = "Generation") +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(),
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invAllData$inv_length)))
+
 
 ## Number of QTNs in inversions
 ggplot(data = df.invLength.average, 
@@ -648,8 +670,63 @@ aggregate(befAft~, data = final.invQTNs, FUN = beforeAfter)
 
 ```{r}
 
-
 apply(is.na(high.alpha), 2, which)
 which(is.na(high.alpha$localAdaptSA))
+
+df.convertSub <- read.table("results/Inversion/1620515429527_outputPopDynam.txt", header =TRUE)
+
+ggplot(data = df.convertSub, aes(x = sim_gen, y = localAdaptSA)) + 
+  geom_line(color = "cornflowerblue", size = 0.75, linetype = "dashed") + 
+  scale_x_continuous(expand = c(0, 0), limits = c(10000, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(-0.01, 1)) +
+   theme_classic() +
+       theme(panel.background = element_blank(), 
+             strip.background = element_rect(colour = "white", fill = "grey92")) +
+ labs(title = "Local Adaptation",
+           y = "Local Adaptation",
+           x = "Generation") 
+
+
+```
+
+### Plot age of inversion over time
+```{r}
+#df.invAllData$inv_age <- df.invAllData$sim_gen - df.invAllData$inv_originGen
+
+ggplot(data = df.invLength.average, 
+       aes(x = sim_gen, y = ave_inv_age, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+   facet_wrap(~ alpha) + 
+    labs(title = "Average Inversions Age Through Time",
+           y = "Average Inversion Age",
+           x = "Generation") +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invLength.average$ave_inv_age)))
+### SD
+df.invLength.average$upSDinvAge <- df.invLength.average$ave_inv_age + df.invLength.average$SD_inv_age
+df.invLength.average$lowSDinvAge <-  df.invLength.average$ave_inv_age - df.invLength.average$SD_inv_age
+
+ggplot(data = df.invLength.average, 
+       aes(x = sim_gen, y = SD_inv_age, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+   facet_wrap(~ alpha) + 
+    labs(title = "Average Inversions Age Through Time",
+           y = "Average Inversion Age",
+           x = "Generation") +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invLength.average$SD_inv_age)))
+
 
 ```

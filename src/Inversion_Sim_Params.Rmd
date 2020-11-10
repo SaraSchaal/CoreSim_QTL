@@ -38,8 +38,8 @@ output: html_document
   columns <- c("seed", "muBase", "muInv", "sigmaK", "alpha", "rep", "n", "enVar", "mig1", "mig2", "theta1", "theta2", "burnin", "chromNum", "r", "dom")
 
 ## Time per sim varies based on parameters
-  min <- num_sims*15
-  hours <- min/60
+ # min <- (num_sims/72)*
+  hours <- (num_sims/72)*3
   days <- hours/24
   
   params <- matrix(nrow = 0, ncol = num_param)
