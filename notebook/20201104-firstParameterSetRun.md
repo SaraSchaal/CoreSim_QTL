@@ -18,5 +18,5 @@ Ran 2160 simulations with the following parameter combinations:
   	theta2 <- -1
   	dom <- 2 	#2 is false so no dominance 
 
-Each simulation runs between 1.5-4 hrs 
-
+Each simulation runs between ~1.5-4 hrs 
+Peak memory ~1.4 GB
