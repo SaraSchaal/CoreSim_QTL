@@ -1,0 +1,412 @@
+---
+title: "processInversionSims"
+author: "Sara Michele Schaal"
+date: "6/17/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+```
+
+```{r}
+options(scipen = 999)
+### Read in datafiles ###
+#df.params <- read.table("fullINVparamslist.txt", header = TRUE)
+#df.params <- read.table("src/testINVparamslist.txt")
+#df.params <- data.frame(seed = c(1751625359138, 1751583067058, 1751620201657, 1751583946190, 1751616892960,
+                              #   1751566183207, 1751570485992, 1751568804886, 1751626452845, 2065972841416,
+                              #   1751582301417, 1751629252645, 1751629716441, 1751572690982, 1751628536499, 
+                              #   1751630159938, 1614479103543, 1614479625159, 1614479993467))
+
+df.params <- read.table("invSimParams.txt", header = TRUE)
+```
+
+
+```{r}
+folder <- "../results/"
+
+## Inversion Through Time
+df.invTime <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invTimeNewFile <- read.table(paste(folder, seed, "_outputInvTime.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(invTimeNewFile) > 0){
+    invTimeNewFile$seed <- seed
+    df.invTime <-  rbind(df.invTime, invTimeNewFile)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.invTime, "FullSet_invTime.txt", row.names = FALSE)
+
+## Inversion Summary Data
+df.invData <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invData <- read.table(paste(folder, seed, "_outputInvSumInfo.txt", sep=""), header = TRUE,
+                        stringsAsFactors = FALSE)
+  if(nrow(invData) > 0){
+    invData$seed <- seed
+    df.invData <- rbind(df.invData, invData)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.invData, "FullSet_invData.txt", row.names = FALSE)
+
+## QTN Inversion Through Time
+df.invQTNTime <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invQTNTimeNewFile <- read.table(paste(folder, seed, "_outputInvQtn.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(invQTNTimeNewFile) > 0){
+    invQTNTimeNewFile$seed <- seed
+    df.invQTNTime <-  rbind(df.invQTNTime, invQTNTimeNewFile)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.invQTNTime, "FullSet_invQTNTime.txt", row.names = FALSE)
+
+## QTN Inversion Summary Data
+df.invQTNData <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invQTNDataNewFile <- read.table(paste(folder, seed, "_outputInvQtnSumInfo.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(invQTNDataNewFile) > 0){
+    invQTNDataNewFile$seed <- seed
+    df.invQTNData <-  rbind(df.invQTNData, invQTNDataNewFile)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.invQTNData, "FullSet_invQTNSumInfo.txt", row.names = FALSE)
+
+## Pop Dynamics
+df.popDyn <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  popDynNewFile <- read.table(paste(folder, seed, "_outputPopDynam.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(popDynNewFile) > 0){
+   popDynNewFile$seed <- seed
+   df.popDyn <-  rbind(df.popDyn, popDynNewFile)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.popDyn, "FullSet_popDyn.txt", row.names = FALSE)
+
+#SimStats
+df.simStats <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  simStatsNewFile <- read.table(paste(folder, seed, "_outputSimStats.txt", sep=""), stringsAsFactors = FALSE)
+  simStatsNewFile$seed <- seed
+  df.simStats <-  rbind(df.simStats, simStatsNewFile)
+  count <- count + 1
+  print(count)
+}
+df.simStats <- df.simStats[,2:ncol(df.simStats)]
+colnames(df.simStats) <- c("mig1", "mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar", "Seed")
+write.table(df.simStats, "FullSet_simStats.txt", row.names = FALSE)
+
+#Mutations
+df.finalMuts <- NULL
+count <- 0
+no.Data <- NULL
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  if(file.exists(paste(folder, seed, "_outputMutations.txt", sep=""))){
+    finalMutsNewFile <- read.table(paste(folder, seed, "_outputMutations.txt", sep=""), stringsAsFactors = FALSE, header = TRUE)
+  finalMutsNewFile$seed <- seed
+  df.finalMuts <-  rbind(df.finalMuts, finalMutsNewFile)
+  } else {
+    no.Data <- c(no.Data, seed)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(no.Data,"seedsToRerun.txt", row.names = FALSE)
+colnames(df.finalMuts)[2] <- "mut_id" 
+file.exists(paste(folder, seed, "_outputMutations.txt", sep=""))
+write.table(df.finalMuts, "FullSet_finalMuts.txt", row.names = FALSE)
+
+```
+
+## Combine dataframes
+
+```{r}
+df.mutInfo <- merge(df.finalMuts, df.invQTNData, all.x = TRUE, by = c("seed", "mut_id"))
+df.mutInfo <- merge(df.mutInfo, df.params, all.x = TRUE, by = c("seed"))
+df.invMutInfo <- subset(df.mutInfo, subset = muInv > 0)
+df.invMutInfo$inOut <- ifelse(is.na(df.invMutInfo$inv_id), "out", "in")
+
+mig.labels <- c("0.001" = "mig = 0.001", "0.01" = "mig = 0.01", "0.1" = "mig = 0.1", 
+                  "0.25" = "mig = 0.25", "0.4" = "mig = 0.4", "0.5" = "mig = 0.5")
+levels(df.invMutInfo$muBase) <- c("1e-7", "1e-6")
+
+ for(i in 18:ncol(df.invMutInfo)){
+    df.invMutInfo[,i] <- as.factor(as.character(df.invMutInfo[,i]))
+  }  
+  
+ggplot(data = df.invMutInfo[df.invMutInfo$enVar == 0 & df.invMutInfo$muInv == 0.001 & df.invMutInfo$alpha == 0.002 & df.invMutInfo$muBase == "1e-6",], 
+       aes(x = sigmaK, y = adapPhenoDiv, fill = inOut)) + 
+  geom_boxplot(outlier.colour="black", outlier.shape=16,
+             outlier.size=1, notch=FALSE) +
+  facet_wrap(~mig1, labeller = labeller(mig1 = mig.labels), ncol = 6) +
+ scale_y_continuous(expand = c(0, 0), limits = c(-0.008, 0.008))
+
+```
+
+## Dataframe for Katie
+
+```{r}
+# merge inversion through time data with parameters
+df.invTimeParam <- merge(df.invTime, df.params, all.x = TRUE, by = c("seed"))
+
+# subset inversion qtn file for just the seeds of interest
+df.invQTNTimeSub <- subset(df.invQTNTime, subset = seed == c(3383645, 3383657, 3383669, 3383681, 3383693))
+colnames(df.invQTNData)[3] <- "qtn_id"
+
+# merge inversion QTN data with parameters
+movie.InvQTNSub.Data <- merge(df.invQTNTimeSub, df.params, all.x = TRUE, by = c("seed"))
+head(movie.InvQTNSub.Data)
+
+df.invQTNData[df.invQTNData$sim_gen==200 & df.invQTNData$qtn_id == 9084,]
+movie.InvQTN.Data <- merge(df.invQTNData, movie.InvQTNSub.Data, all.y = TRUE, by = c("seed", "qtn_id"))
+movie.Inv.Data <- subset(df.invTimeParam, subset = muBase == 0.0000001 
+                          & muInv == 0.001 & sigmaK == 0.75 & alpha == 0.002 
+                          & enVar == 0 & mig1 == 0.25)
+movie.Inv.Data <- merge(movie.Inv.Data, all.y = TRUE, by = c("seed", "inv_id"))
+
+
+write.table(movie.Inv.Data, "movieInvData.txt", row.names = FALSE)
+write.table(movie.InvQTN.Data, "movieInvQTNData.txt", row.names = FALSE)
+
+```
+## Unique Parameters - (used for averaging)
+Subset original parameters dataframe to identify all unique parameter combinations. Then using those parameter values identify the simulation seeds of replicate simulations for each set of parameters.🤯
+```{r}
+
+# find all unique parameter combinations 
+unique.params <- unique(df.simStats[c("mig1","mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar")])
+reps <- 5
+# make columns for replicate seeds
+for(i in 1:reps){
+  seedColName <- paste("Seed", i, sep = "")
+  unique.params[,seedColName] <- NA
+}
+
+count <- 0
+for(i in 1:nrow(unique.params)){
+  for(j in 1:nrow(df.simStats)){
+    if(apply(unique.params[i,1:12], 1, paste, collapse = " ") == 
+       apply(df.simStats[j,c("mig1","mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", 
+                             "sigmaK", "burnin", "dom", "enVar")], 1, paste, collapse = " ")){
+      for(k in 1:reps){
+        seedCol <- paste("Seed", k, sep="")
+        if(is.na(unique.params[i, seedCol])){
+          unique.params[i, seedCol] <- df.simStats$Seed[j]
+          break
+        } 
+      }
+    }
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(unique.params, "FullSet_uniqueParams", row.names = FALSE)
+
+```
+
+### Average Replicate Simulations - Pop dynamics file
+Create a dataframe that has the average of all the replicate parameter values. Then bind the corresponding parameters to the dataframe for ease of plotting and analysis later. 
+```{r}
+##################################
+### convert all "NAN"s to NAs  ### REMOVE WITH NEW SIMs CHANGING TO ZEROS
+#########################################################################
+
+for(i in 1:nrow(df.popDyn)){
+  for(j in 1:ncol(df.popDyn)){
+    if(df.popDyn[i,j] == "NAN"){
+      df.popDyn[i,j] <- 0
+    }
+  }
+}
+# convert every column to numeric ? might still need
+cols <- c(1:ncol(df.popDyn))
+df.popDyn[, cols] <- apply(df.popDyn[,cols], 2, as.numeric)
+###################################################################
+
+
+########################
+### average for loop ###
+###################################################################
+
+df.LA.average <- NULL
+df.LA.stderr <- NULL
+df.LA.all <- NULL
+count <- 0
+# step through each line of the unique parameters dataframe
+for(i in 1:nrow(unique.params)){
+    ptm <- proc.time()
+    # create empty variable for putting each data set that should be average
+    df.average <- NULL
+    av.seeds <- NULL
+    # step through the population dynamics dataframe
+    for(j in 1:nrow(df.popDyn)){
+      # step through the different seeds that have the unique parameters
+      for(k in 1:reps){
+        seedCol <- paste("Seed", k, sep="")
+        # if that seed is not an NA then do the next step
+        if(!is.na(unique.params[i, seedCol])){
+          # if the seed from unique parameters matches the seed of the pop dynam dataset store it
+          if(df.popDyn$seed[j] == unique.params[i, seedCol]){
+            # bind data from same parameter combination together for averaging later
+            df.average <- rbind(df.average, df.popDyn[j,])
+            # store unique seeds to this dataset
+            av.seeds <- unique(c(av.seeds, unique.params[i, seedCol]))
+          }
+        }
+      }
+    }
+    
+    
+    ## average columns of interest
+    # df.averageSubset <- df.average[,vect.aggCols]
+    new.average <- aggregate(.~sim_gen, data = df.average, FUN = mean)
+    SE <- function(x){
+      sd(x)/sqrt(length(x))
+    }
+    new.se <- aggregate(.~sim_gen, data = df.average, FUN = SE)
+    df.simParams <- data.frame(mu_inv = rep(unique.params$mu_inv[i], nrow(new.average)), 
+                               mig = rep(unique.params$mig1[i], nrow(new.average)),
+                               alpha = rep(unique.params$alpha[i], nrow(new.average)), 
+                               sigmaK = rep(unique.params$sigmaK[i], nrow(new.average)), 
+                               enVar = rep(unique.params$enVar[i], nrow(new.average)), 
+                               mu_base = rep(unique.params$mu_base[i], nrow(new.average)))
+    
+    df.simParamsAll <- data.frame(mu_inv = rep(unique.params$mu_inv[i], nrow(df.average)), 
+                               mig = rep(unique.params$mig1[i], nrow(df.average)),
+                               alpha = rep(unique.params$alpha[i], nrow(df.average)), 
+                               sigmaK = rep(unique.params$sigmaK[i], nrow(df.average)), 
+                               enVar = rep(unique.params$enVar[i], nrow(df.average)), 
+                               mu_base = rep(unique.params$mu_base[i], nrow(df.average)))
+   
+    # create seed columns so we can keep track of relevant seed names
+    df.Seedcolumns <- NULL
+    df.SeedcolumnsAll <- NULL
+    vect.colNames <- NULL
+    for(m in 1:reps){
+      seedCol <- paste("Seed", m, sep = "")
+      if(!is.na(av.seeds[m])){
+        df.Seedcolumns <- cbind(df.Seedcolumns, rep(av.seeds[m], nrow(new.average)))
+        df.SeedcolumnsAll <- cbind(df.SeedcolumnsAll, rep(av.seeds[m], nrow(df.average)))
+      } else {
+        df.Seedcolumns <- cbind(df.Seedcolumns, rep(NA, nrow(new.average)))
+        df.SeedcolumnsAll <- cbind(df.SeedcolumnsAll, rep(NA, nrow(df.average)))
+      }
+      vect.colNames <- c(vect.colNames, seedCol)
+    }
+    colnames(df.Seedcolumns) <- vect.colNames
+    colnames(df.SeedcolumnsAll) <- vect.colNames
+    
+    # finally bind together all the data in the final dataframe
+    df.LA.average <- rbind(df.LA.average, cbind(new.average, df.simParams, df.Seedcolumns))
+    df.LA.stderr <- rbind(df.LA.stderr, cbind(new.se, df.simParams, df.Seedcolumns))
+    df.LA.all <- rbind(df.LA.all, cbind(df.average, df.simParamsAll, df.SeedcolumnsAll))
+    count <- count + 1
+    print(count)
+    print(proc.time() - ptm)
+} # close average for loop
+###################################################################
+df.LA.average <- subset(df.LA.average, select = -seed)
+df.LA.stderr <- subset(df.LA.stderr, select = -seed)
+df.LA.all <- subset(df.LA.all, select = -seed)
+
+#df.LA.average <- read.table("FullSet_LAaverage.txt", header = TRUE)
+write.table(df.LA.average, "FullSet_LAaverage.txt", row.names = FALSE)
+write.table(df.LA.stderr, "FullSet_LAstderr.txt", row.names = FALSE)
+write.table(df.LA.all, "FullSet_LAallData.txt", row.names = FALSE)
+
+df.LA.average <- read.table(paste0(folder, "FullSet_LAaverage.txt"), header = TRUE, stringsAsFactors = FALSE)
+
+# df.LA.average[,df.LA.average] <- lapply(df.LA.average[,LA.cols], function(x) as.factor(as.character(x)))
+# convert every column of parameters data to factor 
+
+for(i in 16:ncol(df.LA.average)){
+  df.LA.average[,i] <- as.factor(as.character(df.LA.average[,i]))
+}
+
+
+```
+
+### Plot Local Adaptation 
+```{r}
+library(ggplot2)
+inv.labs <- c("0" = "No Inversions", "1e-06" = "Moderate Inversion Mu", "0.001" = "High Inversion Mu")
+df.LA.average$mu_inv <- factor(df.LA.average$mu_inv, levels = c("0","1e-06", "0.001"))
+df.LA.average$mu_base <- factor(df.LA.average$mu_base, levels = c("high", "low"))
+high.alpha <- subset(df.LA.average, subset = alpha == 0.2 & enVar == 0 )
+low.alpha <- subset(df.LA.average, subset = alpha == 0.002 & enVar == 0 )
+
+### Panels are inversion vs. no inversion ###
+highSigMu.LAinv <- ggplot(data = high.alpha, 
+       aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_base))) + 
+       geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+       facet_wrap(~ sigmaK + mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+       labs(title = "Local Adaptation - high sigma_mu (0.2)",
+            y = "Local Adaptation",
+            x = "Generation") +
+ #scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
+       guides(color = guide_legend(title = "Migration Rate"),
+              linetype = guide_legend(title = "QTN Mutation Rate")) +
+       theme_classic() +
+       theme(panel.background = element_blank(), 
+             strip.background = element_rect(colour = "white", fill = "grey92")) +
+#  theme(legend.position = "none") +
+       scale_linetype_discrete(name = "QTN Mutation Rate", labels= c("1e-6", "1e-7")) +
+       scale_color_manual(values=c("darkgrey","cadetblue1","cadetblue3",
+                                   "cornflowerblue", "navy","black")) +
+       scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+       scale_y_continuous(expand = c(0, 0), limits = c(-0.1, 1))
+
+lowSigMu.LAinv <- ggplot(data = low.alpha, 
+       aes(x = sim_gen, y = localAdaptSA, group = mig)) + 
+       geom_line(aes(color = mig), size = 0.75) + 
+       facet_wrap(~sigmaK + mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+       labs(title = "Local Adaptation - low sigma_mu (0.002)",
+            y = "Local Adaptation",
+            x = "Generation") +
+ # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
+       guides(color = guide_legend(title = "Migration Rate")) +
+             # linetype = guide_legend(title = "QTN Mutation Rate")) +
+       theme_classic() +
+       theme(panel.background = element_blank(), 
+             strip.background = element_rect(colour = "white", fill = "grey92")) +
+#  theme(legend.position = "none") +
+       scale_color_manual(values=c("darkgrey","cadetblue1","cadetblue3", 
+                                   "cornflowerblue", "navy", "black")) +
+       scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+       scale_y_continuous(expand = c(0, 0), limits = c(-0.1, 1))
+
+
+```
+
+```{r}
+library(dplyr)
+
+df.LA.average %>%
+  filter(alpha == 0.002, sim_gen == 50000, mu_inv == 0.001, sigmaK == 0.75, enVar == 0) 
+
+
+
+```

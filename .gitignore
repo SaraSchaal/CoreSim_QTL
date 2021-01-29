@@ -3,4 +3,7 @@
 .RData
 .Ruserdata
 
-/results
+/results/Inversion
+/results/20210104_Movie/noSeed_InversionVCF.vcf
+/results/20210129_Movie/3384725_InversionVCF.vcf
+
