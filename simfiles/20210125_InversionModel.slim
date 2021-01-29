@@ -1,5 +1,5 @@
 initialize(){
-//	setSeed(1606681713427);
+	//setSeed(3384725);
 
 	
 	//////////////////////////////////////////////////////////////////
@@ -20,12 +20,12 @@ initialize(){
 		defineConstant("MU_INV", 1e-3);		// 2e-4				// inversion generation (ind^-1) (gen^-1)
 		defineConstant("R", 1e-6);								// recombination rate
 		defineConstant("N", 1000);								// subpop size
-		defineConstant("MIG1", 0.1);							// migration rate into p1
-		defineConstant("MIG2", 0.1);							// migration rate into p2
+		defineConstant("MIG1", 0.25);							// migration rate into p1
+		defineConstant("MIG2", 0.25);							// migration rate into p2
 		defineConstant("THETA", c(1.0, -1.0));				// optima after burn in P1
-		defineConstant("SIGMA_K", 0.9);						// QTN selection strength
+		defineConstant("SIGMA_K", 0.75);						// QTN selection strength
 		defineConstant("BURNIN", 10000);						// number of burning generations 
-		defineConstant("ENVAR", 0.01);							// environmental variance 
+		defineConstant("ENVAR", 0);							// environmental variance 
 		defineConstant("ALPHA", 0.002);							// SD of the normal distribution of effect sizes
 		defineConstant("DOM", 2);								// Turn on/off dominance
 	
@@ -34,6 +34,7 @@ initialize(){
 		setwd("/scratch/schaal.s/InversionSimulations/results");
 		path = getwd();
 		defineConstant("MYSEED", seed);						// set random number generator can be fixed at earlier argument for reproducibility
+		setSeed(seed);
 		defineConstant("MYPATH", path);						// set the path on your computer for writing files
 		defineConstant("C_NUM", chromNum);							// number of chromosomes
 		defineConstant("C_LENGTHS", rep(1e5, C_NUM));	// lengths for each chromosome
@@ -81,7 +82,8 @@ initialize(){
 	// X X X X X Simulation Stats X X X X X //
 	//////////////////////////////////////////
 	
-	output_sim = paste(c(MYSEED, MIG1, MIG2, N, N, MU, MU_INV, R, ALPHA, SIGMA_K, BURNIN, DOM, ENVAR), sep = " ");
+	output_sim = MYSEED + " " + MIG1 + " " + MIG2 + " " +  N + " " +  N + " " +  MU_base + " " +  MU_INV + " " +  R + " " +  ALPHA + " " + 
+					 SIGMA_K + " " + BURNIN + " " + DOM + " " + ENVAR;
 	
 	writeFile(paste(c(MYPATH, "/", MYSEED, "_outputSimStats.txt"), sep = ""), output_sim);
 
@@ -189,7 +191,6 @@ late() {
 	}
 }
 
-// this recombination callback should cause the inversion to indirectly be under frequency-dependent *recombination* (selection?)
 // there is no DIRECT selection on the inversion
 recombination() {
 
@@ -279,6 +280,23 @@ late(){
 
 late(){
 
+	inds = sim.subpopulations.individuals;
+	genomes = inds.genomes;
+		
+	for(mut in sim.mutationsOfType(m3){
+		if(originGen == sim.generation){
+			pos = mut.position;														// start of inversion
+			len = mut.tag;																// length of inversion
+			end = pos + len - 1;														// end of inversion
+			originGen = mut.originGeneration;									// origin genreation of the inversion mutation
+			mut_genomes = genomes[genomes.containsMutations(mut)];		// genomes with inversion
+			QTNs = unique(mut_genomes.mutationsOfType(m2), preserveOrder = F); // find all m2 mutations within those genomes with inversion
+			QTNsInInv = QTNs[QTNs.position >= pos & QTNs.position <= end];
+			// calculate additive genetic variance for inversion
+			//writeFile() // includes inversion ID, origin dynamics, num of qtns, & 
+		}		
+	}
+
 	//////////////////////////////////////////////////
 	//// Execute the following code every 200 gen ////
 	//////////////////////////////////////////////////
@@ -286,9 +304,8 @@ late(){
 	//////////////////////////////////////////////////
 	
 	if (sim.generation % 200 == 0){
+		//readFile()
 		
-		inds = sim.subpopulations.individuals;
-		genomes = inds.genomes;
 		
 		catn("================================ " + sim.generation);
 		catn("m3 mutations segregating: " + size(sim.mutationsOfType(m3)));
@@ -412,7 +429,7 @@ late(){
 					writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvQtn.txt"), sep = ""), outInvQtn, append = T);
 									
 				  // output QTN summary data if its a new QTN since last output (THIRD OUTPUT FILE IN SPREADSHEET)					
-					if(sim.generation - InvQTNsGen[i] < 200){
+					if((sim.generation - InvQTNsGen[i]) <= 200){
 						outInvQtnSumInfo = sim.generation + " " + mut.id + " " + InvQTNsID[i] + " " + InvQTNsGen[i] + " " + 
 									  		  	 QTNpositions[i] + " " + InvQTNsSelCoeff[i] + " " + InvQTNsDom[i];
 						writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvQtnSumInfo.txt"), sep = ""), outInvQtnSumInfo, append = T);		  		  	    							}					  		  
