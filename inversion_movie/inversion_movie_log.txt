@@ -1,0 +1,37 @@
+## 2021-02-02
+
+* The "no_seed" inversion movie is interesting but is not replicable (the seed was never output)
+
+* The VCF files are too large to deal with, so I subsampled 200 random individuals (which should give us on average ~ 100 per population) and an MAF of 0.01
+
+`vcftools --vcf 3384725_InversionVCF.vcf --max-indv 200 --maf 0.05 --out 3384725_InversionVCF_200ind_MAF05 --recode --recode-INFO-all`
+
+The `--recode --recode-INFO-all` tells it to output a vcf file AND keep all the information.
+
+Sara and I need to discuss the MAF filter - we've talked about 0.01 but are using 0.05 for now
+
+```
+Parameters as interpreted:
+	--vcf 3384725_InversionVCF.vcf
+	--recode-INFO-all
+	--maf 0.05
+	--max-indv 200
+	--out 3384725_InversionVCF_200ind_MAF05
+	--recode
+
+Filtering Individuals Randomly
+After filtering, kept 200 out of 2000 Individuals
+Outputting VCF file...
+After filtering, kept 5978 out of a possible 21454 Sites
+Run Time = 5.00 seconds
+```
+
+There are some slight discrepancies with the mut dataframe and the VCF file after filtering. The same number of mutations are not there, but it might just be sampling error.
+
+The individual IDs in Slim do not match the IDs in the VCF file. I will assume they are in the same order
+
+
+
+
+
+
