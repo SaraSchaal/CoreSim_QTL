@@ -103,7 +103,8 @@
       
 #############################################################################################################
 #### PLOTTING ####
-
+#############################################################################################################
+  
   ## make labels for facet wrapping
     alpha.labels <- c("0.2" = "sigmaMu = 0.2", "0.002" = "sigmaMu = 0.002")
     mig.labels <- c("0.001" = "mig = 0.001", "0.01" = "mig = 0.01", "0.1" = "mig = 0.1", 
@@ -187,7 +188,6 @@
            y = "Average Inversion Age",
            x = "Generation") +
       guides(color = guide_legend(title = "QTN Mutation Rate")) +
-   #          linetype = guide_legend(title = "Sigma Mu (Effect Size)")) +
       theme_classic() +
       theme(panel.background = element_blank(), 
             strip.background = element_rect(colour = "white", fill = "grey92")) +
@@ -262,13 +262,11 @@
             strip.background = element_rect(colour = "white", fill = "grey92")) +
       scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
       scale_y_continuous(expand = c(0, 0), limits = c(0, 300))
+   
+### Inversion QTNs ####
+#######################################   
     
-    
-    
-    
-    
-    
-     inv.numQTNs <-  ggplot(data = df.all.data[df.all.data$enVar == 0 & df.all.data$muInv == 0.001,], 
+inv.numQTNs <-  ggplot(data = df.all.data[df.all.data$enVar == 0 & df.all.data$muInv == 0.001,], 
                           aes(x = sim_gen, y = aveQTNs, group = interaction(muBase, alpha, rep))) + 
       geom_line(aes(color = muBase, linetype = alpha), size = 0.75, alpha = 0.3) + 
       geom_line(data = df.ave.data[df.ave.data$enVar == 0 & df.ave.data$muInv == 0.001,], 

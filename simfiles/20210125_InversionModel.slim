@@ -125,6 +125,10 @@ initialize(){
 	outInvQtnSumInfo_head = "sim_gen " + "inv_id " + "mut_id " + "qtn_gen_origin " + "qtn_pos " + "qtn_selCoef " + "qtn_dom ";
 	writeFile(paste(c(MYPATH, "/", MYSEED, "_outputInvQtnSumInfo.txt"), sep = ""), outInvQtnSumInfo_head);
 	
+	// header for inversion origin dynamics
+	outOriginInv_head = "sim_gen " + "inv_id " + "qtn_id " + "qtnSelCoef " + "qtnDom ";
+	writeFile(paste(c(MYPATH, "/", MYSEED, "_outputOriginInvQtn.txt"), sep = ""), outOriginInv_head);
+	
 } // end population defining
 //
 
@@ -283,17 +287,35 @@ late(){
 	inds = sim.subpopulations.individuals;
 	genomes = inds.genomes;
 		
-	for(mut in sim.mutationsOfType(m3){
-		if(originGen == sim.generation){
-			pos = mut.position;														// start of inversion
-			len = mut.tag;																// length of inversion
+	for(muts in sim.mutationsOfType(m3)){
+		originGen = muts.originGeneration;		
+		if(originGen == sim.generation){	
+			pos = muts.position;														// start of inversion
+			len = muts.tag;																// length of inversion
 			end = pos + len - 1;														// end of inversion
-			originGen = mut.originGeneration;									// origin genreation of the inversion mutation
-			mut_genomes = genomes[genomes.containsMutations(mut)];		// genomes with inversion
+			mut_genomes = genomes[genomes.containsMutations(muts)];		// genomes with inversion
 			QTNs = unique(mut_genomes.mutationsOfType(m2), preserveOrder = F); // find all m2 mutations within those genomes with inversion
-			QTNsInInv = QTNs[QTNs.position >= pos & QTNs.position <= end];
-			// calculate additive genetic variance for inversion
-			//writeFile() // includes inversion ID, origin dynamics, num of qtns, & 
+			QTNsInInvOrig = QTNs[QTNs.position >= pos & QTNs.position <= end];
+			InvQTNsID = QTNsInInvOrig.id;	
+			InvQTNsSel = QTNsInInvOrig.selectionCoeff;
+			InvQTNdom = QTNsInInvOrig.getValue("dom");
+					
+			if(size(QTNsInInvOrig) > 0){
+				// if origin dynamic is capturing QTNs at the time of mutation than for each
+				// QTN in the inversion this outputs a new line in the origin dynamics file
+				// and records its selection coefficient and dominance values 
+				for(i in 0:(size(QTNsInInv)-1)){
+					outOriginInvQtn = sim.generation + " " + muts.id + " " + InvQTNsID[i] + " " + InvQTNsSel[i] + " " + InvQTNdom[i];
+					writeFile(paste(c(MYPATH, "/", MYSEED, "_outputOriginInvQtn.txt"), sep = ""), outOriginInvQtn, append = T);			
+				}
+				
+			}	else {
+				// if origin dynamic is neutral at the time of mutation than this ouputs a 
+				// single line for that inversion with 0 values for qtn ID, sel coeff and dom.
+				outOriginInvQtn = sim.generation + " " + muts.id + " " + 0 + " " + 0 + " " + 0;
+				writeFile(paste(c(MYPATH, "/", MYSEED, "_outputOriginInvQtn.txt"), sep = ""), outOriginInvQtn, append = T);
+				
+			}		
 		}		
 	}
 
@@ -304,8 +326,6 @@ late(){
 	//////////////////////////////////////////////////
 	
 	if (sim.generation % 200 == 0){
-		//readFile()
-		
 		
 		catn("================================ " + sim.generation);
 		catn("m3 mutations segregating: " + size(sim.mutationsOfType(m3)));
