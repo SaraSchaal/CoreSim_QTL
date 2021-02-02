@@ -1,5 +1,5 @@
 ---
-title: "Inversion movie"
+title: "Inversion VCF"
 author: "KE Lotterhos"
 date: "1/4/2021"
 output: html_document
@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 
-packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", "fields", "MultivariateRandomForest", "akima", "MLmetrics", "ash", "plotly")
+packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", "fields", "MultivariateRandomForest", "akima", "MLmetrics", "ash", "plotly", "stringr")
 
 for (i in 1:length(packages_needed)){
   if(!(packages_needed[i] %in% installed.packages())){install.packages(packages_needed[i])}
@@ -22,12 +22,12 @@ for (i in 1:length(packages_needed)){
 
 ```{r}
 seed <- 3384725
-path <- paste0("~/Documents/GitHub/CoreSim_QTL/inversion_movie/",seed,"_Movie/")
+path <- paste0("../",seed,"_Movie/")
 
 # Individuals and phenotypes
 indPhen_df<- read.table(paste0(path,seed,"_outputIndPheno.txt"), header=TRUE)
-dim(indCG_df)
-head(indCG_df)
+dim(indPhen_df)
+head(indPhen_df)
 
 # Mutation stats at end of sim
 # for MAF > 0.01?
@@ -44,7 +44,7 @@ head(inv_df)
 
 # VCF file
 vcffile <- list.files(path=path, pattern=paste0(".vcf"))
-vcf <- read.vcfR(vcffile)
+vcf <- read.vcfR(paste0(path,vcffile))
 head(vcf)
 head(vcf@fix, 50)
 dim(vcf@fix)
@@ -89,6 +89,11 @@ hist(a_freq)
 
 # Individuals in VCF
 vcf_ind <- data.frame(vcf_ind=colnames(vcf@gt)[-1])
+
+colnames(G) <- vcf_ind$vcf_ind
+head(G[,1:5])
+dim(G)
+
 dim(vcf_ind)
 head(vcf_ind)
 head(indPhen_df)
@@ -101,267 +106,208 @@ indPhen_df_vcf <- merge(vcf_ind, indPhen_df, by="vcf_ind")
 dim(indPhen_df)
 dim(indPhen_df_vcf)
 
-indPhen_df_vcf <- indPhen_df_vcf[order(indPhen_df_vcf$subpop),]
+indPhen_df_vcf <- indPhen_df_vcf[order(indPhen_df_vcf$subpop, indPhen_df_vcf$id),]
 head(indPhen_df_vcf)
 tail(indPhen_df_vcf)
 ```
 
+
+## Heatmaps based on allele frequencies
 ```{r}
 
+dim(G) # columns are individuals
+
+## Plot raw data
 a<-heatmap(t(G), Rowv = NA,  main="All genotypes",cexCol = 0.3,
-           #Colv = NA,
+           Colv = NA,
            labRow = indPhen_df_vcf$subpop)
 
+
+## Plot population 1 with individuals sorted
+pop1_ids <- which(indPhen_df_vcf$subpop==1)
+pop2_ids <- which(indPhen_df_vcf$subpop==2)
+
+# TO DO: need to change row labels to be chromosome posiiton
+heatmap(t(G[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 1)
+
+heatmap(t(G[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 2)
+
+```
+
+## Heatmaps based on contribution to phenotype
+
+Each allele has an additive effect on the phenotype, which is stored in the `vcf@fix[,"INFO"]` as S. IF the mutation type is 2 (MT=2), the additive effect of an allele on that individual's phenotype is S*(the number of alleles).
+
+For neutral mutations (MT=1) and inversion mutations (MT=3), S=0, so they won't affect the calculation.
+```{r}
+head(vcf@fix[,"INFO"])
+tail(vcf@fix[,"INFO"])
+
+whichinversionmuts <- grep("MT=3", vcf@fix[,"INFO"]) #inversions
+
+vcf@fix[whichinversionmuts,"INFO"]
+
+# This took like an hour to figure out
+a<- as.numeric(substring(str_split(vcf@fix[,"INFO"], pattern =";", simplify=TRUE)[,2], first=3))
+head(a)
+hist(a)
+summary(a)
+length(a)
+dim(G)
+
+G_alpha <- G*a # make sure G and a line up
+max(abs(as.numeric(G_alpha)))
+hist(G_alpha)
+hist(G)
+
+# Sanity check - mutations in rows
+head(G[,1:10])
+
+
+heatmap(t(G_alpha[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 1, 
+        col=two.colors(10, start = "blue", end="red", middle="grey"), 
+        breaks=seq(-0.005, 0.005, length.out = 11))
+
+heatmap(t(G_alpha[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 2, 
+        col=two.colors(100, start = "blue", end="red", middle="grey"), 
+        breaks=seq(-0.005, 0.005, length.out = 101))
+
+```
+
+## Same heatmaps but with different breaks
+
+I don't understand why this works
+```{r}
+
+heatmap(t(G_alpha[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 1, 
+        col=two.colors(100, start = "blue", end="red", middle="grey"), 
+        breaks=seq(-0.55, 0.55, length.out = 101))
+
+heatmap(t(G_alpha[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 2, 
+        col=two.colors(100, start = "blue", end="red", middle="grey"), 
+        breaks=seq(-0.55, 0.55, length.out = 101))
 ```
 
 
+# Just  visualize + or - effect on phenotype
+```{a}
+hist(a)
+a2 <- a
+a2[a>0.001] <- 1
+a2[a<0.001] <- -1
 
+hist(a2)
+G3 <- a2*G
+head(G3)
+hist(G3)
 
+heatmap(t(G3[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 1, 
+        col=two.colors(5, start = "blue", end="red", middle="white"), 
+        breaks=-2.5:2.5)
 
+heatmap(t(G3[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 2, 
+        col=two.colors(5, start = "blue", end="red", middle="white"), 
+        breaks=-2.5:2.5)
 
-
-
-
-
-
-```{r}
-
-df <- read.table("movieData.txt", header=TRUE)
-head(df)
-tail(df)
-df$chrom = floor(df$inv_pos/100000)
-df$chrom_dec = df$inv_pos/100000
-
-hist(df$freq)
-df$inv_mid <- (df$inv_pos + df$inv_end)/2
-max(df$inv_FST)
-
-min(df$inv_originGen)
-max(df$inv_originGen)
-
-all_gen <- unique(df$sim_gen)
-max(df_sub$num_qtns)
 ```
 
-```{r}
-k=0
-length(all_gen)
-for (gen in sort(all_gen)){
-  k=k+1
-  df_sub <- df %>% filter(sim_gen==gen) %>% arrange(inv_pos)
-  df_sub
-  
-   png(paste0("movie/invmovie_", sprintf("%05.f", gen), ".png"), width=10, height = 8,units = "in", res = 600)
-   par(mfrow=c(2,1), mar=c(2,4,0,0), oma=c(3,0,3,0))
-   ### Plot 1 ####
-  plot(y=c(-0.01,0.25),x=c(0, 2.3e+06) , col=rgb(0,0,0,0),
-       ylab="Fst", bty="l", xaxt="n", xlab="",
-         )
-  abline(h=0)
-  if (gen<10000){
-    main = paste0("generation ", gen, " (burnin)")
-  }else{
-    main = paste0("generation ", gen)
-  }
-  mtext(main, outer=TRUE)
-  
-  points(df_sub$inv_mid, df_sub$inv_FST, type="h", lwd=2, col="cornflowerblue")
-  
-  for (i in 1:nrow(df_sub)){
-    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
-     #     y = c(-0.005, -0.005), 
-    #      type = "l", lwd=5, 
-    #      col=rgb(cr(df_sub$freq[i]), max=255)
-    arrows(x0=df_sub$inv_pos[i], x1=df_sub$inv_end[i],
-           y0=-0.005, y1=-0.005, angle=90, length=0.05,
-           code=3, 
-           col=rgb(cr(df_sub$freq[i]), max=255)
-           )
-  }
-  
-  leg_args <- seq(0,1,0.1)
-  legend(2e06, 0.25, legend = leg_args, adj=0,
-         fill=rgb(cr(leg_args),max=255), bty="n", title = "Freq.")
+#  order individuals in the heatmap by their fitness
 
- 
-  ### Plot 2 ####
- plot(y=c(-20,400),x=c(0, 2.3e+06) , col=rgb(0,0,0,0),
-       ylab="Number QTNs within inversion", bty="l", xlab="Inversion Position")
-  abline(h=0)
-  
-  df_sub$age <- (gen - df_sub$inv_originGen)/50000
-   
-  points(df_sub$inv_mid, df_sub$num_qtns, type="h", 
-         lwd=2, col=rgb(cr_age(df_sub$age), max=255))
-   
-  for (i in 1:nrow(df_sub)){
-    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
-     #     y = c(-0.005, -0.005), 
-    #      type = "l", lwd=5, 
-    #      col=rgb(cr(df_sub$freq[i]), max=255)
-    arrows(x0=df_sub$inv_pos[i], x1=df_sub$inv_end[i],
-           y0=-10, y1=-10, angle=90, length=0.05,
-           code=3, 
-           col=rgb(cr(df_sub$freq[i]), max=255)
-           )
-  }
-  
-  leg_args <- seq(0,50000, 10000)
-  legend(2e06, 400, legend = leg_args, adj=0,
-         fill=rgb(cr_age(leg_args/50000),max=255), bty="n", title = "Age")
- 
-   mtext("Inversion Position", side=1, outer=TRUE
-   )
-    dev.off()
-}
+```{r, eval=FALSE}
+plot(indPhen_df_vcf$fitness[pop1_ids], rank(indPhen_df_vcf$fitness[pop1_ids]))
 
-df_sub[df_sub$age>0.5,]
-```
+pop1_order <- order(indPhen_df_vcf$fitness[pop1_ids], decreasing=TRUE)
 
-## Movie 2
-In this movie, each chrom is plotted separately and the inversions are colored by FST, so you can see the size of them relative to the chromosome.
-When I get the QTNs I'll add them to the plot.
-```{r}
-head(df)
+head(indPhen_df_vcf)
+head(G3[, 1:5])
 
-df$inv_FST[df$inv_FST<0] <- 0
+# SANITY CHECK
+head(indPhen_df_vcf[pop1_order,])
+head(G3[, pop1_order[1:5]])
 
-#k=0
-length(all_gen)
-for (gen in sort(all_gen)){
-  #k=k+1
-  df_sub <- df %>% filter(sim_gen==gen) %>% arrange(inv_pos)
-  df_sub
-  
-   png(paste0("movie2/invmovie2_", sprintf("%05.f", gen), ".png"), width=8, height = 8,units = "in", res = 600)
-    
-  par(mfrow=c(1,1), mar=c(4,4,0,0), oma=c(0,0,3,0))
-   ### Plot 1 ####
-  plot(y=c(-0.01,22),x=c(-10, 120000) , col=rgb(0,0,0,0),
-        bty="n", yaxt="n", xlab="Position", ylab=""
-         )
-  
-  if (gen<10000){
-    main = paste0("generation ", gen, " (burnin)")
-  }else{
-    main = paste0("generation ", gen)
-  }
-  mtext(main, outer=TRUE)
-  
-  for (k in seq(0,20,by=2)){
-    polygon(c(0,100000,100000,0), c(k+0.01,k+0.01,k+0.99,k+0.99), col=adjustcolor("green", 0.2), border = NA)
-  }
-  
-
-  for (i in 1:nrow(df_sub)){
-    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
-     #     y = c(-0.005, -0.005), 
-    #      type = "l", lwd=5, 
-    #      col=rgb(cr(df_sub$freq[i]), max=255)
-    
-    if (df_sub$chrom[i]==0){
-      inv_start <- df_sub$inv_pos[i]
-      inv_end <- df_sub$inv_end[i]
-    }else{
-      inv_start <- df_sub$inv_pos[i]%%((df_sub$chrom[i])*100000)
-      inv_end <- df_sub$inv_end[i]%%((df_sub$chrom[i])*100000)
-    }
-    
-    #r <- rnorm(nrow(df_sub), 0, sd=0.05)
-    arrows(x0=inv_start, x1=inv_end,
-           y0=df_sub$chrom_dec[i], y1=df_sub$chrom_dec[i], angle=70, length=0.05,
-           code=3, lwd=4,
-           col=rgb(cr_age(df_sub$inv_FST[i]/0.25), max=255)
-           )
-  }
-  
-  text(rep(-10,20),0:20+0.5,labels = 1:21)
-  
-  leg_args <- seq(0,0.25, 0.05)
-  legend(100000, 20, legend = leg_args, adj=0,
-         fill=rgb(cr_age(leg_args/0.25),max=255), bty="n", title = "Fst")
- 
-  dev.off()
-  }
+heatmap(t(G3[, rev(pop1_order)]),   main="Pop1 genotypes",cexCol = 0.3,
+           Colv = NA,
+         Rowv = NA,
+           labRow = 1, 
+        col=two.colors(5, start = "blue", end="red", middle="white"), 
+        breaks=-2.5:2.5)
 ```
 
 
-## Movie 3
-In this movie, each chrom AND population is plotted separately and the inversions are colored by their frequency in that population, so you can see the size of them relative to the chromosome.
-When I get the QTNs I'll add them to the plot.
+# multiply allele effect by p*(1-p) (gets at VA)
 ```{r}
-head(df)
+head(G[,1:5])
+# Allele freq is sum of row / 2N
 
-df$inv_FST[df$inv_FST<0] <- 0
+p <- rowSums(G)/400 # hard coding
+hist(p)
+G4 <- a*G*(p)*(1-p)
+hist(G4)
 
-#k=0
-length(all_gen)
-for (gen in sort(all_gen)){
-  #k=k+1
-  df_sub <- df %>% filter(sim_gen==gen) %>% arrange(inv_pos)
-  df_sub
-  
-   png(paste0("movie3/invmovie3_", sprintf("%05.f", gen), ".png"), width=8, height = 8,units = "in", res = 600)
-    
-  par(mfrow=c(1,1), mar=c(4,4,0,0), oma=c(0,0,3,0))
-   ### Plot 1 ####
-  plot(y=c(-0.01,22),x=c(-10, 220000) , col=rgb(0,0,0,0),
-        bty="n", yaxt="n", xlab="Position", ylab=""
-         )
-  
-  if (gen<10000){
-    main = paste0("generation ", gen, " (burnin)")
-  }else{
-    main = paste0("generation ", gen)
-  }
-  mtext(main, outer=TRUE)
-  
-  for (k in seq(0,20,by=2)){
-    polygon(c(0,100000,100000,0), c(k+0.01,k+0.01,k+0.99,k+0.99), col=adjustcolor("green", 0.2), border = NA)
-    
-    polygon(c(100000,200000,200000,100000), c(k+0.01,k+0.01,k+0.99,k+0.99), col=adjustcolor("blue", 0.2), border = NA)
-  }
-  
+heatmap(t(G4[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 1, 
+        col=two.colors(100, start = "blue", end="red", middle="grey"), 
+        breaks=seq(-0.55, 0.55, length.out = 101))
 
-  for (i in 1:nrow(df_sub)){
-    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
-     #     y = c(-0.005, -0.005), 
-    #      type = "l", lwd=5, 
-    #      col=rgb(cr(df_sub$freq[i]), max=255)
-    
-    if (df_sub$chrom[i]==0){
-      inv_start <- df_sub$inv_pos[i]
-      inv_end <- df_sub$inv_end[i]
-    }else{
-      inv_start <- df_sub$inv_pos[i]%%((df_sub$chrom[i])*100000)
-      inv_end <- df_sub$inv_end[i]%%((df_sub$chrom[i])*100000)
-    }
-    
-    
-    #r <- rnorm(nrow(df_sub), 0, sd=0.05)
-    arrows(x0=inv_start, x1=inv_end,
-           y0=df_sub$chrom_dec[i], y1=df_sub$chrom_dec[i], angle=70, length=0.05,
-           code=3, lwd=4,
-           col=rgb(cr_pop1(df_sub$freq_p1[i]), max=255)
-           )
-    
-    arrows(x0=inv_start+100000, x1=inv_end+100000,
-           y0=df_sub$chrom_dec[i], y1=df_sub$chrom_dec[i], angle=70, length=0.05,
-           code=3, lwd=4,
-           col=rgb(cr_pop2(df_sub$freq_p2[i]), max=255)
-           )
-  }
-  
-  text(rep(-10,20),0:20+0.5,labels = 1:21)
-  
-  leg_args <- seq(0,1, 0.2)
-  legend(200000, 20, legend = leg_args, adj=0,
-         fill=rgb(cr_pop1(leg_args),max=255), bty="n", title = "pop1 freq")
-  
-  leg_args <- seq(0,1, 0.2)
-  legend(200000, 10, legend = leg_args, adj=0,
-         fill=rgb(cr_pop2(leg_args),max=255), bty="n", title = "pop2 freq")
- 
-  dev.off()
-  }
+
+heatmap(t(G4[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 1, 
+        col=two.colors(100, start = "blue", end="red", middle="grey"), 
+        breaks=seq(-0.55, 0.55, length.out = 101))
+
+```
+
+Same heatmaps but with different breaks
+```{r}
+
+heatmap(t(G4[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA,
+           labRow = 1, 
+        col=two.colors(100, start = "blue", end="red", middle="grey"), 
+        breaks=seq(-0.05, 0.05, length.out = 101))
+
+
+heatmap((G4[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
+        #   Colv = NA,
+         Rowv = NA,
+           labRow = 1, 
+        col=two.colors(100, start = "blue", end="red", middle="grey"), 
+        breaks=seq(-0.05, 0.05, length.out = 101))
+```
+
+# TO DO:
+Add color of individuals fitness on right side
+Add blocks on top showing where inversions are, use alpha so we can look for overlaps
+```{r}
+hist(indPhen_df_vcf$phenotype)
+hist(colSums(G))
 ```
