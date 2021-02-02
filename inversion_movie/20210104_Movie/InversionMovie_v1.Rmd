@@ -1,0 +1,274 @@
+---
+title: "Inversion movie"
+author: "KE Lotterhos"
+date: "1/4/2021"
+output: html_document
+---
+
+ Its one run of Sara's simulations with the parameters we had talked about (mig = 0.25, sigmaK = 0.75, sigmaMu = 0.002, mu_inv = 0.001).
+ 
+ 21 chromosomes 100,000 base pairs each
+ 
+ To create the movie - 
+ * open imovie
+ * import images
+ * create new project
+ * drag photos into project
+ * select all
+    * in upper right, click "i" button. Set duration to 0.5s.
+    * click the crop icon and choose "style --> fit"
+    * i made the time longer for the period when the inversions increase rapidly in freq
+ 
+ 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+cr <- colorRamp(c("grey", "green", "grey"))
+cr_age <- colorRamp(c("grey", "darkred"))
+cr_pop1 <- colorRamp(c("grey", "darkred"))
+cr_pop2 <- colorRamp(c("grey", "darkblue"))
+```
+
+setwd("~/Desktop/inversion_movie")
+
+```{r}
+
+df <- read.table("movieData.txt", header=TRUE)
+head(df)
+tail(df)
+df$chrom = floor(df$inv_pos/100000)
+df$chrom_dec = df$inv_pos/100000
+
+hist(df$freq)
+df$inv_mid <- (df$inv_pos + df$inv_end)/2
+max(df$inv_FST)
+
+min(df$inv_originGen)
+max(df$inv_originGen)
+
+all_gen <- unique(df$sim_gen)
+max(df_sub$num_qtns)
+```
+
+```{r}
+k=0
+length(all_gen)
+for (gen in sort(all_gen)){
+  k=k+1
+  df_sub <- df %>% filter(sim_gen==gen) %>% arrange(inv_pos)
+  df_sub
+  
+   png(paste0("movie/invmovie_", sprintf("%05.f", gen), ".png"), width=10, height = 8,units = "in", res = 600)
+   par(mfrow=c(2,1), mar=c(2,4,0,0), oma=c(3,0,3,0))
+   ### Plot 1 ####
+  plot(y=c(-0.01,0.25),x=c(0, 2.3e+06) , col=rgb(0,0,0,0),
+       ylab="Fst", bty="l", xaxt="n", xlab="",
+         )
+  abline(h=0)
+  if (gen<10000){
+    main = paste0("generation ", gen, " (burnin)")
+  }else{
+    main = paste0("generation ", gen)
+  }
+  mtext(main, outer=TRUE)
+  
+  points(df_sub$inv_mid, df_sub$inv_FST, type="h", lwd=2, col="cornflowerblue")
+  
+  for (i in 1:nrow(df_sub)){
+    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
+     #     y = c(-0.005, -0.005), 
+    #      type = "l", lwd=5, 
+    #      col=rgb(cr(df_sub$freq[i]), max=255)
+    arrows(x0=df_sub$inv_pos[i], x1=df_sub$inv_end[i],
+           y0=-0.005, y1=-0.005, angle=90, length=0.05,
+           code=3, 
+           col=rgb(cr(df_sub$freq[i]), max=255)
+           )
+  }
+  
+  leg_args <- seq(0,1,0.1)
+  legend(2e06, 0.25, legend = leg_args, adj=0,
+         fill=rgb(cr(leg_args),max=255), bty="n", title = "Freq.")
+
+ 
+  ### Plot 2 ####
+ plot(y=c(-20,400),x=c(0, 2.3e+06) , col=rgb(0,0,0,0),
+       ylab="Number QTNs within inversion", bty="l", xlab="Inversion Position")
+  abline(h=0)
+  
+  df_sub$age <- (gen - df_sub$inv_originGen)/50000
+   
+  points(df_sub$inv_mid, df_sub$num_qtns, type="h", 
+         lwd=2, col=rgb(cr_age(df_sub$age), max=255))
+   
+  for (i in 1:nrow(df_sub)){
+    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
+     #     y = c(-0.005, -0.005), 
+    #      type = "l", lwd=5, 
+    #      col=rgb(cr(df_sub$freq[i]), max=255)
+    arrows(x0=df_sub$inv_pos[i], x1=df_sub$inv_end[i],
+           y0=-10, y1=-10, angle=90, length=0.05,
+           code=3, 
+           col=rgb(cr(df_sub$freq[i]), max=255)
+           )
+  }
+  
+  leg_args <- seq(0,50000, 10000)
+  legend(2e06, 400, legend = leg_args, adj=0,
+         fill=rgb(cr_age(leg_args/50000),max=255), bty="n", title = "Age")
+ 
+   mtext("Inversion Position", side=1, outer=TRUE
+   )
+    dev.off()
+}
+
+df_sub[df_sub$age>0.5,]
+```
+
+## Movie 2
+In this movie, each chrom is plotted separately and the inversions are colored by FST, so you can see the size of them relative to the chromosome.
+When I get the QTNs I'll add them to the plot.
+```{r}
+head(df)
+
+df$inv_FST[df$inv_FST<0] <- 0
+
+#k=0
+length(all_gen)
+for (gen in sort(all_gen)){
+  #k=k+1
+  df_sub <- df %>% filter(sim_gen==gen) %>% arrange(inv_pos)
+  df_sub
+  
+   png(paste0("movie2/invmovie2_", sprintf("%05.f", gen), ".png"), width=8, height = 8,units = "in", res = 600)
+    
+  par(mfrow=c(1,1), mar=c(4,4,0,0), oma=c(0,0,3,0))
+   ### Plot 1 ####
+  plot(y=c(-0.01,22),x=c(-10, 120000) , col=rgb(0,0,0,0),
+        bty="n", yaxt="n", xlab="Position", ylab=""
+         )
+  
+  if (gen<10000){
+    main = paste0("generation ", gen, " (burnin)")
+  }else{
+    main = paste0("generation ", gen)
+  }
+  mtext(main, outer=TRUE)
+  
+  for (k in seq(0,20,by=2)){
+    polygon(c(0,100000,100000,0), c(k+0.01,k+0.01,k+0.99,k+0.99), col=adjustcolor("green", 0.2), border = NA)
+  }
+  
+
+  for (i in 1:nrow(df_sub)){
+    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
+     #     y = c(-0.005, -0.005), 
+    #      type = "l", lwd=5, 
+    #      col=rgb(cr(df_sub$freq[i]), max=255)
+    
+    if (df_sub$chrom[i]==0){
+      inv_start <- df_sub$inv_pos[i]
+      inv_end <- df_sub$inv_end[i]
+    }else{
+      inv_start <- df_sub$inv_pos[i]%%((df_sub$chrom[i])*100000)
+      inv_end <- df_sub$inv_end[i]%%((df_sub$chrom[i])*100000)
+    }
+    
+    #r <- rnorm(nrow(df_sub), 0, sd=0.05)
+    arrows(x0=inv_start, x1=inv_end,
+           y0=df_sub$chrom_dec[i], y1=df_sub$chrom_dec[i], angle=70, length=0.05,
+           code=3, lwd=4,
+           col=rgb(cr_age(df_sub$inv_FST[i]/0.25), max=255)
+           )
+  }
+  
+  text(rep(-10,20),0:20+0.5,labels = 1:21)
+  
+  leg_args <- seq(0,0.25, 0.05)
+  legend(100000, 20, legend = leg_args, adj=0,
+         fill=rgb(cr_age(leg_args/0.25),max=255), bty="n", title = "Fst")
+ 
+  dev.off()
+  }
+```
+
+
+## Movie 3
+In this movie, each chrom AND population is plotted separately and the inversions are colored by their frequency in that population, so you can see the size of them relative to the chromosome.
+When I get the QTNs I'll add them to the plot.
+```{r}
+head(df)
+
+df$inv_FST[df$inv_FST<0] <- 0
+
+#k=0
+length(all_gen)
+for (gen in sort(all_gen)){
+  #k=k+1
+  df_sub <- df %>% filter(sim_gen==gen) %>% arrange(inv_pos)
+  df_sub
+  
+   png(paste0("movie3/invmovie3_", sprintf("%05.f", gen), ".png"), width=8, height = 8,units = "in", res = 600)
+    
+  par(mfrow=c(1,1), mar=c(4,4,0,0), oma=c(0,0,3,0))
+   ### Plot 1 ####
+  plot(y=c(-0.01,22),x=c(-10, 220000) , col=rgb(0,0,0,0),
+        bty="n", yaxt="n", xlab="Position", ylab=""
+         )
+  
+  if (gen<10000){
+    main = paste0("generation ", gen, " (burnin)")
+  }else{
+    main = paste0("generation ", gen)
+  }
+  mtext(main, outer=TRUE)
+  
+  for (k in seq(0,20,by=2)){
+    polygon(c(0,100000,100000,0), c(k+0.01,k+0.01,k+0.99,k+0.99), col=adjustcolor("green", 0.2), border = NA)
+    
+    polygon(c(100000,200000,200000,100000), c(k+0.01,k+0.01,k+0.99,k+0.99), col=adjustcolor("blue", 0.2), border = NA)
+  }
+  
+
+  for (i in 1:nrow(df_sub)){
+    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
+     #     y = c(-0.005, -0.005), 
+    #      type = "l", lwd=5, 
+    #      col=rgb(cr(df_sub$freq[i]), max=255)
+    
+    if (df_sub$chrom[i]==0){
+      inv_start <- df_sub$inv_pos[i]
+      inv_end <- df_sub$inv_end[i]
+    }else{
+      inv_start <- df_sub$inv_pos[i]%%((df_sub$chrom[i])*100000)
+      inv_end <- df_sub$inv_end[i]%%((df_sub$chrom[i])*100000)
+    }
+    
+    
+    #r <- rnorm(nrow(df_sub), 0, sd=0.05)
+    arrows(x0=inv_start, x1=inv_end,
+           y0=df_sub$chrom_dec[i], y1=df_sub$chrom_dec[i], angle=70, length=0.05,
+           code=3, lwd=4,
+           col=rgb(cr_pop1(df_sub$freq_p1[i]), max=255)
+           )
+    
+    arrows(x0=inv_start+100000, x1=inv_end+100000,
+           y0=df_sub$chrom_dec[i], y1=df_sub$chrom_dec[i], angle=70, length=0.05,
+           code=3, lwd=4,
+           col=rgb(cr_pop2(df_sub$freq_p2[i]), max=255)
+           )
+  }
+  
+  text(rep(-10,20),0:20+0.5,labels = 1:21)
+  
+  leg_args <- seq(0,1, 0.2)
+  legend(200000, 20, legend = leg_args, adj=0,
+         fill=rgb(cr_pop1(leg_args),max=255), bty="n", title = "pop1 freq")
+  
+  leg_args <- seq(0,1, 0.2)
+  legend(200000, 10, legend = leg_args, adj=0,
+         fill=rgb(cr_pop2(leg_args),max=255), bty="n", title = "pop2 freq")
+ 
+  dev.off()
+  }
+```
