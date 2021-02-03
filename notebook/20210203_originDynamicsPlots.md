@@ -21,3 +21,8 @@ Interestingly some inversions that persist through the whole simulation arose du
   
 1. Do we want to just look at the inversions in the final generation or do we want to try to get a plot through time? 
 2. Do we want to calculate the sum of the QTN effects on the phenotype through time instead of the mean and sd?
+
+### KEL thoughts
+
+I was thinking it would be cool to make your bubble plot, where the size of the bubble is FST and the color is the same, but you track an individual inversion through time as it’s sum increases and FST (the increasing sum implies increasing number of mutation). 
+
