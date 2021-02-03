@@ -11,13 +11,13 @@ In this plot, I have the origin generation of the inversion on the x-axis with t
   
 ![Inversion Origin with number of QTNs](../figures/OriginDynamics/20210203_origin_numQTNs.pdf)
 
-*What we can conclude:*
+**What we can conclude:**
   
 At least with the simulation we’ve been working with. All inversions that persist through the simulation capture some number of qtns at the time it first mutates then gains more throughout the simulation.
  
 Interestingly some inversions that persist through the whole simulation arose during the burnin period when selection wasn't occuring. 
   
-*Follow up questions:*
+**Follow up questions:**
   
 1. Do we want to just look at the inversions in the final generation or do we want to try to get a plot through time? 
 2. Do we want to calculate the sum of the QTN effects on the phenotype through time instead of the mean and sd?
