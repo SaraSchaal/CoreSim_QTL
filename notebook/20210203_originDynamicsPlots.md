@@ -8,3 +8,9 @@ In this plot I have the generation the inversion arose on the x axis, the sum of
 In this plot, I have the origin generation of the inversion on the x-axis with the number of QTNs captured when the inversion mutates on the y-axis in panel 1 and the number of QTNs in the final generation on the y-axis of panel 2
   
 ![Inversion Origin with number of QTNs](../figures/OriginDynamics/20210203_origin_numQTNs.pdf)
+
+What we can conclude:
+At least with the simulation we’ve been working with. All inversions that persist through the simulation capture some number of qtns at the time it first mutates then gains more throughout the simulation.
+  
+Follow up questions:
+Do we want to just look at the inversions in the final generation or do we want to try to get a plot through time? 
