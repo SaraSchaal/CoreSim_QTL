@@ -12,6 +12,8 @@
   - I don't think it's serious, but we haven't evaluated how often this occurs
   - There's also the potential for "inversion within an inversion", which is troublesome because it should have recombination. Again, don't know how often, but looked like it was happening in one video.
   
+- is it bad for us to use the same seed for a matching "control" simulation where nothing changes other than there is no selection occurring throughout the simulation
+
   ## Ask Ben about evolving seas RCN SLiM Workshop in exchange for stipend
   
   # TO DO
