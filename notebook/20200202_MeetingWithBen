@@ -1,0 +1,7 @@
+## Questions for Ben
+
+1. We didn't think of this occurring when we set up the simulation, but inversions can overlap in their location if they arose in different individuals that each 
+were lacking the other inversion. So individual 1 gets an inversion spanning position 3 to 300. Then individual 2 doesn't have this inversion in their genome, but 
+instead have an inversion that spans 210 to 450. Theoretically, these two could make offspring together and have those two inversions in the same individual. This
+is an interesting dynamic and we are thinking of just leaving it as is and quantify how often this happens.
+

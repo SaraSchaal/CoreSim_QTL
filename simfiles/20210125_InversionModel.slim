@@ -298,13 +298,18 @@ late(){
 			QTNsInInvOrig = QTNs[QTNs.position >= pos & QTNs.position <= end];
 			InvQTNsID = QTNsInInvOrig.id;	
 			InvQTNsSel = QTNsInInvOrig.selectionCoeff;
-			InvQTNdom = QTNsInInvOrig.getValue("dom");
+			if(DOM == T){
+				InvQTNdom = QTNsInInvOrig.getValue("dom");							// dominance value of each QTN
+			} else {
+				InvQTNdom = rep(0, size(QTNsInInvOrig));
+			}
+			
 					
 			if(size(QTNsInInvOrig) > 0){
 				// if origin dynamic is capturing QTNs at the time of mutation than for each
 				// QTN in the inversion this outputs a new line in the origin dynamics file
 				// and records its selection coefficient and dominance values 
-				for(i in 0:(size(QTNsInInv)-1)){
+				for(i in 0:(size(QTNsInInvOrig)-1)){
 					outOriginInvQtn = sim.generation + " " + muts.id + " " + InvQTNsID[i] + " " + InvQTNsSel[i] + " " + InvQTNdom[i];
 					writeFile(paste(c(MYPATH, "/", MYSEED, "_outputOriginInvQtn.txt"), sep = ""), outOriginInvQtn, append = T);			
 				}
