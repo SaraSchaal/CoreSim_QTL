@@ -5,6 +5,9 @@ date: "1/4/2021"
 output: html_document
 ---
 
+IF MAF < 0.05 then FST has 0 value
+
+
 ```{r setup, include=FALSE}
 
 packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", "fields", "MultivariateRandomForest", "akima", "MLmetrics", "ash", "plotly", "stringr")
@@ -111,9 +114,50 @@ head(indPhen_df_vcf)
 tail(indPhen_df_vcf)
 ```
 
-
-## Heatmaps based on allele frequencies
+## individual order
 ```{r}
+## Plot population 1 with individuals sorted
+pop1_ids <- which(indPhen_df_vcf$subpop==1)
+pop2_ids <- which(indPhen_df_vcf$subpop==2)
+
+G_pop1 <- G[, pop1_ids]
+G_pop2 <- G[, pop2_ids]
+dim(G_pop2)
+head(G_pop1[,1:5])
+head(G_pop2[,1:5])
+
+## Population 1
+  fordist <- as.data.frame(t(G_pop1))
+  dist_mat <- dist(fordist, method="euclidean")
+  dim(dist_mat)
+  pop1_clust <- hclust(dist_mat, method = "ward.D")
+  str(pop1_clust)
+  
+  pop1_order <- pop1_clust$order
+  
+  heatmap(t(G_pop1[,pop1_order]), Rowv = NA,  main="Pop1 genotypes",cexCol = 0.3,
+             Colv = NA,
+             labRow = indPhen_df_vcf$subpop)
+
+## Population 2
+  fordist <- as.data.frame(t(G_pop2))
+  dist_mat <- dist(fordist, method="euclidean")
+  dim(dist_mat)
+  pop2_clust <- hclust(dist_mat, method = "ward.D")
+  str(pop2_clust)
+  
+  pop2_order <- pop2_clust$order
+  
+  heatmap(t(G_pop2[,pop2_order]), Rowv = NA,  main="Pop2 genotypes",cexCol = 0.3,
+             Colv = NA,
+             labRow = indPhen_df_vcf$subpop)
+```
+
+# TO DO: need to change row labels to be chromosome posiiton
+
+This chunk has some other heatmapping. I realized that the heatmapping clustering really sucked, so I used my own order from hclust.
+
+```{r, echo=FALSE, eval=FALSE}
 
 dim(G) # columns are individuals
 
@@ -122,12 +166,6 @@ a<-heatmap(t(G), Rowv = NA,  main="All genotypes",cexCol = 0.3,
            Colv = NA,
            labRow = indPhen_df_vcf$subpop)
 
-
-## Plot population 1 with individuals sorted
-pop1_ids <- which(indPhen_df_vcf$subpop==1)
-pop2_ids <- which(indPhen_df_vcf$subpop==2)
-
-# TO DO: need to change row labels to be chromosome posiiton
 heatmap(t(G[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
            Colv = NA,
         # Rowv = NA,
@@ -152,162 +190,196 @@ tail(vcf@fix[,"INFO"])
 whichinversionmuts <- grep("MT=3", vcf@fix[,"INFO"]) #inversions
 
 vcf@fix[whichinversionmuts,"INFO"]
-
+info <- str_split(vcf@fix[,"INFO"], pattern =";", simplify=TRUE)
 # This took like an hour to figure out
-a<- as.numeric(substring(str_split(vcf@fix[,"INFO"], pattern =";", simplify=TRUE)[,2], first=3))
+a<- as.numeric(substring(info[,2], first=3))
 head(a)
-hist(a)
+hist(a, breaks=seq(-0.01, 0.01, length.out=101))
 summary(a)
 length(a)
 dim(G)
 
-G_alpha <- G*a # make sure G and a line up
-max(abs(as.numeric(G_alpha)))
-hist(G_alpha)
-hist(G)
+dim(G_pop1)
+head(G_pop1[,1:10])
+
+G1_alpha <- G_pop1*a # make sure G and a line up
+head(G1_alpha[,1:50])
+
+#G1_alpha[,1]
+
+hist(G1_alpha, breaks=seq(-0.02, 0.02, length.out=101))
+
+G2_alpha <- G_pop2*a # make sure G and a line up
+head(G2_alpha[,1:10])
+hist(G2_alpha, breaks=seq(-0.02, 0.02, length.out=101))
+
+hist(colSums(G1_alpha))
+hist(colSums(G2_alpha))
 
 # Sanity check - mutations in rows
-head(G[,1:10])
+head(G[1:100,1:10])
+t(G1_alpha[1:100,9:10])
 
-
-heatmap(t(G_alpha[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
+hist(G1_alpha)
+hist(G2_alpha)
+dim(G1_alpha)
+heatmap(t(G1_alpha[1:1000, pop1_order]),   
+        main="Pop1 G*a",cexCol = 0.3,
            Colv = NA,
-        # Rowv = NA,
-           labRow = 1, 
-        col=two.colors(10, start = "blue", end="red", middle="grey"), 
-        breaks=seq(-0.005, 0.005, length.out = 11))
+        # Rowv = NA, 
+       col=two.colors(100, start = "blue", end="red", middle="white") )
+      # ADDING BREAKS SCREWS UP EVERYTHING
+        #breaks=seq(-0.005, 0.005, length.out = 101))
 
-heatmap(t(G_alpha[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
+heatmap(t(G2_alpha[1:1000, pop2_order]),   
+        main="Pop2 G*a",cexCol = 0.3,
            Colv = NA,
-        # Rowv = NA,
-           labRow = 2, 
-        col=two.colors(100, start = "blue", end="red", middle="grey"), 
-        breaks=seq(-0.005, 0.005, length.out = 101))
-
+       #  Rowv = NA, 
+       col=two.colors(100, start = "blue", end="red", middle="white") )
 ```
 
-## Same heatmaps but with different breaks
-
-I don't understand why this works
+# line up positions
 ```{r}
+vcf_pos <- as.numeric(vcf@fix[,"POS"])
+hist(vcf_pos, breaks=seq(0,2100000, length.out=100))
+hist(muts_df$position, breaks=seq(0,2100000, length.out=100))
 
-heatmap(t(G_alpha[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
-           Colv = NA,
-        # Rowv = NA,
-           labRow = 1, 
-        col=two.colors(100, start = "blue", end="red", middle="grey"), 
-        breaks=seq(-0.55, 0.55, length.out = 101))
+head(sort(muts_df$position))
+head(vcf_pos)
+muts_df$position_vcf <- muts_df$position + 1
+muts_df$is_vcf <- NA
 
-heatmap(t(G_alpha[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
-           Colv = NA,
-        # Rowv = NA,
-           labRow = 2, 
-        col=two.colors(100, start = "blue", end="red", middle="grey"), 
-        breaks=seq(-0.55, 0.55, length.out = 101))
+G_FST <- rep(NA, nrow(G))
+
+# this is slow, but correct
+for (i in 1:nrow(muts_df)){
+  x<- grep(muts_df$mutID[i], vcf@fix[,"INFO"])
+  if (length(x)==1){
+    G_FST[x] <- muts_df$FST[i]
+  }
+}
+
+hist(muts_df$FST)
+hist(G_FST)
+
+sum(is.na(G_FST))
+# mutations that don't match up
+
+length(a)
+length(G_FST)
 ```
 
-
-# Just  visualize + or - effect on phenotype
-```{a}
-hist(a)
-a2 <- a
-a2[a>0.001] <- 1
-a2[a<0.001] <- -1
-
-hist(a2)
-G3 <- a2*G
-head(G3)
-hist(G3)
-
-heatmap(t(G3[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
-           Colv = NA,
-        # Rowv = NA,
-           labRow = 1, 
-        col=two.colors(5, start = "blue", end="red", middle="white"), 
-        breaks=-2.5:2.5)
-
-heatmap(t(G3[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
-           Colv = NA,
-        # Rowv = NA,
-           labRow = 2, 
-        col=two.colors(5, start = "blue", end="red", middle="white"), 
-        breaks=-2.5:2.5)
-
-```
-
-#  order individuals in the heatmap by their fitness
-
-```{r, eval=FALSE}
-plot(indPhen_df_vcf$fitness[pop1_ids], rank(indPhen_df_vcf$fitness[pop1_ids]))
-
-pop1_order <- order(indPhen_df_vcf$fitness[pop1_ids], decreasing=TRUE)
-
-head(indPhen_df_vcf)
-head(G3[, 1:5])
-
-# SANITY CHECK
-head(indPhen_df_vcf[pop1_order,])
-head(G3[, pop1_order[1:5]])
-
-heatmap(t(G3[, rev(pop1_order)]),   main="Pop1 genotypes",cexCol = 0.3,
-           Colv = NA,
-         Rowv = NA,
-           labRow = 1, 
-        col=two.colors(5, start = "blue", end="red", middle="white"), 
-        breaks=-2.5:2.5)
-```
-
-
-# multiply allele effect by p*(1-p) (gets at VA)
+# G x a x FST
 ```{r}
 head(G[,1:5])
 # Allele freq is sum of row / 2N
 
 p <- rowSums(G)/400 # hard coding
 hist(p)
-G4 <- a*G*(p)*(1-p)
-hist(G4)
 
-heatmap(t(G4[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
+
+G1_alpha <- G_pop1*a*G_FST # make sure G and a line up
+G2_alpha <- G_pop2*a*G_FST # make sure G and a line up
+
+
+# Sanity check - mutations in rows
+
+heatmap(t(G1_alpha[ ,pop1_order]),   
+        main="Pop1 G*a*FST",cexCol = 0.3,
            Colv = NA,
-        # Rowv = NA,
-           labRow = 1, 
-        col=two.colors(100, start = "blue", end="red", middle="grey"), 
-        breaks=seq(-0.55, 0.55, length.out = 101))
+        # Rowv = NA, 
+       col=two.colors(100, start = "blue", end="red", middle="white") )
+      # ADDING BREAKS SCREWS UP EVERYTHING
+        #breaks=seq(-0.005, 0.005, length.out = 101))
 
-
-heatmap(t(G4[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
+heatmap(t(G2_alpha[, pop2_order]),   
+        main="Pop2 G*a*FST",cexCol = 0.3,
            Colv = NA,
-        # Rowv = NA,
-           labRow = 1, 
-        col=two.colors(100, start = "blue", end="red", middle="grey"), 
-        breaks=seq(-0.55, 0.55, length.out = 101))
+       #  Rowv = NA, 
+       col=two.colors(100, start = "blue", end="red", middle="white") )
+```
+
+
+# (allele count) x (+ or - effect on phenotype) x FST
+
+```{r}
+hist(a)
+a2 <- a
+a2[a>0.001] <- 1
+a2[a<0.001] <- -1
+
+
+G1_alpha <- G_pop1*a2*G_FST # make sure G and a line up
+G2_alpha <- G_pop2*a2*G_FST # make sure G and a line up
+
+hist(G_pop1*a2)
+
+# Sanity check - mutations in rows
+
+heatmap(t(G1_alpha[, pop1_order]),   
+        main="Pop1 G*a+-*FST",cexCol = 0.3,
+           Colv = NA,
+        # Rowv = NA, 
+       col=two.colors(100, start = "blue", end="red", middle="white") )
+      # ADDING BREAKS SCREWS UP EVERYTHING
+        #breaks=seq(-0.005, 0.005, length.out = 101))
+
+heatmap(t(G2_alpha[, pop2_order]),   
+        main="Pop2 G*a+-*FST",cexCol = 0.3,
+           Colv = NA,
+       #  Rowv = NA, 
+       col=two.colors(100, start = "blue", end="red", middle="white") )
 
 ```
 
-Same heatmaps but with different breaks
+
 ```{r}
-
-heatmap(t(G4[, pop1_ids]),   main="Pop1 genotypes",cexCol = 0.3,
-           Colv = NA,
-        # Rowv = NA,
-           labRow = 1, 
-        col=two.colors(100, start = "blue", end="red", middle="grey"), 
-        breaks=seq(-0.05, 0.05, length.out = 101))
+plot(a^2*p*(1-p), G_FST)
+#inv_df
+```
 
 
-heatmap((G4[, pop2_ids]),   main="Pop2 genotypes",cexCol = 0.3,
-        #   Colv = NA,
-         Rowv = NA,
-           labRow = 1, 
-        col=two.colors(100, start = "blue", end="red", middle="grey"), 
-        breaks=seq(-0.05, 0.05, length.out = 101))
+
+# percent of additive genetic variance in inversions
+```{r}
+head(info)
+dim(info)
+
+# Inversion locations
+grep("MT=3", vcf@fix[,"INFO"])
+grep("MT=3", info[,6])
+
+inv_id <- data.frame(inv_id=as.numeric(substring(info[ grep("MT=3", info[,6]), 1], first=5)))
+
+inv_df_sm <- merge(inv_id, inv_df)
+
+is.window <- function(pos){
+  sum(inv_df_sm$inv_pos < pos & pos < inv_df_sm$inv_end)>0
+}
+is.window(604531)
+is.window(604533)
+
+G_isInvWindow <- rep(NA, nrow(G))
+for (i in 1:nrow(G)){
+  G_isInvWindow[i] <- is.window(as.numeric(vcf@fix[i,"POS"]))
+}
+
+Va <- a^2*p*(1-p)
+Va_perc <- Va/sum(Va)
+
+sum(Va_perc[G_isInvWindow])
+sum(Va_perc[!G_isInvWindow])
+
+boxplot(G_FST~G_isInvWindow)
+
+# Percent of genome covered by inversions
+sum(inv_df_sm$inv_end - inv_df_sm$inv_pos)/max(muts_df$position)
+
 ```
 
 # TO DO:
 Add color of individuals fitness on right side
+
 Add blocks on top showing where inversions are, use alpha so we can look for overlaps
-```{r}
-hist(indPhen_df_vcf$phenotype)
-hist(colSums(G))
-```
+
+Check Sara's FST output matches VCF FST output (?)

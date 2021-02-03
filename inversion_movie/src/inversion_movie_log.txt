@@ -31,6 +31,10 @@ There are some slight discrepancies with the mut dataframe and the VCF file afte
 The individual IDs in Slim do not match the IDs in the VCF file. I will assume they are in the same order
 
 
+Clustering in heat map sucks. It's better to do your own hclust to order individuals.
+
+
+
 
 
 
