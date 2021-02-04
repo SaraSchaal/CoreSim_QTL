@@ -8,6 +8,7 @@ Looking into the simulation where inversions aid in adaptation under a higher ge
 Inv mu = 1e-3, QTN effect = 0.002, strength of selection = 0.75, environmental variance = 0
   
 The following plot shows the average length of inversions split by the FST values of the inversions: top 10% inversion FST values, bottom 90% inversion FST values. 
+  
 ![Inversion Length](../figures/ASN/InvLength.pdf)
   
 The following plot shows the average age of inversions split by the same FST values.  
