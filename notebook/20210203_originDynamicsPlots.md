@@ -29,3 +29,9 @@ I can setValue(key name, value that I want (singlton or vector))
 
 I was thinking it would be cool to make your bubble plot, where the size of the bubble is FST and the color is the same, but you track an individual inversion through time as it’s sum increases and FST (the increasing sum implies increasing number of mutation). 
 ![Inversion Origin with FST and QTN effects through Time](../figures/OriginDynamics/20210210_invEffectTime.pdf)
+
+## Updated notes
+use a bubble size based on the area instead of diameter you can see different bubble sizes better.
+add track lines to look at an inversion through time 
+change to be a gradient of blues and reds for the different inversion IDs
+overlapping inversion only calculate for those that are in the final generation 
