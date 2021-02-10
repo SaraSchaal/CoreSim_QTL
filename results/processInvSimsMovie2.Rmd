@@ -136,10 +136,10 @@ for(i in 1:nrow(df.params)){
 }
 write.table(no.Data,"seedsToRerun.txt", row.names = FALSE)
 colnames(df.finalMuts)[2] <- "mut_id" 
-file.exists(paste(folder, seed, "_outputMutations.txt", sep=""))
 write.table(df.finalMuts, "FullSet_finalMuts.txt", row.names = FALSE)
 
 ```
+
 
 ## Combine dataframes
 
@@ -401,12 +401,3 @@ lowSigMu.LAinv <- ggplot(data = low.alpha,
 
 ```
 
-```{r}
-library(dplyr)
-
-df.LA.average %>%
-  filter(alpha == 0.002, sim_gen == 50000, mu_inv == 0.001, sigmaK == 0.75, enVar == 0) 
-
-
-
-```
