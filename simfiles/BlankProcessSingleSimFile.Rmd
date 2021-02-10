@@ -5,7 +5,430 @@ date: "2/10/2021"
 output: html_document
 ---
 
+run sim
+run vcftools to get small vcf file (200 ind. MAF > 0.01)
+delete large vcffile
+run R script no small vcf file
+
+PIPELINE https://github.com/TestTheTests/TTT_RecombinationGenomeScans/blob/master/src/repInversion_serial.sh
+
+vcftools --vcf 3384725_InversionVCF.vcf --max-indv 200 --maf 0.05 --out 3384725_InversionVCF_200ind_MAF05 --recode --recode-INFO-all
+
+GIVE SARA VCFTOOLS CODE
+
+
+INVERSION MOVIE FRAME
+args <- get the seed from the command line
+seed <- args[1] #3384725
+
+SANITY CHECK FOR 0/1 in VCF
 ```{r}
+
+packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", "fields", "MultivariateRandomForest", "akima", "MLmetrics", "ash", "plotly", "stringr", "tidyverse")
+
+for (i in 1:length(packages_needed)){
+  if(!(packages_needed[i] %in% installed.packages())){install.packages(packages_needed[i])}
+}
+
+#  require(ggplot2)}
+
+for (i in 1:length(packages_needed)){
+  library( packages_needed[i], character.only = TRUE)
+}
+
+```
+
+```{r}
+cr <- colorRamp(c("grey", "green", "grey"))
+cr_age <- colorRamp(c("grey", "darkred"))
+cr_pop1 <- colorRamp(c("grey", "darkred"))
+cr_pop2 <- colorRamp(c("grey", "darkblue"))
+
+
+
+df <- read.table("movieData.txt", header=TRUE) SUB SEED FILENAME
+head(df)
+tail(df)
+df$chrom = floor(df$inv_pos/100000)
+df$chrom_dec = df$inv_pos/100000
+
+hist(df$freq)
+df$inv_mid <- (df$inv_pos + df$inv_end)/2
+max(df$inv_FST)
+
+min(df$inv_originGen)
+max(df$inv_originGen)
+
+all_gen <- unique(df$sim_gen)
+max(df_sub$num_qtns)
+
+gen = 50000
+  df_sub <- df %>% filter(sim_gen==gen) %>% arrange(inv_pos)
+  df_sub
+  
+   png(paste0("movie/invmovie_", sprintf("%05.f", gen), ".png"), width=10, height = 8,units = "in", res = 600)
+   par(mfrow=c(2,1), mar=c(2,4,0,0), oma=c(3,0,3,0))
+   ### Plot 1 ####
+  plot(y=c(-0.01,0.25),x=c(0, 2.3e+06) , col=rgb(0,0,0,0),
+       ylab="Fst", bty="l", xaxt="n", xlab="",
+         )
+  abline(h=0)
+  if (gen<10000){
+    main = paste0("generation ", gen, " (burnin)")
+  }else{
+    main = paste0("generation ", gen)
+  }
+  mtext(main, outer=TRUE)
+  
+  points(df_sub$inv_mid, df_sub$inv_FST, type="h", lwd=2, col="cornflowerblue")
+  
+  for (i in 1:nrow(df_sub)){
+    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
+     #     y = c(-0.005, -0.005), 
+    #      type = "l", lwd=5, 
+    #      col=rgb(cr(df_sub$freq[i]), max=255)
+    arrows(x0=df_sub$inv_pos[i], x1=df_sub$inv_end[i],
+           y0=-0.005, y1=-0.005, angle=90, length=0.05,
+           code=3, 
+           col=rgb(cr(df_sub$freq[i]), max=255)
+           )
+  }
+  
+  leg_args <- seq(0,1,0.1)
+  legend(2e06, 0.25, legend = leg_args, adj=0,
+         fill=rgb(cr(leg_args),max=255), bty="n", title = "Freq.")
+
+ 
+  ### Plot 2 ####
+ plot(y=c(-20,400),x=c(0, 2.3e+06) , col=rgb(0,0,0,0),
+       ylab="Number QTNs within inversion", bty="l", xlab="Inversion Position")
+  abline(h=0)
+  
+  df_sub$age <- (gen - df_sub$inv_originGen)/50000
+   
+  points(df_sub$inv_mid, df_sub$num_qtns, type="h", 
+         lwd=2, col=rgb(cr_age(df_sub$age), max=255))
+   
+  for (i in 1:nrow(df_sub)){
+    #points(x = c(df_sub$inv_pos[i], df_sub$inv_end[i]),
+     #     y = c(-0.005, -0.005), 
+    #      type = "l", lwd=5, 
+    #      col=rgb(cr(df_sub$freq[i]), max=255)
+    arrows(x0=df_sub$inv_pos[i], x1=df_sub$inv_end[i],
+           y0=-10, y1=-10, angle=90, length=0.05,
+           code=3, 
+           col=rgb(cr(df_sub$freq[i]), max=255)
+           )
+  }
+  
+  leg_args <- seq(0,50000, 10000)
+  legend(2e06, 400, legend = leg_args, adj=0,
+         fill=rgb(cr_age(leg_args/50000),max=255), bty="n", title = "Age")
+ 
+   mtext("Inversion Position", side=1, outer=TRUE
+   )
+    dev.off()
+}
+
+```
+
+VCF FILE
+```{r}
+# Individuals and phenotypes
+indPhen_df<- read.table(paste0(path,seed,"_outputIndPheno.txt"), header=TRUE)
+dim(indPhen_df)
+head(indPhen_df)
+
+# Mutation stats at end of sim
+# for MAF > 0.01?
+muts_df <- read.table(paste0(path,seed,"_outputMutations.txt"), header=TRUE)
+dim(muts_df)
+head(muts_df)
+table(muts_df$type) #just m2 mutations
+hist(muts_df$FST)
+hist(muts_df$freq)
+
+# inversion summary
+inv_df <- read.table(paste0(path,seed,"_outputInvSumInfo.txt"), header=TRUE)
+head(inv_df)
+
+# VCF file
+vcffile <- list.files(path=path, pattern=paste0(".vcf"))
+vcf <- read.vcfR(paste0(path,vcffile))
+head(vcf)
+head(vcf@fix, 50)
+dim(vcf@fix)
+# example of how to find a specific mutation in the vcf file
+  muts_df[2,]
+  vcf@fix[grep(muts_df$mutID[1], vcf@fix[,"INFO"]),]
+  
+  
+geno <- vcf@gt[,-1] 
+position <- getPOS(vcf)
+if (sum(duplicated(position)) != 0){
+  print("This simulation needs to be checked for duplicated locus positions")
+}
+
+
+G <- matrix(NA, nrow = nrow(geno), ncol = ncol(geno))
+G[geno %in% c("0/0", "0|0")] <- 0
+G[geno  %in% c("0/1", "1/0", "1|0", "0|1")] <- 1
+G[geno %in% c("1/1", "1|1")] <- 2
+
+a_freq <- rowSums(G)/(2*ncol(G))
+hist(a_freq)
+
+
+vcf_ind <- data.frame(vcf_ind=colnames(vcf@gt)[-1])
+
+colnames(G) <- vcf_ind$vcf_ind
+ADD MUTATION NAMES TO G
+head(G[,1:5])
+dim(G)
+
+dim(vcf_ind)
+head(vcf_ind)
+head(indPhen_df)
+indPhen_df$vcf_ind <- paste0("i",0:1999) # hard coding
+# The individual IDs in Slim do not match the IDs in the VCF file. 
+# I will assume they are in the same order
+tail(indPhen_df)
+
+indPhen_df_vcf <- merge(vcf_ind, indPhen_df, by="vcf_ind")
+dim(indPhen_df)
+dim(indPhen_df_vcf)
+
+indPhen_df_vcf <- indPhen_df_vcf[order(indPhen_df_vcf$subpop, indPhen_df_vcf$id),]
+head(indPhen_df_vcf)
+tail(indPhen_df_vcf)
+```
+heatmap order
+```{r}
+pop1_ids <- which(indPhen_df_vcf$subpop==1)
+pop2_ids <- which(indPhen_df_vcf$subpop==2)
+
+G_pop1 <- G[, pop1_ids]
+G_pop2 <- G[, pop2_ids]
+dim(G_pop2)
+head(G_pop1[,1:5])
+head(G_pop2[,1:5])
+
+## Population 1
+  fordist <- as.data.frame(t(G_pop1))
+  dist_mat <- dist(fordist, method="euclidean")
+  dim(dist_mat)
+  pop1_clust <- hclust(dist_mat, method = "ward.D")
+  str(pop1_clust)
+  
+  pop1_order <- pop1_clust$order
+  
+ ## Population 2
+  fordist <- as.data.frame(t(G_pop2))
+  dist_mat <- dist(fordist, method="euclidean")
+  dim(dist_mat)
+  pop2_clust <- hclust(dist_mat, method = "ward.D")
+  str(pop2_clust)
+  
+  pop2_order <- pop2_clust$order
+```
+Get allele effect sizes
+```{r}
+
+whichinversionmuts <- grep("MT=3", vcf@fix[,"INFO"]) #inversions
+
+vcf@fix[whichinversionmuts,"INFO"]
+info <- str_split(vcf@fix[,"INFO"], pattern =";", simplify=TRUE)
+# This took like an hour to figure out
+a<- as.numeric(substring(info[,2], first=3)) #allele effect size
+head(a)
+hist(a, breaks=seq(-0.01, 0.01, length.out=101))
+summary(a)
+length(a)
+dim(G)
+
+dim(G_pop1)
+head(G_pop1[,1:10])
+
+G1_alpha <- G_pop1*a # make sure G and a line up
+head(G1_alpha[,1:50])
+
+#G1_alpha[,1]
+
+hist(G1_alpha, breaks=seq(-0.02, 0.02, length.out=101))
+
+G2_alpha <- G_pop2*a # make sure G and a line up
+head(G2_alpha[,1:10])
+hist(G2_alpha, breaks=seq(-0.02, 0.02, length.out=101))
+
+hist(colSums(G1_alpha))
+hist(colSums(G2_alpha))
+
+# Sanity check - mutations in rows
+head(G[1:100,1:10])
+t(G1_alpha[1:100,9:10])
+
+hist(G1_alpha)
+hist(G2_alpha)
+dim(G1_alpha)
+```
+
+snps in inversions can be seend
+```{r}
+
+vcf_pos <- as.numeric(vcf@fix[,"POS"])
+hist(vcf_pos, breaks=seq(0,2100000, length.out=100))
+hist(muts_df$position, breaks=seq(0,2100000, length.out=100))
+
+head(sort(muts_df$position))
+head(vcf_pos)
+muts_df$position_vcf <- muts_df$position + 1
+muts_df$is_vcf <- NA
+```
+FSTs from Sara's output - we want to use outflank
+```{r}
+
+G_FST <- rep(NA, nrow(G))
+
+# this is slow, but correct
+for (i in 1:nrow(muts_df)){
+  x<- grep(muts_df$mutID[i], vcf@fix[,"INFO"])
+  if (length(x)==1){
+    G_FST[x] <- muts_df$FST[i]
+  }
+}
+
+hist(muts_df$FST)
+hist(G_FST)
+
+sum(is.na(G_FST))
+# mutations that don't match up
+
+length(a)
+length(G_FST)
+```
+
+INVERSION HAPLOTYPE HEATMAPS
+```{r}
+hist(a)
+a2 <- a
+a2[a>0.001] <- 1
+a2[a<0.001] <- -1
+
+
+G1_alpha <- G_pop1*a2*G_FST # make sure G and a line up
+G2_alpha <- G_pop2*a2*G_FST # make sure G and a line up
+
+hist(G_pop1*a2)
+
+# Sanity check - mutations in rows
+
+heatmap(t(G1_alpha[, pop1_order]),   
+        main="Pop1 G*a+-*FST",cexCol = 0.3,
+           Colv = NA, useRaster=TRUE,
+        scale="none",
+        # Rowv = NA, 
+       col=two.colors(100, start = "blue", end="red", middle="white") )
+      # ADDING BREAKS SCREWS UP EVERYTHING
+        #breaks=seq(-0.005, 0.005, length.out = 101))
+
+heatmap(t(G2_alpha[, pop2_order]),   
+        main="Pop2 G*a+-*FST",cexCol = 0.3,
+           Colv = NA, useRaster=TRUE,
+        scale="none",
+       #  Rowv = NA, 
+       col=two.colors(100, start = "blue", end="red", middle="white") )
+```
+
+Heatmap with signed alleles according to a reference individual
+
+In real genomes, one individual would be the reference individual. Let's pick individual 1. 
+
+* Resign all alleles that are 2 in individual 1 as 0.
+* For heterozygous loci, assign them according to whether they are a higher frequency in population 1 than pop 2
+```{r}
+G_ref1 <- G_pop1
+G_ref2 <- G_pop2
+
+af_pop1 <- rowSums(G_pop1)/(2*ncol(G_pop1))
+af_pop2 <- rowSums(G_pop2)/(2*ncol(G_pop2))
+hist(af_pop1)
+hist(af_pop2)
+todo <- which(af_pop1>af_pop2)
+
+todo_homo <- which(G[,1]==2)
+for (i in todo_homo){
+  G_ref1[i,] <- abs(G_pop1[i,]-2)
+  G_ref2[i,] <- abs(G_pop2[i,]-2)
+}
+
+todo_hetero <- which(G[,1]==1 & af_pop1>af_pop2)
+for (i in todo_hetero){
+  G_ref1[i,] <- abs(G_pop1[i,]-2)
+  G_ref2[i,] <- abs(G_pop2[i,]-2)
+}
+
+table(G_ref1[,1])
+
+table(G_ref1)
+table(G_ref2)
+table(G_isInvWindow)
+
+
+
+heatmap(t(G_ref1[,pop1_order]), Rowv = NA,  main="Pop1 genotypes",cexCol = 0.3,
+             Colv = NA, useRaster=TRUE,
+        scale="none")
+
+
+heatmap(t(G_ref2[,pop2_order]), Rowv = NA,  main="Pop2 genotypes",cexCol = 0.3,
+             Colv = NA, useRaster=TRUE,
+        scale="none")
+```
+
+Percent Va within inversions
+
+```{r}
+
+G_isInvWindow <- rep("OUT", nrow(G))
+for (i in 1:nrow(G)){
+  if(is.window(as.numeric(vcf@fix[i,"POS"]))){
+   G_isInvWindow[i] <- "INV" 
+  }
+}
+table(G_isInvWindow)
+
+G_isInvWindow[which(as.numeric(vcf@fix[,"POS"]) > 2000000)] <- "NEUT"
+table(G_isInvWindow)
+
+
+Va <- a^2*p*(1-p)
+Va_perc <- Va/sum(Va)
+
+Va_inv <- sum(Va_perc[G_isInvWindow=="INV"])
+Va_out <- sum(Va_perc[G_isInvWindow=="OUT"])
+
+boxplot(G_FST~G_isInvWindow)
+
+# Percent of genome covered by inversions
+DOES NOT ACCOUNT FOR OVERLAP
+Inv_perc <- sum(inv_df_sm$inv_end - inv_df_sm$inv_pos)/max(muts_df$position)
+
+Va_inv/Inv_perc
+Va_out/(1-Inv_perc)
 
 
 ```
+https://github.com/TestTheTests/TTT_RecombinationGenomeScans/blob/master/src/b_Proc_Sims.R
+PRUNE FOR LD
+Line 345 - BUT CHECK NEW VIGNETTE FOR THIS PROGRAM bigsnpr and bigstatsr
+
+### PCADAPT pruned data ####   
+Line 453
+
+OUTFLANK
+line 470 - also see viz in vignette
+```{r}
+
+```
+
+SARA'S CODE
