@@ -28,4 +28,4 @@ I can setValue(key name, value that I want (singlton or vector))
 ### KEL thoughts
 
 I was thinking it would be cool to make your bubble plot, where the size of the bubble is FST and the color is the same, but you track an individual inversion through time as it’s sum increases and FST (the increasing sum implies increasing number of mutation). 
-
+![Inversion Origin with FST and QTN effects through Time](../figures/OriginDynamics/20210210_invEffectTime.pdf)
