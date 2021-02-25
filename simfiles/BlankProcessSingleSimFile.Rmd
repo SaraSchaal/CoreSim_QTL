@@ -46,7 +46,7 @@ cr_pop2 <- colorRamp(c("grey", "darkblue"))
 
 
 
-df <- read.table("movieData.txt", header=TRUE) SUB SEED FILENAME
+df <- read.table("movieData.txt", header=TRUE) #SUB SEED FILENAME
 head(df)
 tail(df)
 df$chrom = floor(df$inv_pos/100000)
@@ -128,7 +128,7 @@ gen = 50000
    mtext("Inversion Position", side=1, outer=TRUE
    )
     dev.off()
-}
+#}
 
 ```
 
@@ -182,7 +182,7 @@ hist(a_freq)
 vcf_ind <- data.frame(vcf_ind=colnames(vcf@gt)[-1])
 
 colnames(G) <- vcf_ind$vcf_ind
-ADD MUTATION NAMES TO G
+#ADD MUTATION NAMES TO G
 head(G[,1:5])
 dim(G)
 
@@ -410,7 +410,7 @@ Va_out <- sum(Va_perc[G_isInvWindow=="OUT"])
 boxplot(G_FST~G_isInvWindow)
 
 # Percent of genome covered by inversions
-DOES NOT ACCOUNT FOR OVERLAP
+#DOES NOT ACCOUNT FOR OVERLAP
 Inv_perc <- sum(inv_df_sm$inv_end - inv_df_sm$inv_pos)/max(muts_df$position)
 
 Va_inv/Inv_perc
@@ -432,3 +432,10 @@ line 470 - also see viz in vignette
 ```
 
 SARA'S CODE
+
+
+```{r}
+
+
+
+```
