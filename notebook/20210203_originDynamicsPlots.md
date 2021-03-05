@@ -35,3 +35,8 @@ use a bubble size based on the area instead of diameter you can see different bu
 add track lines to look at an inversion through time 
 change to be a gradient of blues and reds for the different inversion IDs
 overlapping inversion only calculate for those that are in the final generation 
+
+![Inversion Origin with FST and QTN effects through Time](../figures/OriginDynamics/20210301_invEffectTimeAll.png)
+![Inversion Origin with FST and QTN effects through Time](../figures/OriginDynamics/20210301_invEffectTimeOneInv.pdf)
+![Inversion Origin with FST and QTN effects through Time](../figures/OriginDynamics/20210301_invEffectTimeAllLine.pdf)
+I don't this last one. Seems too busy.
