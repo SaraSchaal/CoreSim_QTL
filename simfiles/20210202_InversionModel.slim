@@ -353,7 +353,6 @@ late(){
 			end = pos + len - 1;														 // end of inversion
 			originGen = mut.originGeneration;									 // origin genreation of the inversion mutation
 			mut_genomes = genomes[genomes.containsMutations(mut)];		 // genomes with inversion
-//WORK THIS OUT WITH KATIE ABOUT INVERSION WINDOW	
 			non_mut_genomes = genomes[!genomes.containsMutations(mut)]; // genomes without inversion
 			origSel = mut.getValue("OrigSumSel");									 // selection coefficients of all QTNs captured when inversion arose
 			origQTNnum = mut.getValue("OrigNumQTNs");											 // number of QTNs captured when inversion arose 
@@ -556,8 +555,8 @@ late(){
 	// X X Individual genomes 
 	
 	inds = sim.subpopulations.individuals;
-	randInds = sample(inds, 100);
-	randInds.genomes.outputVCF(paste(c(MYPATH, "/", MYSEED, "_InversionVCF.vcf"), sep= ""));
+	//randInds = sample(inds, 100);
+	inds.genomes.outputVCF(paste(c(MYPATH, "/", MYSEED, "_InversionVCF.vcf"), sep= ""));
 	
 	// X X X X Phenotypes & Number of Heterozygous vs Homozygous Individuals for Each Inversion 
 	
@@ -643,7 +642,7 @@ late(){
 	
 	for(i in 0:(size(m_neut)-1)){
 		out_m = out_m + m_neut.position[i] + " " + m_neut.id[i] + " " + 0 + " " +
-			m_neut.originGeneration[i] + " " + "m1 " + m_neut_freqs[i] + m_neut_p1freqs[i] + " " +
+			m_neut.originGeneration[i] + " " + "m1 " + m_neut_freqs[i] + " " + m_neut_p1freqs[i] + " " +
 			m_neut_p2freqs[i] + " " + 0 + " " + neut_FST[i] + "\n";
 	}
 	
@@ -671,7 +670,7 @@ late(){
 	out_m_inv = NULL;
 	for(i in 0:(size(m_inv)-1)){
 		out_m = out_m + m_inv.position[i] + " " + m_inv.id[i] + " " + 0 + " " +
-			m_inv.originGeneration[i] + " " + "m3 " + m_inv_freqs[i] + m_inv_p1freqs[i] + " " +
+			m_inv.originGeneration[i] + " " + "m3 " + m_inv_freqs[i] + " " + m_inv_p1freqs[i] + " " +
 			m_inv_p2freqs[i] + " " + 0 + " " + inv_FST[i] + "\n";
 	}
 	

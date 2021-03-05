@@ -78,17 +78,52 @@ plot(qtnSelCoef~origin_gen, data = df.InvDataOriginMAF, xlab = "Inversion Origin
 
 ggplot(df.invFinalAllDataPop, aes(x = sim_gen, y = qtnSelCoefsum, group = pop)) + 
   geom_point(aes(color = pop, size = inv_FST), alpha = 0.8) + 
+  geom_line(aes(color = pop), alpha = 0.8) + 
   scale_color_manual(values=c("navy", "red")) + 
+  scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) + 
   theme_classic() +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92"),
         text = element_text(size = 15)) +
   labs(title = "Total Effect of Inversion QTNs on Phenotype",
        y = "sum of each Inversion QTNs effects on phenotype",
-       x = "Inversion Origin Generation") +
+       x = "Generation") +
   guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
   guides(size = guide_legend(title = "Inversion FST")) 
 
+ggplot(df.invFinalAllDataPop, aes(x = sim_gen, y = qtnSelCoefsum, group = pop)) + 
+  geom_point(aes(color = pop, size = inv_FST), alpha = 0.8) + 
+#  geom_line(aes(color = pop), alpha = 0.8) + 
+  scale_color_manual(values=c("navy", "red")) + 
+  scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) + 
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92"),
+        text = element_text(size = 15)) +
+  labs(title = "Total Effect of Inversion QTNs on Phenotype",
+       y = "sum of each Inversion QTNs effects on phenotype",
+       x = "Generation") +
+  guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
+  guides(size = guide_legend(title = "Inversion FST")) 
+
+
+example <- df.invFinalAllDataPop[df.invFinalAllDataPop$sim_gen == 50000,][1,2]
+df.example <- df.invFinalAllDataPop[df.invFinalAllDataPop$inv_id == example,]
+
+ggplot(df.example, aes(x = sim_gen, y = qtnSelCoefsum)) + 
+  geom_point(aes(color = pop, size = inv_FST), alpha = 0.8) + 
+  geom_line(aes(color = pop), alpha = 0.8) + 
+  scale_color_manual(values=c("navy", "red")) + 
+  scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) + 
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92"),
+        text = element_text(size = 15)) +
+  labs(title = "Total Effect of Inversion QTNs on Phenotype",
+       y = "sum of each Inversion QTNs effects on phenotype",
+       x = "Generation") +
+  guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
+  guides(size = guide_legend(title = "Inversion FST")) 
 
 
 ### How often does overlap occur in this simulation

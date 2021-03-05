@@ -108,7 +108,8 @@ df.noSelMutsQTNsM <- rbind(df.noSelMutsQTNs, df.noSelMutsNeut)
 df.SelMutsQTNsM <- rbind(df.SelMutsQTNs, df.SelMutsNeut)
 df.SeliWQTNsM <- rbind(df.SeliWMutsQTNs, df.SeliWMutsNeut)
 df.noSeliWQTNsM <- rbind(df.noSeliWMutsQTNs, df.noSeliWMutsNeut)
-
+df.SeliWQTNsM$FST <- as.numeric(as.character(df.SeliWQTNsM$FST))
+df.noSeliWQTNsM$FST <- as.numeric(as.character(df.noSeliWQTNsM$FST))
 #noSelQTNs <- ggplot(df.noSelMutsQTNs, aes(x = FST, color = inOut)) +
                  # geom_histogram(alpha = 0.9, bins = 100) 
                   #geom_histogram(df.noSelMutsNeut, aes(x = FST))
@@ -117,6 +118,12 @@ df.noSeliWQTNsM <- rbind(df.noSeliWMutsQTNs, df.noSeliWMutsNeut)
                   #geom_histogram(fill = "white", alpha = 0.5, bins = 100) 
                   #geom_histogram(df.SelMutsNeut, aes(x = FST))
 
+SelFSTpos <- ggplot(df.SelMutsQTNsM, aes(x = position, y = FST, group = inOut)) + 
+  geom_point(aes(color = inOut)) + 
+  scale_color_manual(values=c( "red", "goldenrod", "navy")) +
+  xlim(0, 2100000) + 
+  ylim(0, 0.2) +
+  theme(legend.position = "none")
 
 noSelFSTpos <- ggplot(df.noSelMutsQTNsM, aes(x = position, y = FST, group = inOut)) + 
                  geom_point(aes(color = inOut)) + 
@@ -131,7 +138,7 @@ noSelFSTposNoylim <- ggplot(df.noSelMutsQTNsM, aes(x = position, y = FST, group 
                         xlim(0, 2100000) 
               
                  
-SeliWFSTpos <- ggplot(df.SeliWMutsQTNsM, aes(x = position, y = FST, group = inOut)) + 
+SeliWFSTpos <- ggplot(df.SeliWQTNsM, aes(x = position, y = FST, group = inOut)) + 
                     geom_point(aes(color = inOut)) + 
                     scale_color_manual(values=c( "red", "goldenrod", "navy")) +
                     xlim(0, 2100000) + 
@@ -139,26 +146,18 @@ SeliWFSTpos <- ggplot(df.SeliWMutsQTNsM, aes(x = position, y = FST, group = inOu
                     theme(legend.position = "none")
                    # geom_vline()
 
-noSeliWFSTpos <- ggplot(df.noSeliWMutsQTNsM, aes(x = position, y = FST, group = inOut)) + 
+noSeliWFSTpos <- ggplot(df.noSeliWQTNsM, aes(x = position, y = FST, group = inOut)) + 
                   geom_point(aes(color = inOut)) + 
                   scale_color_manual(values=c("red", "goldenrod", "navy")) +
                   xlim(0, 2100000) +
                   ylim(0, 0.2) +
                   theme(legend.position = "none")
 
-noSeliWFSTposNoylim <- ggplot(df.noSeliWMutsQTNsM, aes(x = position, y = FST, group = inOut)) + 
+noSeliWFSTposNoylim <- ggplot(df.noSeliWQTNsM, aes(x = position, y = FST, group = inOut)) + 
                         geom_point(aes(color = inOut)) + 
                         scale_color_manual(values=c("red", "goldenrod", "navy")) +
                         xlim(0, 2100000) 
 
-
-SeliWFSTpos <- ggplot(df.SeliWMutsQTNsM, aes(x = position, y = FST, group = inOut)) + 
-                      geom_point(aes(color = inOut)) + 
-                      scale_color_manual(values=c( "red", "goldenrod", "navy")) +
-                      xlim(0, 2100000) + 
-                      ylim(0, 0.2) +
-                      theme(legend.position = "none")
-                      # geom_vline()
                     
               
 ggarrange(SelFSTpos, noSelFSTpos, noSelFSTposNoylim, nrow = 1, ncol = 3)

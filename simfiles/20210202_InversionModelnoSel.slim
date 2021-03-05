@@ -298,7 +298,7 @@ late(){
 			mut_genomes = genomes[genomes.containsMutations(muts)];					// genomes with inversion
 			QTNs = unique(mut_genomes.mutationsOfType(m2), preserveOrder = F);  // find all m2 mutations within those genomes with inversion 		
 			QTNsInInvOrig = QTNs[QTNs.position >= pos & QTNs.position <= end];  // subset all qtns to only be those within inversion
-			InvQTNsID = QTNsInInvOrig.id;														// IDs of QTNs within inversion ---- DON'T NEED ANYMORE?
+			InvQTNsID = QTNsInInvOrig.id;														// IDs of QTNs within inversion 
 			InvQTNsSel = QTNsInInvOrig.selectionCoeff;									// QTNs in inversion total selection coefficient
 			if(DOM == T){
 				InvQTNdom = QTNsInInvOrig.getValue("dom");								// dominance value of each QTN
@@ -556,8 +556,8 @@ late(){
 	// X X Individual genomes 
 	
 	inds = sim.subpopulations.individuals;
-	randInds = sample(inds, 100);
-	randInds.genomes.outputVCF(paste(c(MYPATH, "/", MYSEED, "noSel_InversionVCF.vcf"), sep= ""));
+	//randInds = sample(inds, 100);
+	inds.genomes.outputVCF(paste(c(MYPATH, "/", MYSEED, "noSel_InversionVCF.vcf"), sep= ""));
 	
 	// X X X X Phenotypes & Number of Heterozygous vs Homozygous Individuals for Each Inversion 
 	
@@ -643,7 +643,7 @@ late(){
 	
 	for(i in 0:(size(m_neut)-1)){
 		out_m = out_m + m_neut.position[i] + " " + m_neut.id[i] + " " + 0 + " " +
-			m_neut.originGeneration[i] + " " + "m1 " + m_neut_freqs[i] + m_neut_p1freqs[i] + " " +
+			m_neut.originGeneration[i] + " " + "m1 " + m_neut_freqs[i] + " " + m_neut_p1freqs[i] + " " +
 			m_neut_p2freqs[i] + " " + 0 + " " + neut_FST[i] + "\n";
 	}
 	
@@ -670,7 +670,7 @@ late(){
 	
 	for(i in 0:(size(m_inv)-1)){
 		out_m = out_m + m_inv.position[i] + " " + m_inv.id[i] + " " + 0 + " " +
-			m_inv.originGeneration[i] + " " + "m3 " + m_inv_freqs[i] + m_inv_p1freqs[i] + " " +
+			m_inv.originGeneration[i] + " " + "m3 " + m_inv_freqs[i] + " " + m_inv_p1freqs[i] + " " +
 			m_inv_p2freqs[i] + " " + 0 + " " + inv_FST[i] + "\n";
 	}
 	

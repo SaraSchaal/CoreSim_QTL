@@ -15,7 +15,8 @@ options(scipen = 999)
 
 # download data
  folder <- "results/Inversion/20201115_FullSet"
- df.params <- read.table("src/InvSimParams.txt", header = TRUE)
+ seed <- "3384725"
+ #df.params <- read.table("src/InvSimParams.txt", header = TRUE)
  df.invTime <- read.table(paste(folder, "FullSet_invTime.txt", sep = ""), header = TRUE)
  df.invData <- read.table(paste(folder, "FullSet_invData.txt", sep = ""), header = TRUE)
  df.LAallData <- read.table(paste(folder, "FullSet_LAallData.txt", sep = ""), header = TRUE)
