@@ -9,4 +9,6 @@ Brief moment of panic when I saw so many with the same FST values, but this is c
 Why don't we see any inversions being outliers that are neutral? I expected to see some being outliers.  
 
 
-TO ADD INVERSION WINDOW COMPARISON: RUNNING NOW DOUBLES THE SIMULATION RUN TIME UGHH. TIMED OUT OVER NIGHT LAST NIGHT.
+![FST of QTNs](../figures/FSToutliers/FSTcolorInOutNeutwindow.png)
+
+**fix add neutral mutations.**
