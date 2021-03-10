@@ -24,14 +24,14 @@ To generate the null distribution, we cut the genome into 1000 chunks (500 bases
 * Cut genome into 1000 chunks, remove anything that overlaps with inversion, label as inversion and non-inversion windows
   * Va_out_scaled = sum(Va_perc[“OUT”]))/map_distance (chunk i)
   * SNPs_out_scaled = # snps / map distance
-  * # outliers compared to control sims / map_distance
-  * # outliers OutFLANK / map_distance
+  * num outliers compared to control sims / map_distance
+  * num outliers OutFLANK / map_distance
 
 For inversion window i, 
   * get Va_perc_inv_i = sum(Va_perc[inv_i])) - all SNPS in that inversion window
   * Va_inv_i_scaled = Va_inv_i/(map distance inversion window)
   * Get # snps / map distance
-  * # outliers compared to control sims / map_distance
-  * # outliers OutFLANK / map_distance
+  * num outliers compared to control sims / map_distance
+  * num outliers OutFLANK / map_distance
 
 compare obsreved to > null dsitribution
