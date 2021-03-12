@@ -26,7 +26,7 @@ SANITY CHECK FOR 0/1 in VCF
 
 ## List Packages Needed 
 packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", "fields", "MultivariateRandomForest", "akima", "MLmetrics", "ash", "plotly", "stringr", "tidyverse",
-                     "bigsnpr", "bigstatsr")
+                     "bigsnpr", "bigstatsr", "ggpubr")
 
 ## install packages that aren't installed already
 for (i in 1:length(packages_needed)){
@@ -296,14 +296,15 @@ muts_df$is_vcf <- NA
 
 FSTs from Sara's output - we want to use outflank
 ```{r}
+## May not need but make sure you don't need it as a sanity check.
 
 G_FST <- rep(NA, nrow(G)) 
 
 # this is slow, but correct
-for (i in 1:nrow(muts_df)){
-  x<- grep(muts_df$mutID[i], vcf@fix[,"INFO"])
+for (i in 1:nrow(df.muts)){
+  x<- grep(df.muts$mutID[i], vcf@fix[,"INFO"])
   if (length(x)==1){
-    G_FST[x] <- muts_df$FST[i]
+    G_FST[x] <- df.muts$FST[i]
   }
 }
 
@@ -415,6 +416,7 @@ table(G_isInvWindow)
 Va <- a^2*p*(1-p)
 Va_perc <- Va/sum(Va)
 
+# HOW MANY SNPS ARE IN EACH OF THESE
 Va_inv <- sum(Va_perc[G_isInvWindow=="INV"])
 Va_out <- sum(Va_perc[G_isInvWindow=="OUT"])
 
@@ -432,6 +434,12 @@ Va_out/(1-Inv_perc)
 https://github.com/TestTheTests/TTT_RecombinationGenomeScans/blob/master/src/b_Proc_Sims.R
 PRUNE FOR LD
 Line 345 - BUT CHECK NEW VIGNETTE FOR THIS PROGRAM bigsnpr and bigstatsr
+outflank only works when you have a lot of SNPs 
+power will be highest when > 1000
+have an output for number of loci that we estimate FST, and the number of loci used after trimming/LD trim (a few hundred or more is best)
+if this doesn't work try this (function).
+
+Flag qtn with its inversion window ID and make a string that has the inversion IDs that contain the qtn for those that are outliers to the control simulations. Is it an FST outlier by outflank. 
 ### Prune ###
 ```{r}
 

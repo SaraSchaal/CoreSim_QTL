@@ -16,15 +16,15 @@ library(dplyr)
 library(purrr)
 options(scipen = 999)
 
-# Load data
+# Load File Path
 folder <- "results/Inversion/20201115_FullSet"
+
+# upload a file with all the simulations that were run in this folder
 df.params <- read.table("src/InvSimParams.txt", header = TRUE)
 ```
 
 ### Run the following code chunk once to get full data files to do further analyses on ###
 ```{r}
-
-
 ## Inversion Through Time
 df.invTime <- NULL
 count <- 0
@@ -521,5 +521,17 @@ movie.Inv.Data <- merge(movie.Inv.Data, all.y = TRUE, by = c("seed", "inv_id"))
 
 write.table(movie.Inv.Data, "movieInvData.txt", row.names = FALSE)
 write.table(movie.InvQTN.Data, "movieInvQTNData.txt", row.names = FALSE)
+
+```
+
+
+# Subset for a file that you are interested in
+```{r}
+# Run subset for either the seed you want or the parameter values
+# either this line:
+df.singleFile <- subset(df.params, subset = seed == 3383282)
+# or this line:
+df.singleFile <- subset(df.params, subset = muBase == 1e-7 & muInv == 1e-3 & alpha == 0.002 & sigmaK == 0.75 & 
+                                            rep == 1 & enVar == 0, mig1 == 0.25)
 
 ```

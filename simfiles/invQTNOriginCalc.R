@@ -122,6 +122,7 @@ ggplot(df.example, aes(x = sim_gen, y = qtnSelCoefsum)) +
   labs(title = "Total Effect of Inversion QTNs on Phenotype",
        y = "sum of each Inversion QTNs effects on phenotype",
        x = "Generation") +
+  ylim(-0.2, 0.2) +
   guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
   guides(size = guide_legend(title = "Inversion FST")) 
 
@@ -157,12 +158,13 @@ for(i in 1:length(unique(inv.data$sim_gen))){
 }
 colnames(df.overlap) <- c("sim_gen", "inv_id1", "inv_id2", "inv_id1_start", "inv_id1_end", "inv_id2_start", "inv_id2_end")
 df.overlap <- as.data.frame(df.overlap)
-head(df.overlap)
+tail(df.overlap)
 nrow(df.overlap)
 
 length(unique(paste(df.overlap$inv_id1, df.overlap$inv_id2)))
 
+## 3 were in final generation and all gain the inversion in the last few gens
 
-df.overlap$IDpaste <- paste(df.overlap$inv_id1, df.overlap$inv_id2)
-df.unique <- as.vector(unique(df.overlap$IDpaste))
-df.overlap[df.overlap$IDpaste %in% df.unique, ]
+#df.overlap$IDpaste <- paste(df.overlap$inv_id1, df.overlap$inv_id2)
+#df.unique <- as.vector(unique(df.overlap$IDpaste))
+#df.overlap[df.overlap$IDpaste %in% df.unique, ]
