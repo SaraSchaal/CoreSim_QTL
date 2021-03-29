@@ -2,7 +2,7 @@
 # Compare same parameters between a high and low migration rate
 
 ## Local adaptation
-![LA HighMig](../figures/20210321_lowVhighMig/High_Mig/LA_HighMig_3384725.png =250x)
+![LA HighMig](../figures/20210321_lowVhighMig/High_Mig/LA_HighMig_3384725.png)
 ![LA LowMig](../figures/20210321_lowVhighMig/Low_Mig/LA_lowMig_3383643.png)
 Notes:   
 
