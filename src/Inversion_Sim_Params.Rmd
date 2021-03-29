@@ -74,6 +74,8 @@ dim(df.params)
 write.table(df.params, "invSimParams.txt", row.names = FALSE)
 # test.data <- head(df.params)
 # write.table(test.data, "testINVparamslist.txt", row.names = FALSE)
+df.params <- as.data.frame(df.params)
+df.params[df.params$muInv == 0.001 & df.params$muBase == 0.0000001 & sigmaK,]
 
 ```
 

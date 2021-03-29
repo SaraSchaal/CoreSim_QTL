@@ -682,7 +682,7 @@ ggplot(df.invFinalsubset, aes(x = sim_gen, y = qtnSelCoefsum)) +
         strip.background = element_rect(colour = "white", fill = "grey92"),
         text = element_text(size = 15)) +
   labs(title = "Total Effect of Inversion QTNs on Phenotype",
-       y = "sum of each Inversion QTNs effects on phenotype",
+       y = "sum of each Inversion QTNs \neffects on phenotype",
        x = "Generation") +
   ylim(-0.2, 0.2) +
   guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
@@ -690,6 +690,7 @@ ggplot(df.invFinalsubset, aes(x = sim_gen, y = qtnSelCoefsum)) +
 
 
 ```
+
 ## VCF ##
 ```{r}
 

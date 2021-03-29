@@ -114,8 +114,8 @@ initialize(){
 	writeFile(paste(c(MYPATH, "/", MYSEED, "noSel_outputInvTime.txt"), sep = ""), outInv_head);
 	
 	// header for inversion summary info
-	outInvSum_head = "inv_id " + "sim_gen " + "inv_originGen " + "inv_pos " + "inv_end " + "inv_length " + "invOrigQTNSelCoef " + 
-							"invOrigNumQTNs ";
+	outInvSum_head = "inv_id " + "sim_gen " + "inv_originGen " + "inv_pos " + "inv_end " + "inv_length " +
+	 "invOrigQTNSelCoef " + "invOrigNumQTNs ";
 	writeFile(paste(c(MYPATH, "/", MYSEED, "noSel_outputInvSumInfo.txt"), sep = ""), outInvSum_head);
 	
 	// header for qtn dynamics info every 200 generations
@@ -363,8 +363,8 @@ late(){
 			
 			// output meta information about the inversion if less than 200 generations old (FIRST OUTPUT FILE IN SPREADSHEET)
 			if((sim.generation - originGen) <= 200){
-				outINVsum = mut.id + " " + sim.generation + " " + originGen + " " + pos + " " + end + " " + len + " " + origSel + 
-								" " + origQTNnum;
+				outINVsum = mut.id + " " + sim.generation + " " + originGen + " " + pos + " " + end + " " + len + " " +
+				 origSel + " " + origQTNnum;
 				writeFile(paste(c(MYPATH, "/", MYSEED, "noSel_outputInvSumInfo.txt"), sep = ""), outINVsum, append = T);
 			}
 			

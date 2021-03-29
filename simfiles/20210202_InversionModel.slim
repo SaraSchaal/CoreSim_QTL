@@ -176,7 +176,7 @@ late() {
 				e_end = e_start + e.tag;
 				
 				// if inv start location is less than existing end and the inv end location is greater than exisiting start
-				// make overlap = true and move onto next? so it fails to establish 
+				// make overlap = true and move onto next, so it fails to establish 
 				if ((inv_start <= e_end) & (inv_start + inv_length - 1 >= e_start)){
 					
 					overlaps = T;
