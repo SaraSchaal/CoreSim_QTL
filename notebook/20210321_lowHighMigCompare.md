@@ -60,7 +60,7 @@ Notes:
 Notes: 
 
 ## Effect of Inv QTNs on Phenotypes
-<img src="../figures/20210321_lowVhighMig/High_Mig/3384725_invOrigin.png" width="500">
-<img src="../figures/20210321_lowVhighMig/Mod_Mig_highMu/3384724_invOrigin.png" width ="500">
-<img src="../figures/20210321_lowVhighMig/Mod_Mig_lowMu/3383644_invOrigin.png" width ="500">
-<img src="../figures/20210321_lowVhighMig/Low_Mig/3383643_invOrigin.png" width="500">
+<img src="../figures/20210321_lowVhighMig/High_Mig/3384725_invOrigin.png" width="750">
+<img src="../figures/20210321_lowVhighMig/Mod_Mig_highMu/3384724_invOrigin.png" width ="750">
+<img src="../figures/20210321_lowVhighMig/Mod_Mig_lowMu/3383644_invOrigin.png" width ="750">
+<img src="../figures/20210321_lowVhighMig/Low_Mig/3383643_invOrigin.png" width="750">
