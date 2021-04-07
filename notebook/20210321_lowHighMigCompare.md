@@ -5,6 +5,7 @@
 ![LA HighMig](../figures/20210321_lowVhighMig/High_Mig/3384725_LA.png)
 ![LA ModMigHighMu](../figures/20210321_lowVhighMig/Mod_Mig_highMu/3384724_LA.png)
 ![LA ModMigLowMu](../figures/20210321_lowVhighMig/Mod_Mig_lowMu/3383644_LA.png)
+<img src="../figures/20210321_lowVhighMig/High_Mig/3384725_LA.png" width="200">
 ![LA LowMig](../figures/20210321_lowVhighMig/Low_Mig/3384725_LA.png)
 Notes:   
 
