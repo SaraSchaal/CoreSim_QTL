@@ -14,8 +14,6 @@ PIPELINE https://github.com/TestTheTests/TTT_RecombinationGenomeScans/blob/maste
 
 vcftools --vcf 3384725_InversionVCF.vcf --max-indv 200 --maf 0.05 --out 3384725_InversionVCF_200ind_MAF05 --recode --recode-INFO-all
 
-GIVE SARA VCFTOOLS CODE
-
 
 INVERSION MOVIE FRAME
 args <- get the seed from the command line

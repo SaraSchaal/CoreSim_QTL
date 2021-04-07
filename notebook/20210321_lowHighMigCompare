@@ -2,8 +2,10 @@
 # Compare same parameters between a high and low migration rate
 
 ## Local adaptation
-![LA HighMig](../figures/20210321_lowVhighMig/High_Mig/LA_HighMig_3384725.png)
-![LA LowMig](../figures/20210321_lowVhighMig/Low_Mig/LA_lowMig_3383643.png)
+![LA HighMig](../figures/20210321_lowVhighMig/High_Mig/3384725_LA.png)
+![LA ModMigHighMu](../figures/20210321_lowVhighMig/Mod_Mig_highMu/3384724_LA.png)
+![LA ModMigLowMu](../figures/20210321_lowVhighMig/Mod_Mig_lowMu/3383644_LA.png)
+![LA LowMig](../figures/20210321_lowVhighMig/Low_Mig/3384725_LA.png)
 Notes:   
 
 

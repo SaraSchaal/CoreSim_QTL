@@ -25,7 +25,7 @@ for (i in 1:length(packages_needed)){
 }
 
 # download data
- folder <- "results/Inversion/20210220_inOutInvFST/"
+ folder <- "results/Inversion/20210321_runLowMig/"
  #folder <- "results/20210129_Movie/"
  seed <- "3384725"
  #df.params <- read.table("src/InvSimParams.txt", header = TRUE)
@@ -39,7 +39,6 @@ for (i in 1:length(packages_needed)){
  df.params <- read.table(paste0(folder, seed, "_outputSimStats.txt", sep = ""), header = FALSE)
  colnames(df.params) <- c("seed", "mig1", "mig2", "N1", "N2", "r", "muInv", 
                           "muBase", "alpha", "sigmaK", "burnin", "rep", "enVar")
- df.InvOrigin <- read.table(paste(folder, "3384725_outputOriginInvQtn.txt", sep = ""), header = TRUE)
  
  df.invTime.NS <- read.table(paste0(folder, seed, "noSel_outputInvTime.txt", sep = ""), header = TRUE)
  df.invData.NS <- read.table(paste0(folder, seed, "noSel_outputInvSumInfo.txt", sep = ""), header = TRUE)
@@ -55,9 +54,10 @@ for (i in 1:length(packages_needed)){
 ### SELECTION ###
   df.invAllDatatemp <- merge(df.invData, df.invTime, by.x = c("inv_id"), 
                          by.y = c("inv_id"), all.y = TRUE)
-  colnames(df.invAllDatatemp)[7] <- "sim_gen"
+  colnames(df.invAllDatatemp)[9] <- "sim_gen"
   df.invAllData <- df.invAllDatatemp[,-2]
   df.invAllData$inv_age <- df.invAllData$sim_gen - df.invAllData$inv_originGen
+  df.invAllData$num_qtns_Lscaled <- df.invAllData$num_qtns/df.invAllData$inv_length
   
 ### NO SELECTION ###
   df.invAllDatatemp.NS <- merge(df.invData.NS, df.invTime.NS, by.x = c("inv_id"), 
@@ -65,6 +65,7 @@ for (i in 1:length(packages_needed)){
   colnames(df.invAllDatatemp.NS)[9] <- "sim_gen"
   df.invAllData.NS <- df.invAllDatatemp.NS[,-2]
   df.invAllData.NS$inv_age <- df.invAllData.NS$sim_gen - df.invAllData.NS$inv_originGen
+  df.invAllData.NS$num_qtns_Lscaled <- df.invAllData.NS$num_qtns/df.invAllData.NS$inv_length
  
 ```
 
@@ -79,10 +80,11 @@ for (i in 1:length(packages_needed)){
  top10.data <- df.invAllData %>%
     group_by(sim_gen) %>%
     filter(inv_FST>=quantile(inv_FST, 0.9)) %>%
-    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length"), 
+    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length", "num_qtns_Lscaled"), 
                  mean, .groups = "keep") %>%
     rename(inv_ageT10 = inv_age, mean_qtnSelCoefT10 = mean_qtnSelCoef, 
-           num_qtnsT10 = num_qtns, inv_lengthT10 = inv_length)
+           num_qtnsT10 = num_qtns, inv_lengthT10 = inv_length, 
+           num_qtns_LscaledT10 = num_qtns_Lscaled)
 
   top10.data.nosum <- df.invAllData %>%
     group_by(sim_gen) %>%
@@ -92,10 +94,11 @@ for (i in 1:length(packages_needed)){
   bottom90.data <- df.invAllData %>%
     group_by(sim_gen) %>%
     filter(inv_FST<quantile(inv_FST, 0.9)) %>%
-    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length"), 
+    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length", "num_qtns_Lscaled"), 
                  mean, .groups = "keep") %>%
     rename(inv_ageB90 = inv_age, mean_qtnSelCoefB90 = mean_qtnSelCoef, 
-           numqtnsB90 = num_qtns, inv_lengthB90 = inv_length) 
+           numqtnsB90 = num_qtns, inv_lengthB90 = inv_length,
+           num_qtns_LscaledB90 = num_qtns_Lscaled) 
   
      bot90.data.nosum <- df.invAllData %>%
       group_by(sim_gen) %>%
@@ -106,30 +109,33 @@ for (i in 1:length(packages_needed)){
        #      numqtnsSDB90 = num_qtns, inv_lengthSDB90 = inv_length)
                       
      
-    sd.Top10 <- aggregate(cbind(num_qtns, mean_qtnSelCoef, num_qtns, inv_length)~sim_gen, 
+    sd.Top10 <- aggregate(cbind(num_qtns, mean_qtnSelCoef, num_qtns, inv_length, num_qtns_Lscaled)~sim_gen, 
                data = top10.data.nosum, FUN = sd)
-    colnames(sd.Top10)[2:5] <- c("sd_inv_ageT10", "sd_qtnSelCoefT10", "sd_num_qtnsT10", "sd_inv_lengthT10")
-    sd.Bottom90 <- aggregate(cbind(num_qtns, mean_qtnSelCoef, num_qtns, inv_length)~sim_gen, 
-               data = bot90.data.nosum, FUN = sd)
-    colnames(sd.Bottom90)[2:5] <- c("sd_inv_ageB90", "sd_qtnSelCoefB90", "sd_num_qtnsB90", "sd_inv_lengthB90")              
+    colnames(sd.Top10)[2:6] <- c("sd_inv_ageT10", "sd_qtnSelCoefT10", "sd_num_qtnsT10", 
+                                 "sd_inv_lengthT10", "sd_num_qtns_LscaledT10")
+    sd.Bottom90 <- aggregate(cbind(num_qtns, mean_qtnSelCoef, num_qtns, inv_length, 
+                                   num_qtns_Lscaled)~sim_gen, data = bot90.data.nosum, FUN = sd)
+    colnames(sd.Bottom90)[2:6] <- c("sd_inv_ageB90", "sd_qtnSelCoefB90", "sd_num_qtnsB90", 
+                                    "sd_inv_lengthB90", "sd_num_qtns_LscaledB90")              
   
 ## Join dataframes with parameters
   df.FSTsplitTb <- full_join(top10.data, bottom90.data, by = "sim_gen")
   
 ## convert to data frame and factor parameter columns
   df.FSTsplitTemp <- as.data.frame(df.FSTsplitTb)  
-  df.FSTsplitTemp2 <- full_join(df.FSTsplitTemp, sd.Top10, by = "sim_gen")
-  df.FSTsplit <- full_join(df.FSTsplitTemp2, sd.Bottom90, by = "sim_gen")
+  df.FSTsplitTemp2 <- left_join(df.FSTsplitTemp, sd.Top10, by = "sim_gen")
+  df.FSTsplit <- left_join(df.FSTsplitTemp2, sd.Bottom90, by = "sim_gen")
   
 ### NO SELECTION SIMS ###
 ## Top 10 percent of FST values
  top10.data.NS <- df.invAllData.NS %>%
     group_by(sim_gen) %>%
     filter(inv_FST>=quantile(inv_FST, 0.9)) %>%
-    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length"), 
+    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length", "num_qtns_Lscaled"), 
                  mean, .groups = "keep") %>%
     rename(inv_ageT10 = inv_age, mean_qtnSelCoefT10 = mean_qtnSelCoef, 
-           num_qtnsT10 = num_qtns, inv_lengthT10 = inv_length)
+           num_qtnsT10 = num_qtns, inv_lengthT10 = inv_length, 
+           num_qtns_LscaledT10 = num_qtns_Lscaled)
  
  top10.data.nosum.NS <- df.invAllData.NS %>%
     group_by(sim_gen) %>%
@@ -139,10 +145,11 @@ for (i in 1:length(packages_needed)){
   bottom90.data.NS <- df.invAllData.NS %>%
     group_by(sim_gen) %>%
     filter(inv_FST<quantile(inv_FST, 0.9)) %>%
-    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length"), 
+    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length", "num_qtns_Lscaled"), 
                  mean, .groups = "keep") %>%
     rename(inv_ageB90 = inv_age, mean_qtnSelCoefB90 = mean_qtnSelCoef, 
-           numqtnsB90 = num_qtns, inv_lengthB90 = inv_length) 
+           numqtnsB90 = num_qtns, inv_lengthB90 = inv_length, 
+           num_qtns_LscaledB90 = num_qtns_Lscaled) 
   
   bot90.data.nosum.NS <- df.invAllData.NS %>%
                   group_by(sim_gen) %>%
@@ -152,20 +159,22 @@ for (i in 1:length(packages_needed)){
         # rename(inv_ageSDB90 = inv_age, SD_qtnSelCoefB90 = mean_qtnSelCoef, 
         #      numqtnsSDB90 = num_qtns, inv_lengthSDB90 = inv_length)
      
-    sd.Top10.NS <- aggregate(cbind(inv_age, mean_qtnSelCoef, num_qtns, inv_length)~sim_gen, 
-               data = top10.data.nosum.NS, FUN = sd)
-    colnames(sd.Top10.NS)[2:5] <- c("sd_inv_ageT10", "sd_qtnSelCoefT10", "sd_num_qtnsT10", "sd_inv_lengthT10")
-    sd.Bottom90.NS <- aggregate(cbind(inv_age, mean_qtnSelCoef, num_qtns, inv_length)~sim_gen, 
-               data = bot90.data.nosum.NS, FUN = sd)
-    colnames(sd.Bottom90.NS)[2:5] <- c("sd_inv_ageB90", "sd_qtnSelCoefB90", "sd_num_qtnsB90", "sd_inv_lengthB90")
+    sd.Top10.NS <- aggregate(cbind(inv_age, mean_qtnSelCoef, num_qtns, inv_length, 
+                                   num_qtns_Lscaled)~sim_gen, data = top10.data.nosum.NS, FUN = sd)
+    colnames(sd.Top10.NS)[2:6] <- c("sd_inv_ageT10", "sd_qtnSelCoefT10", "sd_num_qtnsT10", 
+                                    "sd_inv_lengthT10", "sd_num_qtns_LscaledT10")
+    sd.Bottom90.NS <- aggregate(cbind(inv_age, mean_qtnSelCoef, num_qtns, inv_length,
+                                      num_qtns_Lscaled)~sim_gen, data = bot90.data.nosum.NS, FUN = sd)
+    colnames(sd.Bottom90.NS)[2:6] <- c("sd_inv_ageB90", "sd_qtnSelCoefB90", "sd_num_qtnsB90",
+                                       "sd_inv_lengthB90", "sd_num_qtns_LscaledB90")
   
 ## Join dataframes with parameters
   df.FSTsplit.NSTb <- full_join(top10.data.NS, bottom90.data.NS, by = "sim_gen")
   
 ## convert to data frame and factor parameter columns
   df.FSTsplit.NStemp <- as.data.frame(df.FSTsplit.NSTb)  
-  df.FSTsplit.NStemp2 <- full_join(df.FSTsplit.NStemp, sd.Top10.NS, by = "sim_gen")
-  df.FSTsplit.NS <- full_join(df.FSTsplit.NStemp2, sd.Bottom90.NS, by = "sim_gen")
+  df.FSTsplit.NStemp2 <- left_join(df.FSTsplit.NStemp, sd.Top10.NS, by = "sim_gen")
+  df.FSTsplit.NS <- left_join(df.FSTsplit.NStemp2, sd.Bottom90.NS, by = "sim_gen")
   
 ```
 
@@ -200,6 +209,7 @@ LA.plot <- ggplot(data = df.popDyn,
        scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
        scale_y_continuous(expand = c(0, 0), limits = c(-0.1, 1))
 
+LA.plot
 
 ## Phenotypes
 ## TRY MAKING THIS A SINGLE TWO PANEL PLOT WITH TWO LINES ON EACH FOR THE TWO POPULATIONS
@@ -284,6 +294,7 @@ fitP2.plot <- ggplot(data = df.popDyn,
        geom_line(color = "navy", size = 0.75) + 
        geom_line(aes(y = meanFitP2 + sdFitP2, x = sim_gen), color = "lightgrey") + 
        geom_line(aes(y = meanFitP2 - sdFitP2, x = sim_gen), color = "lightgrey") + 
+       geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
        labs(title = "Population 2", y = "Fitness", x = "Generation") +
        theme_classic() +
        theme(panel.background = element_blank(), 
@@ -307,7 +318,7 @@ ggarrange(fitP1.plot, fitP2.plot)
   ## plot inversion age --  split by inversiion FST with reps
    
     ### SELECTION ###
-    df.invage <- pivot_longer(df.FSTsplit[, c(1,2,6,10,14)], cols = c(inv_ageT10, inv_ageB90,sd_inv_ageT10, sd_inv_ageB90),
+    df.invage <- pivot_longer(df.FSTsplit[, c(1,2,7)], cols = c(inv_ageT10, inv_ageB90), #, sd_inv_ageT10, sd_inv_ageB90),
                               names_to = "FSTsplit", values_to = "inv_age")
     inv.age.plot <- ggplot(data = df.invage, 
                            aes(x = sim_gen, y = inv_age, group = FSTsplit)) + 
@@ -324,7 +335,7 @@ ggarrange(fitP1.plot, fitP2.plot)
                            scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.FSTsplit$inv_ageT10)))
             
     ### NO SELECTION ###
-    df.invage.NS <- pivot_longer(df.FSTsplit.NS[, c(1,2,6)], cols = c(inv_ageT10, inv_ageB90),
+    df.invage.NS <- pivot_longer(df.FSTsplit.NS[, c(1,2,7)], cols = c(inv_ageT10, inv_ageB90),
                                  names_to = "FSTsplit", values_to = "inv_age")
     
     inv.age.plot.NS <- ggplot(data = df.invage.NS, 
@@ -353,7 +364,7 @@ ggarrange(fitP1.plot, fitP2.plot)
  #######################################
   
   # Selection   
-    df.invlength <- pivot_longer(df.FSTsplit[, c(1,5,9)], cols = c(inv_lengthT10, inv_lengthB90),
+    df.invlength <- pivot_longer(df.FSTsplit[, c(1,5,10)], cols = c(inv_lengthT10, inv_lengthB90),
                               names_to = "FSTsplit", values_to = "inv_length")
     inv.length.plot <- ggplot(data = df.invlength, 
                            aes(x = sim_gen, y = inv_length, group = FSTsplit)) + 
@@ -371,7 +382,7 @@ ggarrange(fitP1.plot, fitP2.plot)
             
     
     ### NO SELECTION ###
-    df.invlength.NS <- pivot_longer(df.FSTsplit.NS[, c(1,5,9)], cols = c(inv_lengthT10, inv_lengthB90),
+    df.invlength.NS <- pivot_longer(df.FSTsplit.NS[, c(1,5,10)], cols = c(inv_lengthT10, inv_lengthB90),
                                  names_to = "FSTsplit", values_to = "inv_length")
     
     inv.length.plot.NS <- ggplot(data = df.invlength.NS, 
@@ -397,7 +408,7 @@ ggarrange(fitP1.plot, fitP2.plot)
 ### Inversion QTNs ####
 #######################################   
   # Selection
-    df.invQTNs <- pivot_longer(df.FSTsplit[, c(1,4,8)], cols = c(num_qtnsT10, numqtnsB90),
+    df.invQTNs <- pivot_longer(df.FSTsplit[, c(1,4,9)], cols = c(num_qtnsT10, numqtnsB90),
                               names_to = "FSTsplit", values_to = "inv_qtnNum")
     
     inv.qtns.plot <- ggplot(data = df.invQTNs, 
@@ -420,7 +431,7 @@ ggarrange(fitP1.plot, fitP2.plot)
 
     
   # No Selection    
-  df.invQTNs.NS <- pivot_longer(df.FSTsplit.NS[, c(1,4,8)], cols = c(num_qtnsT10, numqtnsB90),
+  df.invQTNs.NS <- pivot_longer(df.FSTsplit.NS[, c(1,4,9)], cols = c(num_qtnsT10, numqtnsB90),
                               names_to = "FSTsplit", values_to = "inv_qtnNum")
 
   inv.qtns.plot.NS <- ggplot(data = df.invQTNs.NS, 
@@ -439,7 +450,57 @@ ggarrange(fitP1.plot, fitP2.plot)
     legQTNs <- g_legend(inv.qtns.plot.NS)
     
     inv.qtns.plot.NS.noleg <- inv.qtns.plot.NS + theme(legend.position = "none")
+    
   ggarrange(inv.qtns.plot, inv.qtns.plot.NS.noleg, legQTNs, labels = c("Selection", "No Selection"),
+            ncol = 3, widths = c(2.3,2.3,0.8))
+  
+### Inversion QTNs Length Scaled ####
+#######################################   
+  # Selection
+    df.invQTNsLscaled <- pivot_longer(df.FSTsplit[, c(1,6,11)], cols = c(num_qtns_LscaledT10, num_qtns_LscaledB90),
+                              names_to = "FSTsplit", values_to = "inv_qtnNum")
+    
+    inv.qtns.Lscaled.plot <- ggplot(data = df.invQTNsLscaled, 
+                               aes(x = sim_gen, y = inv_qtnNum, group = FSTsplit)) + 
+                               geom_line(aes(color = FSTsplit), size = 0.75) + 
+                               geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+                               labs(title = "",
+                                     y = "Average Number of inversion QTNs scaled by Inversion Length",
+                                     x = "Generation") +
+                               theme_classic() +
+                               theme(panel.background = element_blank(), 
+                                     strip.background = element_rect(colour = "white", fill = "grey92")) +
+                               #scale_color_discrete(name = "FST split", labels = 
+                                #c("Top 10% FST", "Bottom 90% FST")) +
+                               scale_color_manual(labels = c("Bot 90%", "Top 10%"), 
+                                                  values=c( "thistle", "plum4")) +
+                               theme(legend.position = "none") +
+                               scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+                               scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_qtnNum)))
+
+    
+  # No Selection    
+  df.invQTNs.Lscaled.NS <- pivot_longer(df.FSTsplit.NS[, c(1,6,11)], cols = c(num_qtns_LscaledT10, num_qtns_LscaledB90),
+                              names_to = "FSTsplit", values_to = "inv_qtnNum")
+
+  inv.qtns.Lscaled.plot.NS <- ggplot(data = df.invQTNs.Lscaled.NS, 
+                               aes(x = sim_gen, y = inv_qtnNum, group = FSTsplit)) + 
+                               geom_line(aes(color = FSTsplit), size = 0.75) + 
+                               geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+                               labs(title = " ", y = "", x = "Generation") +
+                               theme_classic() +
+                               theme(panel.background = element_blank(), 
+                                     strip.background = element_rect(colour = "white", fill = "grey92")) +
+                               scale_color_manual(labels = c("Bot 90%", "Top 10%"), 
+                                                  values=c("thistle", "plum4")) +
+                               scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+                               scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_qtnNum)))
+   
+    legQTNsLscaled <- g_legend(inv.qtns.Lscaled.plot.NS)
+    
+    inv.qtns.Lscaled.plot.NS.noleg <- inv.qtns.Lscaled.plot.NS + theme(legend.position = "none")
+    
+  ggarrange(inv.qtns.Lscaled.plot, inv.qtns.Lscaled.plot.NS.noleg, legQTNsLscaled, labels = c("Selection", "No Selection"),
             ncol = 3, widths = c(2.3,2.3,0.8))
 
 ```
@@ -515,8 +576,9 @@ for(i in 1:nrow(qtnMuts)){
 neutMuts <- filter(df.muts, type == "m1")
 neutMuts$inOut <- "neut"
 
-df.neutQtnMuts <- rbind(qtnMuts, neutMuts)
-df.neutQtnMuts$FST <- as.numeric(as.character(df.neutQtnMuts$FST))
+df.neutQtnMutstemp <- rbind(qtnMuts, neutMuts)
+df.neutQtnMutstemp$FST <- as.numeric(as.character(df.neutQtnMutstemp$FST))
+df.neutQtnMuts <- df.neutQtnMutstemp[!is.nan(df.neutQtnMutstemp$FST),]
 
 ## No selection
 for(i in 1:nrow(qtnMuts.NS)){
@@ -530,20 +592,23 @@ for(i in 1:nrow(qtnMuts.NS)){
 neutMuts.NS <- filter(df.muts.NS, type == "m1")
 neutMuts.NS$inOut <- "neut"
 
-df.neutQtnMuts.NS <- rbind(qtnMuts.NS, neutMuts.NS)
-df.neutQtnMuts.NS$FST <- as.numeric(as.character(df.neutQtnMuts.NS$FST))
 
+df.neutQtnMuts.NStemp <- rbind(qtnMuts.NS, neutMuts.NS)
+df.neutQtnMuts.NStemp$FST <- as.numeric(as.character(df.neutQtnMuts.NStemp$FST))
+df.neutQtnMuts.NS <- df.neutQtnMuts.NStemp[!is.nan(df.neutQtnMuts.NStemp$FST),]
 
 ```
 
 ## Plot Manhattan plots
 ```{r}
+
 ## Selection
 manh.plot <- ggplot(df.neutQtnMuts, aes(x = position, y = FST, group = inOut)) + 
                     geom_point(aes(color = inOut)) + 
                     scale_color_manual(values=c( "red", "goldenrod", "navy")) +
                     xlim(0, 2100000) + 
-                    ylim(0, 0.2) +
+                    ylim(0, max(df.neutQtnMuts$FST)) +
+                    labs(title = "Selection") + 
                     theme(legend.position = "none")
 
 ## No Selection
@@ -551,11 +616,16 @@ manh.plot.NS <- ggplot(df.neutQtnMuts.NS, aes(x = position, y = FST, group = inO
                     geom_point(aes(color = inOut)) + 
                     scale_color_manual(values=c( "red", "goldenrod", "navy")) +
                     xlim(0, 2100000) + 
-                    ylim(0, 0.2) +
-                    theme(legend.position = "none")
+                    ylim(0, max(df.neutQtnMuts$FST)) +
+                    labs(title = "No Selection") 
+                    
+## No legend
+manh.plot.NS.noleg <- manh.plot.NS + theme(legend.position = "none")
 
-## ADD THE LEGEND AND CHROMOSOME COLORS
-ggarrange(manh.plot, manh.plot.NS)
+legManh <- g_legend(manh.plot.NS)
+
+## ADD CHROMOSOME COLORS
+ggarrange(manh.plot, manh.plot.NS.noleg, legManh, ncol = 3, widths = c(2.3,2.3,0.8))
 
 ```
 
@@ -564,18 +634,8 @@ ggarrange(manh.plot, manh.plot.NS)
 ```{r}
 # Subset for final generation
 df.invFinalGen <- subset(df.invTime, subset = sim_gen == 50000)
+df.InvDataOrigin <- left_join(df.invFinalGen, df.invData, by = "inv_id")
 
-# get sum of effect size on the phenotype
-df.InvQTNsum <- aggregate(qtnSelCoef~inv_id, FUN = sum, data = df.InvOrigin)
-df.InvQTNnum <- aggregate(qtn_id~inv_id, FUN = length, data = df.InvOrigin)
-df.InvOriginGen <- aggregate(sim_gen~inv_id, FUN = mean, data = df.InvOrigin)
-df.InvQTNsumNum <- left_join(df.InvQTNsum, df.InvQTNnum, by = "inv_id")
-colnames(df.InvQTNsumNum)[3] <- "origin_num_qtns"
-df.InvQTNsumNumGen <- left_join(df.InvQTNsumNum, df.InvOriginGen, by = "inv_id")
-colnames(df.InvQTNsumNumGen)[4] <- "origin_gen"
-
-# merge inversion data with origin dynamics
-df.InvDataOrigin <- left_join(df.invFinalGen, df.InvQTNsumNumGen, by = "inv_id")
 
 # subset for MAF > 0.01
 df.InvDataOriginMAF <- df.InvDataOrigin[df.InvDataOrigin$freq > 0.01,]
@@ -588,34 +648,23 @@ for(i in 1:nrow(df.InvDataOriginMAF)){
   }
 }
 
-## Subset dataframe to get how the inversions change through time
+## Subset dataframe to get how the MAF filtered inversions change through time
 inv.IDs <- as.vector(df.InvDataOriginMAF$inv_id)
 df.invFinalAllData <- df.invTime[df.invTime$inv_id %in% inv.IDs, ]
 df.invFinalAllData$qtnSelCoefsum <- df.invFinalAllData$mean_qtnSelCoef*df.invFinalAllData$num_qtns
-df.invFinalAllDataPop <- left_join(df.invFinalAllData, df.InvDataOriginMAF[c(2,15)], by = "inv_id")
+df.invFinalAllDataPop <- left_join(df.invFinalAllData,
+                                   df.InvDataOriginMAF[c(2,13:19)], 
+                                   by = "inv_id")
 
 ## Plotting
 par(mfrow = c(1,3))
-plot(origin_num_qtns~origin_gen, data = df.InvDataOriginMAF, xlab = "Inversion Origin Generation",
+plot(invOrigNumQTNs~inv_originGen, data = df.InvDataOriginMAF, xlab = "Inversion Origin Generation",
      ylab = "Origin number of QTNs in Inversion", col = "cornflowerblue", pch = 19, ylim = c(0, 400))
-plot(num_qtns~origin_gen, data = df.InvDataOriginMAF, xlab = "Inversion Origin Generation",
+plot(num_qtns~inv_originGen, data = df.InvDataOriginMAF, xlab = "Inversion Origin Generation",
      ylab = "Final number of QTNs in Inversion", col = "dodgerblue4", pch = 19, ylim = c(0, 400))
-plot(qtnSelCoef~origin_gen, data = df.InvDataOriginMAF, xlab = "Inversion Origin Generation",
+plot(invOrigQTNSelCoef~inv_originGen, data = df.InvDataOriginMAF, xlab = "Inversion Origin Generation",
      ylab = "Sum of QTN effects on phenotype in Inversion", col = "cyan4", pch = 19)
 
-## I DON'T THINK WE WANT
-ggplot(df.InvDataOriginMAF, aes(x = origin_gen, y = qtnSelCoef, group = pop)) + 
-  geom_point(aes(color = pop, size = inv_FST), alpha = 0.8) + 
-  scale_color_manual(values=c("navy", "red")) + 
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92"),
-        text = element_text(size = 15)) +
-  labs(title = "Total Effect of Inversion QTNs on Phenotype",
-       y = "sum of each Inversion QTNs \neffects on phenotype",
-       x = "Inversion Origin Generation") +
-  guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
-  guides(size = guide_legend(title = "Inversion FST")) 
 
 ## All inversions from final generation through time (filtered by MAF > 0.01)
 ggplot(df.invFinalAllDataPop, aes(x = sim_gen, y = qtnSelCoefsum, group = pop)) + 
@@ -633,21 +682,6 @@ ggplot(df.invFinalAllDataPop, aes(x = sim_gen, y = qtnSelCoefsum, group = pop)) 
   guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
   guides(size = guide_legend(title = "Inversion FST")) 
 
-## I DON"T THINK WE WANT
-ggplot(df.invFinalAllDataPop, aes(x = sim_gen, y = qtnSelCoefsum, group = pop)) + 
-  geom_point(aes(color = pop, size = inv_FST), alpha = 0.8) + 
-#  geom_line(aes(color = pop), alpha = 0.8) + 
-  scale_color_manual(values=c("navy", "red")) + 
-  scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) + 
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92"),
-        text = element_text(size = 15)) +
-  labs(title = "Total Effect of Inversion QTNs on Phenotype",
-       y = "sum of each Inversion QTNs \neffects on phenotype",
-       x = "Generation") +
-  guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
-  guides(size = guide_legend(title = "Inversion FST")) 
 
 
 # example <- df.invFinalAllDataPop[df.invFinalAllDataPop$sim_gen == 50000,][1,2]
@@ -723,18 +757,20 @@ dim(vcf.MAF@fix)
 df.muts[2,]
 vcf.MAF@fix[grep(df.muts$mutID[1], vcf.MAF@fix[,"INFO"]),]
   
-geno <- vcf.MAF@gt[,-1] 
-position <- getPOS(vcf.MAF)
+geno <- vcf.MAF@gt[,-1] # this gets individual ids and genotypes
+position <- getPOS(vcf.MAF) # this gets position of mutations
 
 if (sum(duplicated(position)) != 0){
   print("This simulation needs to be checked for duplicated locus positions")
 }
 
+# convert the genome data to only have three options 0 (homoz), 1 (heteroz), or 2 (homoz alt)
 G <- matrix(NA, nrow = nrow(geno), ncol = ncol(geno))
 G[geno %in% c("0/0", "0|0")] <- 0
 G[geno  %in% c("0/1", "1/0", "1|0", "0|1")] <- 1
 G[geno %in% c("1/1", "1|1")] <- 2
 
+# calculate allele frequencies
 a_freq <- rowSums(G)/(2*ncol(G))
 hist(a_freq) 
 
@@ -757,6 +793,7 @@ df.indPheno$vcf_ind <- paste0("i",0:1999) # hard coding
 # I will assume they are in the same order
 tail(df.indPheno)
 
+# Add vcf individual IDs with slim individual IDs and pop numbers 
 indPhen_df_vcf <- merge(vcf_ind, df.indPheno, by="vcf_ind")
 dim(df.indPheno)
 dim(indPhen_df_vcf)
@@ -767,14 +804,16 @@ tail(indPhen_df_vcf)
 
 ```
 
-
+## this clusters individuals by genotype using ward.D clustering
 ```{r}
+# split individuals by subpop
 pop1_ids <- which(indPhen_df_vcf$subpop==1)
 pop2_ids <- which(indPhen_df_vcf$subpop==2)
 
+# split G by subpop
 G_pop1 <- G[, pop1_ids]
 G_pop2 <- G[, pop2_ids]
-dim(G_pop2)
+dim(G_pop1)
 head(G_pop1[,1:5])
 head(G_pop2[,1:5])
 
@@ -801,13 +840,15 @@ head(G_pop2[,1:5])
 
 ```{r}
 # Why are we doing this for all allele affect sizes? shouldn't we just be looking at m2 mutations?
-
 whichinversionmuts <- grep("MT=3", vcf.MAF@fix[,"INFO"]) #inversions
+whichqtnmuts <- grep("MT=2", vcf.MAF@fix[,"INFO"]) #qtns
+whichneutmuts <- grep("MT=1", vcf.MAF@fix[,"INFO"]) #neut
 
 vcf.MAF@fix[whichinversionmuts,"INFO"]
 info <- str_split(vcf.MAF@fix[,"INFO"], pattern =";", simplify=TRUE)
 head(info)
-# This took like an hour to figure out
+dim(info)
+
 a <- as.numeric(substring(info[,2], first=3)) #allele effect size
 head(a)
 hist(a, breaks=seq(-0.01, 0.01, length.out=101))
@@ -818,6 +859,7 @@ dim(G)
 dim(G_pop1)
 head(G_pop1[,1:10])
 
+#G * a gives the overall effect size of the mutations on the phenotype
 G1_alpha <- G_pop1*a # make sure G and a line up
 head(G1_alpha[,1:50])
 
@@ -851,6 +893,41 @@ head(vcf_pos)
 df.muts$position_vcf <- df.muts$position + 1
 df.muts$is_vcf <- NA
 
+```
+
+FSTs from Sara's output - we want to use outflank
+```{r}
+## May not need but make sure you don't need it as a sanity check.
+
+G_FST <- rep(NA, nrow(G)) 
+freq <- df.muts$freq
+altFreq <- 1 - df.muts$freq
+df.MAFcalc <- cbind(freq, altFreq)
+
+df.muts$MAF <- apply(df.MAFcalc, 1, min)
+df.mutsMAF <- subset(df.muts, subset = MAF > 0.01)
+dim(df.mutsMAF)
+df.mutsMAF$FST <- as.numeric(as.character(df.mutsMAF$FST))
+# this is slow, but correct
+count <- 0
+for (i in 1:nrow(df.mutsMAF)){
+  x <- grep(df.mutsMAF$mutID[i], vcf.MAF@fix[,"INFO"])
+  if (length(x)==1){
+    G_FST[x] <- df.mutsMAF$FST[i]
+  }
+  count <- count+1
+  print(count)
+}
+
+hist(df.mutsMAF$FST, breaks = 50)
+head(G_FST)
+hist(G_FST)
+
+sum(is.na(G_FST))
+# mutations that don't match up
+
+length(a)
+length(G_FST)
 ```
 
 
@@ -912,23 +989,16 @@ for (i in todo_hetero){
 }
 
 table(G_ref1[,1])
-
 table(G_ref1)
 table(G_ref2)
-table(G_isInvWindow)
-
-
+#table(G_isInvWindow)
 
 heatmap(t(G_ref1[,pop1_order]), Rowv = NA,  main="Pop1 genotypes",cexCol = 0.3,
              Colv = NA, useRaster=TRUE,
         scale="none")
 
-
 heatmap(t(G_ref2[,pop2_order]), Rowv = NA,  main="Pop2 genotypes",cexCol = 0.3,
              Colv = NA, useRaster=TRUE,
         scale="none")
-
-
-
 
 ```
