@@ -4,10 +4,10 @@
 ######################################################################################################
 ### Load Packages and Download Data Files ###
 ## List Packages Needed 
-packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", "fields",
-                     "MultivariateRandomForest", "gridExtra", "akima",
+packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", 
+                     "MultivariateRandomForest", "gridExtra", "akima", "fields",
                      "MLmetrics", "ash", "plotly", "stringr", "tidyverse",
-                     "bigsnpr", "bigstatsr", "ggpubr", "purrr", "dplyr")
+                     "bigsnpr", "bigstatsr", "ggpubr", "purrr", "dplyr", "lfmm", "pcadapt" )
 
 ## Install packages that aren't installed already
 for (i in 1:length(packages_needed)){
@@ -19,25 +19,37 @@ for (i in 1:length(packages_needed)){
   library( packages_needed[i], character.only = TRUE)
 }
 
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("LEA")
+library(LEA)
+BiocManager::install("qvalue")
+library(qvalue)
+install.packages("remotes")
+remotes::install_github("whitlock/OutFLANK")
+library(OutFLANK)
+
 ### Download Data
-folder <- "results/Inversion/20210220_inOutInvFST/" 
-seed <- "3384725" #args[1]
+folderIn <- "results/Inversion/20210321_runLowMig/" #args[1]
+folderOut <- "figures/20210321_lowVhighMig/High_Mig/" #args[2]
+seed <- "3384725" #args[3]
 
-df.invTime <- read.table(paste0(folder, seed, "_outputInvTime.txt", sep = ""), header = TRUE)
-df.invData <- read.table(paste0(folder, seed, "_outputInvSumInfo.txt", sep = ""), header = TRUE)
-df.muts <- read.table(paste0(folder, seed, "_outputMutations.txt", sep = ""), header = TRUE)
-df.popDyn <- read.table(paste0(folder, seed, "_outputPopDynam.txt", sep = ""), header = TRUE)
-df.indPheno <- read.table(paste0(folder, seed, "_outputIndPheno.txt", sep = ""), header = TRUE)
-df.invQTNData <- read.table(paste0(folder, seed, "_outputInvQtnSumInfo.txt", sep = ""), header = TRUE)
-df.invQTNTime <- read.table(paste0(folder, seed, "_outputInvQtn.txt", sep = ""), header = TRUE)
-df.params <- read.table(paste0(folder, seed, "_outputSimStats.txt", sep = ""), header = FALSE)
-colnames(df.params) <- c("seed", "mig1", "mig2", "N1", "N2", "r", "muInv", 
-                         "muBase", "alpha", "sigmaK", "burnin", "rep", "enVar")
+df.invTime <- read.table(paste0(folderIn, seed, "_outputInvTime.txt", sep = ""), header = TRUE)
+df.invData <- read.table(paste0(folderIn, seed, "_outputInvSumInfo.txt", sep = ""), header = TRUE)
+df.muts <- read.table(paste0(folderIn, seed, "_outputMutations.txt", sep = ""), header = TRUE)
+df.popDyn <- read.table(paste0(folderIn, seed, "_outputPopDynam.txt", sep = ""), header = TRUE)
+df.indPheno <- read.table(paste0(folderIn, seed, "_outputIndPheno.txt", sep = ""), header = TRUE)
+df.invQTNData <- read.table(paste0(folderIn, seed, "_outputInvQtnSumInfo.txt", sep = ""), header = TRUE)
+df.invQTNTime <- read.table(paste0(folderIn, seed, "_outputInvQtn.txt", sep = ""), header = TRUE)
+df.params <- read.table(paste0(folderIn, seed, "_outputSimStats.txt", sep = ""), header = FALSE)
+colnames(df.params) <- c("seed", "mig1", "mig2", "N1", "N2", "muBase", "muInv", 
+                         "r", "alpha", "sigmaK", "burnin", "rep", "enVar")
 
-df.invTime.NS <- read.table(paste0(folder, seed, "noSel_outputInvTime.txt", sep = ""), header = TRUE)
-df.invData.NS <- read.table(paste0(folder, seed, "noSel_outputInvSumInfo.txt", sep = ""), header = TRUE)
-df.muts.NS <- read.table(paste0(folder, seed, "noSel_outputMutations.txt", sep = ""), header = TRUE)
-df.popDyn.NS <- read.table(paste0(folder, seed, "noSel_outputPopDynam.txt", sep = ""), header = TRUE)
+df.invTime.NS <- read.table(paste0(folderIn, seed, "noSel_outputInvTime.txt", sep = ""), header = TRUE)
+df.invData.NS <- read.table(paste0(folderIn, seed, "noSel_outputInvSumInfo.txt", sep = ""), header = TRUE)
+df.muts.NS <- read.table(paste0(folderIn, seed, "noSel_outputMutations.txt", sep = ""), header = TRUE)
+df.popDyn.NS <- read.table(paste0(folderIn, seed, "noSel_outputPopDynam.txt", sep = ""), header = TRUE)
 ######################################################################################################
 
 
@@ -198,7 +210,7 @@ g_legend<-function(myggplot){
     scale_y_continuous(expand = c(0, 0), limits = c(-0.1, 1))
 
   par(mar = c(1,1,1,2))
-  pdf(paste0("figures/", seed, "_LA.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_LA.pdf"), height = 5, width = 7)
 
   LA.plot + theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"))
 
@@ -206,7 +218,7 @@ g_legend<-function(myggplot){
 
 
 ## Phenotypes ##
-  df.pheno <- pivot_longer(df.popDyn[, c(1,10,14)], cols = c(meanPhenoP1, meanPhenoP2, sdPhenoP1, sdPhenoP2),
+  df.pheno <- pivot_longer(df.popDyn[, c(1,10,14)], cols = c(meanPhenoP1, meanPhenoP2),
                             names_to = "pop", values_to = "meanPheno")
   pheno.plot.leg <- ggplot(data = df.pheno, 
                         aes(x = sim_gen, y = meanPheno, group = pop)) + 
@@ -269,7 +281,7 @@ g_legend<-function(myggplot){
 
   pheno.leg <- g_legend(pheno.plot.leg)
 
-  pdf(paste0("figures/", seed, "_pheno.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_pheno.pdf"), height = 5, width = 7)
 
   ggarrange(pheno.plot, pheno.plot.NS, pheno.leg, ncol = 3, widths = c(2.3,2.3,0.8))
 
@@ -311,7 +323,7 @@ g_legend<-function(myggplot){
                                                           df.popDyn$sdFitP2 + df.popDyn$sdFitP2) + 0.1)))) +
   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
 
-  pdf(paste0("figures/", seed, "_fitness.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_fitness.pdf"), height = 5, width = 7)
 
   ggarrange(fitP1.plot, fitP2.plot)
 
@@ -359,7 +371,7 @@ g_legend<-function(myggplot){
   
   inv.age.plot.NS.noleg <- inv.age.plot.NS + theme(legend.position = "none")
   
-  pdf(paste0("figures/", seed, "_invAge.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_invAge.pdf"), height = 5, width = 7)
   ggarrange(inv.age.plot, inv.age.plot.NS.noleg, leg, 
             labels = c("Selection", "No Selection"), ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
@@ -376,7 +388,7 @@ g_legend<-function(myggplot){
     theme_classic() +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
-    scale_color_manual(labels = c("Bot 90%", "Top 10%"),
+    scale_color_manual(labels = c( "Top 10%", "Bot 90%"),
                        values=c("lightsalmon3", "lightsalmon1")) +
     theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
@@ -406,7 +418,7 @@ g_legend<-function(myggplot){
   
   inv.length.plot.NS.noLeg <- inv.length.plot.NS + theme(legend.position = "none")
   
-  pdf(paste0("figures/", seed, "_invLength.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_invLength.pdf"), height = 5, width = 7)
   ggarrange(inv.length.plot, inv.length.plot.NS.noLeg, legLeng, labels = c("Selection", "No Selection"),
             ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
@@ -426,7 +438,7 @@ g_legend<-function(myggplot){
     theme_classic() +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
-    scale_color_manual(labels = c("Bot 90%", "Top 10%"), 
+    scale_color_manual(labels = c( "Top 10%", "Bot 90%"), 
                        values=c( "thistle", "plum4")) +
     theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
@@ -456,7 +468,7 @@ g_legend<-function(myggplot){
   
   inv.qtns.plot.NS.noleg <- inv.qtns.plot.NS + theme(legend.position = "none")
   
-  pdf(paste0("figures/", seed, "_invQTNs.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_invQTNs.pdf"), height = 5, width = 7)
   ggarrange(inv.qtns.plot, inv.qtns.plot.NS.noleg, legQTNs, labels = c("Selection", "No Selection"),
             ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
@@ -477,7 +489,7 @@ g_legend<-function(myggplot){
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(labels = c("Top 10%", "Bot 90%"), 
-                       values=c( "plum4",  "thistle")) +
+                       values=c(   "plum4", "thistle")) +
     theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_qtnNum))) +
@@ -496,7 +508,7 @@ g_legend<-function(myggplot){
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(labels = c("Top 10%", "Bot 90%"), 
-                       values=c("thistle",  "plum4")) +
+                       values=c("plum4", "thistle")) +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_qtnNum))) +
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
@@ -505,7 +517,7 @@ g_legend<-function(myggplot){
   
   inv.qtns.Lscaled.plot.NS.noleg <- inv.qtns.Lscaled.plot.NS + theme(legend.position = "none")
   
-  pdf(paste0("figures/", seed, "_invQTNsLscaled.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_invQTNsLscaled.pdf"), height = 5, width = 7)
   ggarrange(inv.qtns.Lscaled.plot, inv.qtns.Lscaled.plot.NS.noleg, legQTNsLscaled, labels = c("Selection", "No Selection"),
             ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
@@ -639,7 +651,7 @@ g_legend<-function(myggplot){
   legManh <- g_legend(manh.plot.NS)
   
   ## TO DO: ADD CHROMOSOME COLORS
-  png(paste0("figures/", seed, "_manh.png"), width = 700, height = 700, units = "px")
+  png(paste0(folderOut, seed, "_manh.png"), width = 700, height = 700, units = "px")
   ggarrange(manh.plot, manh.plot.NS.noleg, legManh, ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
   
@@ -735,7 +747,7 @@ g_legend<-function(myggplot){
   plot.inv.orig.noleg <- plot.inv.orig + theme(legend.position = "none")
   
   legInvOrig <- g_legend(plot.inv.orig)
-  pdf(paste0("figures/", seed, "_invOrigin.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_invOrigin.pdf"), height = 5, width = 12)
   ggarrange( plot.inv.orig.noleg, plot.inv.orig.NS, legInvOrig, ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
 #### end plot origin dynamics
@@ -763,15 +775,24 @@ g_legend<-function(myggplot){
   # VCF file
   #vcffile <- list.files(path=path, pattern=paste0(".vcf"))
   #vcf <- read.vcfR(paste0(folder,seed, "_InversionVCF.vcf"))
-  vcf.MAF <- read.vcfR(paste0(folder,seed, "_InversionVCF_MAF01.recode.vcf"))
+  vcf.MAF <- read.vcfR(paste0(folderIn,seed, "_InversionVCF_MAF01.recode.vcf"))
   
   head(vcf.MAF)
   head(vcf.MAF@fix, 50)
   dim(vcf.MAF@fix)
   
+  # subset mutations file for MAF > 0.01
+  freq <- df.muts$freq
+  altFreq <- 1 - df.muts$freq
+  df.calc <- cbind(freq, altFreq)
+  df.muts$MAF <- apply(df.calc, 1, min)
+  df.mutsMAF <- subset(df.muts, subset = MAF >= 0.01)
+  dim(df.mutsMAF)
+  df.mutsMAF$FST <- as.numeric(as.character(df.mutsMAF$FST))
+  
   # example of how to find a specific mutation in the vcf file
-  df.muts[2,]
-  vcf.MAF@fix[grep(df.muts$mutID[1], vcf.MAF@fix[,"INFO"]),]
+  df.mutsMAF[2,]
+  vcf.MAF@fix[grep(df.mutsMAF$mutID[1], vcf.MAF@fix[,"INFO"]),]
   
   geno <- vcf.MAF@gt[,-1] # this gets individual ids and genotypes
   position <- getPOS(vcf.MAF) # this gets position of mutations
@@ -787,13 +808,18 @@ g_legend<-function(myggplot){
   G[geno %in% c("1/1", "1|1")] <- 2
   
   # calculate allele frequencies
+  # sum across rows to get how many copies of the allele then divide by 2 times the number of columns (ind x diploid)
   a_freq <- rowSums(G)/(2*ncol(G))
   hist(a_freq) 
   
+  # get individual name information from vcf file (e.g., i999) 
   vcf_ind <- data.frame(vcf_ind=colnames(vcf.MAF@gt)[-1])
+  # store mutation metadata which includes mut ID (MID), selection coef (S)
+  # dominance (DOM), population origin (PO), ? (GO), mutation type (MT), ? (AC), ? (DP)
   meta <- vcf.MAF@fix[,"INFO"]
   head(meta)
   length(meta)
+  # identify mutation ids and make sure its the number of muts you expect
   length(regmatches(meta, regexpr("[0-9]+[0-9]", meta)))
   vcf_muts <- data.frame(vcf_muts=vcf.MAF@fix[,8])
   colnames(G) <- vcf_ind$vcf_ind # adds individual ids as column names
@@ -814,6 +840,7 @@ g_legend<-function(myggplot){
   dim(df.indPheno)
   dim(indPhen_df_vcf)
   
+  # reorder the dataframe so that it is by subpop first then ind ID
   indPhen_df_vcf <- indPhen_df_vcf[order(indPhen_df_vcf$subpop, indPhen_df_vcf$id),]
   head(indPhen_df_vcf)
   tail(indPhen_df_vcf)
@@ -829,82 +856,83 @@ g_legend<-function(myggplot){
   head(G_pop1[,1:5])
   head(G_pop2[,1:5])
   
-  # ## Population 1
-  fordist <- as.data.frame(t(G_pop1))
-  dist_mat <- dist(fordist, method="euclidean")
-  dim(dist_mat)
-  pop1_clust <- hclust(dist_mat, method = "ward.D")
+  ## clustering ##
+  # first transform matrix so that columns are mutations
+  fordistp1 <- as.data.frame(t(G_pop1))
+  fordistp2 <- as.data.frame(t(G_pop2))
+  # this calculates the distance matrix for individuals based on similar
+  # mutation combinations and euclidean is the square root of sum of squares 
+  # of mutational dissimilarities
+  dist_matp1 <- dist(fordistp1, method="euclidean")
+  dist_matp2 <- dist(fordistp2, method="euclidean")
+  # This then clusters individuals into distinct groups based on genetic 
+  # distances calculated previously 
+  pop1_clust <- hclust(dist_matp1, method = "ward.D")
+  pop2_clust <- hclust(dist_matp2, method = "ward.D")
   str(pop1_clust)
-  pop1_order <- pop1_clust$order
-  
-  #  ## Population 2
-  fordist <- as.data.frame(t(G_pop2))
-  dist_mat <- dist(fordist, method="euclidean")
-  dim(dist_mat)
-  pop2_clust <- hclust(dist_mat, method = "ward.D")
   str(pop2_clust)
+  pop1_order <- pop1_clust$order
   pop2_order <- pop2_clust$order
-  
+
   # Why are we doing this for all allele affect sizes? shouldn't we just be looking at m2 mutations?
+  # create variables that identify which mutations are which
   whichinversionmuts <- grep("MT=3", vcf.MAF@fix[,"INFO"]) #inversions
   whichqtnmuts <- grep("MT=2", vcf.MAF@fix[,"INFO"]) #qtns
   whichneutmuts <- grep("MT=1", vcf.MAF@fix[,"INFO"]) #neut
   
-  vcf.MAF@fix[whichinversionmuts,"INFO"]
+  #vcf.MAF@fix[whichinversionmuts,"INFO"] # if you want info for specific mutation types
+  # store info for mutation sin another variable and split data into columns
   info <- str_split(vcf.MAF@fix[,"INFO"], pattern =";", simplify=TRUE)
   head(info)
   dim(info)
   
-  a <- as.numeric(substring(info[,2], first=3)) #allele effect size
+  # find allele effect sizes
+  a <- as.numeric(substring(info[,2], first=3)) 
   head(a)
   hist(a, breaks=seq(-0.01, 0.01, length.out=101))
   summary(a)
   length(a)
   dim(G)
-  
-  dim(G_pop1)
-  head(G_pop1[,1:10])
-  
+
   #G * a gives the overall effect size of the mutations on the phenotype
-  G1_alpha <- G_pop1*a # make sure G and a line up
-  head(G1_alpha[,1:50])
-  
+  G1_alpha <- G_pop1*a 
+  head(G1_alpha[,1:10])
   hist(G1_alpha, breaks=seq(-0.02, 0.02, length.out=101))
   
-  G2_alpha <- G_pop2*a # make sure G and a line up
+  G2_alpha <- G_pop2*a 
   head(G2_alpha[,1:10])
   hist(G2_alpha, breaks=seq(-0.02, 0.02, length.out=101))
   
+  # this gives the distribution of phenotypes in each population 
+  # population 1 is evolving to an optimum of 1
+  # population 2 is evolving to an optimum of -1
   hist(colSums(G1_alpha))
   hist(colSums(G2_alpha))
   
   # Sanity check - mutations in rows
   head(G[1:100,1:10])
-  t(G1_alpha[1:100,9:10])
+  t(G1_alpha[1:100,1:2])
   
   hist(G1_alpha)
   hist(G2_alpha)
   dim(G1_alpha)
   
+  # get position of all mutations and plot a hist of mutation locations
+  # the regions with higher frequencies of mutations are potentially inverted regions
   vcf_pos <- as.numeric(vcf.MAF@fix[,"POS"])
   hist(vcf_pos, breaks=seq(0,2100000, length.out=100))
-  hist(df.muts$position, breaks=seq(0,2100000, length.out=100))
+  hist(df.mutsMAF$position, breaks=seq(0,2100000, length.out=100))
   
-  head(sort(df.muts$position))
+  # sort mutations and make sure vcf matches slim output
+  # slim output is one base off so add a base to match vcf position
+  head(sort(df.mutsMAF$position))
   head(vcf_pos)
-  df.muts$position_vcf <- df.muts$position + 1
-  df.muts$is_vcf <- NA
+  df.mutsMAF$position_vcf <- df.mutsMAF$position + 1
+  df.mutsMAF$is_vcf <- NA
   
-  G_FST <- rep(NA, nrow(G)) 
-  freq <- df.muts$freq
-  altFreq <- 1 - df.muts$freq
-  df.MAFcalc <- cbind(freq, altFreq)
-  
-  df.muts$MAF <- apply(df.MAFcalc, 1, min)
-  df.mutsMAF <- subset(df.muts, subset = MAF > 0.01)
-  dim(df.mutsMAF)
-  df.mutsMAF$FST <- as.numeric(as.character(df.mutsMAF$FST))
+  # Check to make sure FST values match between files
   # this is slow, but correct
+  G_FST <- rep(NA, nrow(G)) 
   count <- 0
   for (i in 1:nrow(df.mutsMAF)){
     x <- grep(df.mutsMAF$mutID[i], vcf.MAF@fix[,"INFO"])
@@ -925,6 +953,10 @@ g_legend<-function(myggplot){
   length(a)
   length(G_FST)
   
+  head(df.mutsMAF)
+  df.mutsMAFord<- df.mutsMAF[order(df.mutsMAF$position),]
+  #G.ord <- G[order(G)]
+  
 #### end process VCF
 ######################################################################################################    
 
@@ -935,16 +967,14 @@ g_legend<-function(myggplot){
 #### plot heatmaps
   hist(a)
   a2 <- a
+  # make an arbitary cutoff to visualize loci effect on phenotype
   a2[a>0.001] <- 1
   a2[a<0.001] <- -1
-  
   
   G1_alpha <- G_pop1*a2*G_FST # make sure G and a line up
   G2_alpha <- G_pop2*a2*G_FST # make sure G and a line up
   
   hist(G_pop1*a2)
-  
-  # Sanity check - mutations in rows
   
   pdf(paste0("figures/", seed, "_heatmapPop1alphaFST.pdf"), height = 5, width = 7)
   heatmap(t(G1_alpha[, pop1_order]),   
@@ -952,7 +982,7 @@ g_legend<-function(myggplot){
           Colv = NA, useRaster=TRUE,
           scale="none",
           # Rowv = NA, 
-          col=two.colors(100, start = "blue", end="red", middle="white") )
+          col=two.colors(100, start = "blue", end="red", middle="white"))
   # ADDING BREAKS SCREWS UP EVERYTHING
   #breaks=seq(-0.005, 0.005, length.out = 101))
   dev.off()
@@ -992,7 +1022,7 @@ g_legend<-function(myggplot){
   table(G_ref1[,1])
   table(G_ref1)
   table(G_ref2)
-  #table(G_isInvWindow)
+
   pdf(paste0("figures/", seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
   
   heatmap(t(G_ref1[,pop1_order]), Rowv = NA,  main="Pop1 genotypes",cexCol = 0.3,
@@ -1010,12 +1040,121 @@ g_legend<-function(myggplot){
 
 ######################################################################################################
 #### BigSnpr ####
+## This chunk of code finds a quasi-independent set of SNPs
+# Identify chromosome ID for each mutation
+chromosome <- getCHROM(vcf.MAF)
 
-  
-  
+# list the G matrix with the position of each mutation and the chromosome 
+# it is on. This is used for
+training <- list(G = G, 
+                 position = position,
+                 chromosome = chromosome)
 
+# puts it in the raw format and stores likelihood genotype probability
+G_coded <- add_code256(big_copy(t(training$G),
+                                type = "raw"), 
+                       code=bigsnpr:::CODE_012)
+
+# this is doing SNP pruning - removing correlated SNPs
+newpc <- snp_autoSVD(G=G_coded, infos.chr = as.integer(training$chromosome),
+                     infos.pos = training$position)
+  # take snps with highest MAF and correlate snps around it
+  # Snps with R^2 > 0.2 are removed
+  # the subset is the indexes of the remaining SNPs
+
+# These are the indexes of the quasi-independent 
+# set of loci that are kept after pruning for LD
+which_pruned = attr(newpc, which = "subset")
+
+training$G_coded <- G_coded
+training$G_pruned <- training$G[which_pruned,]
+training$which_pruned <- which_pruned
+
+df.mutsMAF$quasi_indep <- FALSE
+df.mutsMAF$quasi_indep[training$which_pruned] <- TRUE
+
+#### end bigsnpr
 ######################################################################################################
   
+######################################################################################################
+#### PCADAPT
+gename <- paste0(seed, "_genotypes.lfmm")
+write.lfmm(t(training$G), gename)
+pcafile <- read.pcadapt(gename, type="lfmm")
+pca_all <- pcadapt(pcafile,K=3)
+head(pca_all$loadings)
+df.mutsMAF$pca_ALL_PC1_loadings <- pca_all$loadings[,1]
+df.mutsMAF$pca_ALL_PC2_loadings <- pca_all$loadings[,2]
+df.mutsMAF$pca_ALL_PC3_loadings <- pca_all$loadings[,3]
+head(df.mutsMAF)
+
+
+### PCA loadings if pruned data is used ####
+gename2 <- paste0(seed, "_genotypes_pruned.lfmm")
+write.lfmm(t(training$G_pruned), gename2)
+pcafile2 <- read.pcadapt(gename2, type="lfmm")
+pca_pruned <- pcadapt(pcafile2,K=3)
+
+df.mutsMAF$pca_PRUNED_PC1_loadings <- NA 
+df.mutsMAF$pca_PRUNED_PC2_loadings <- NA
+df.mutsMAF$pca_PRUNED_PC1_loadings[training$which_pruned] <- pca_pruned$loadings[,1]
+df.mutsMAF$pca_PRUNED_PC2_loadings[training$which_pruned] <- pca_pruned$loadings[,2]  
+
+cor.test(df.mutsMAF$pca_ALL_PC1_loadings, df.mutsMAF$pca_PRUNED_PC1_loadings)
+cor.test(df.mutsMAF$pca_ALL_PC2_loadings, df.mutsMAF$pca_PRUNED_PC2_loadings)
+
+df.mutsMAF$pcadapt_4.3.3_ALL_chisq <- as.numeric(pca_all$chi2.stat)
+df.mutsMAF$pcadapt_4.3.3_ALL_log10p <- -log10(pca_all$pvalues)
+
+plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_ALL_chisq)
+plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_ALL_log10p)
+
+test <- snp_gc(snp_pcadapt(training$G_coded, U.row = newpc$u[,1]))
+df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p <- -predict(test,log10=T)
+
+plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p )
+cor.test(df.mutsMAF$pcadapt_4.3.3_ALL_log10p, df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p, method = "spearman")
+plot(df.mutsMAF$position,df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p)
+
+#### end PCADAPT
+######################################################################################################
+
+
+
+######################################################################################################
+#### OutFLANK
+
+FstDataFrame <- MakeDiploidFSTMat(t(training$G),final_df$vcf_ord,
+                                  ind$group[ind$infinal])
+out_ini <- OutFLANK(FstDataFrame, NumberOfSamples=k) 
+str(out_ini)
+
+out_pruned <- OutFLANK(FstDataFrame[training$which_pruned,], NumberOfSamples=k)     
+str(out_pruned)
+
+P1 <- pOutlierFinderChiSqNoCorr(FstDataFrame, 
+                                Fstbar = out_pruned$FSTNoCorrbar, 
+                                dfInferred = out_pruned$dfInferred, Hmin=0.1)
+P1 <- P1[order(P1$LocusName),]
+identical(P1$LocusName, df.mutsMAF$vcf_ord) # should be TRUE
+identical(out_ini$results$LocusName, df.mutsMAF$vcf_ord) # should be TRUE
+forfinal <- data.frame(vcf_ord = out_ini$results$LocusName,
+                       OutFLANK_0.2_FST = out_ini$results$FST,
+                       OutFLANK_0.2_He = out_ini$results$He,
+                       OutFLANK_0.2_ALL_log10p = -log10(out_ini$results$pvaluesRightTail),
+                       OutFLANK_0.2_PRUNED_log10p = -log10(P1$pvaluesRightTail))
+df.mutsMAF_temp <- merge(df.mutsMAF, forfinal, by="vcf_ord", all.x=TRUE)
+dim(df.mutsMAF)
+dim(df.mutsMAF_temp)
+head(df.mutsMAF_temp)
+
+#### end OutFLANK
+######################################################################################################
+
+
+
+
+
 ######################################################################################################    
 ## COPY AND PASTE WHERE NEEDED
 pdf(paste0("figures/", seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
