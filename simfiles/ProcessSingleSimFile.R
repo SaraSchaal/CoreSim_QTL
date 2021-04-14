@@ -537,39 +537,47 @@ g_legend<-function(myggplot){
   # filter the inversion data to get the final generation
   df.invDataFinalGen <- filter(df.invAllData, sim_gen == 50000)
   df.invDataFinalGenNS <- filter(df.invAllDataNS, sim_gen == 50000)
-  
+
   # identify all the positions in the genome that are within the inversion windows
   invWind <- function(x){
     invWindowBases <- NULL
     numSegInv <- 0
+    inversion.ID <- NULL
     for(i in 1:nrow(x)) {
-      invWindowBases <- c(invWindowBases, seq(from = x$inv_pos[i], 
-                                              to = x$inv_end[i], by = 1))
+      bases <- seq(from = x$inv_pos[i],to = x$inv_end[i], by = 1)
+      invWindowBases <- c(invWindowBases, bases)
       numSegInv <- numSegInv + 1
+      inversion.ID <- c(inversion.ID, rep(x$inv_id[i], length(bases)))
     }
-    
+
     # identify all the positions in the genome that are within the inversion windows
     # filtered for MAF of 0.01
     invWindowBasesMAF <- NULL
     numSegInvMAF <- 0
+    inversion.ID.MAF <- NULL
     for(i in 1:nrow(x)) {
       Inv_wtype_freq <-  1 - x$freq[i]					
       MAF <-  min(x$freq[i], Inv_wtype_freq)				
       if(MAF > 0.01){
-        invWindowBasesMAF <- c(invWindowBasesMAF, seq(from = x$inv_pos[i], 
-                                                      to = x$inv_end[i], by = 1))
+        basesMAF <- seq(from = x$inv_pos[i], to = x$inv_end[i], by = 1)
+        invWindowBasesMAF <- c(invWindowBasesMAF, basesMAF)
         numSegInvMAF <- numSegInvMAF + 1
+        inversion.ID.MAF <- c(inversion.ID.MAF, rep(x$inv_id[i], length(basesMAF)))
       }
     }
-    #segInv <- paste("number of segregating inversions =",  numSegInv, sep = " ")
-    #segInvMAF <- paste("number of segregating inversions filtered for MAF 0.01 =",  numSegInvMAF, sep = " ")
-    obj_list <- list("invWindBases" = invWindowBases, "invWindBasesMAF" = invWindowBasesMAF, 
+    
+    df.invWindow <- data.frame("invWindBases" = invWindowBases, "invID" = inversion.ID)
+    df.invWindowMAF <- data.frame("invWindBasesMAF" = invWindowBasesMAF, "invIDMAF" = inversion.ID.MAF)
+    obj_list <- list("df.invWind" = df.invWindow,
+                     "df.invWindMAF" = df.invWindowMAF ,
                      "numSeqInv" = numSegInv, "numSeqInvMAF" = numSegInvMAF)
     return(obj_list)
   }
   
-  invWindBases <- invWind(df.invDataFinalGen)[[1]]
-  invWindBasesNS <- invWind(df.invDataFinalGenNS)[[1]]  
+  df.invWind <- invWind(df.invDataFinalGen)
+  invWindBases <- invWind(df.invDataFinalGen)[[2]]
+  df.invWindNS <- invWind(df.invDataFinalGenNS) 
+  invWindBasesNS <- invWind(df.invDataFinalGenNS)[[2]]
   
 ### end inversion window calculation
 ######################################################################################################  
@@ -582,47 +590,269 @@ g_legend<-function(myggplot){
   qtnMuts <- filter(df.muts, type == "m2")
   qtnMuts.NS <- filter(df.muts.NS, type == "m2")
   
+  ## filter for MAF
+  qtnMuts$FST <- as.numeric(as.character(qtnMuts$FST))
+  df.qtnMuts <- qtnMuts[!is.nan(qtnMuts$FST),]
+  freq <- df.qtnMuts$freq
+  altFreq <- 1-freq
+  df.calc <- cbind(freq,altFreq)
+  df.qtnMuts$MAF <- apply(df.calc, 1, min)
+  df.qtnMuts.MAF <- subset(df.qtnMuts, subset = MAF >= 0.01)
+  
+  qtnMuts.NS$FST <- as.numeric(as.character(qtnMuts.NS$FST))
+  df.qtnMuts.NS <- qtnMuts.NS[!is.nan(qtnMuts.NS$FST),]
+  freq <- df.qtnMuts.NS$freq
+  altFreq <- 1-freq
+  df.calc <- cbind(freq,altFreq)
+  df.qtnMuts.NS$MAF <- apply(df.calc, 1, min)
+  df.qtnMuts.NS.MAF <- subset(df.qtnMuts.NS, subset = MAF >= 0.01)
+  
   # identify which qtns overlap with inv window locations
-  invWinQTNrows <- which(qtnMuts$position %in% invWindBases)
-  invWinQTNrows.NS <- which(qtnMuts.NS$position %in% invWindBasesNS)
+  invWinQTNrows <- which(df.qtnMuts.MAF$position %in% invWindBases$invWindBasesMAF)
+  invWinQTNrows.NS <- which(df.qtnMuts.NS.MAF$position %in% invWindBasesNS$invWindBasesMAF)
   
   # use this to identify how many positions have multiple qtns 
-  mult.qtns <- length(which(qtnMuts$position %in% invWindBases)) - length(intersect(invWindBases, qtnMuts$position))
-  mult.qtns.NS <- length(which(qtnMuts.NS$position %in% invWindBasesNS)) - length(intersect(invWindBasesNS, qtnMuts.NS$position))
+  #mult.qtns <- length(which(qtnMuts$position %in% invWindBases)) - length(intersect(invWindBases, qtnMuts$position))
+  #mult.qtns.NS <- length(which(qtnMuts.NS$position %in% invWindBasesNS)) - length(intersect(invWindBasesNS, qtnMuts.NS$position))
   
   ## Selection
-  for(i in 1:nrow(qtnMuts)){
+  for(i in 1:nrow(df.qtnMuts.MAF)){
     if(i %in% invWinQTNrows){
-      qtnMuts$inOut[i] <- "in"
+      df.qtnMuts.MAF$inOut[i] <- "in"
     } else {
-      qtnMuts$inOut[i] <- "out"
+      df.qtnMuts.MAF$inOut[i] <- "out"
     } 
   }
-  
+
   neutMuts <- filter(df.muts, type == "m1")
   neutMuts$inOut <- "neut"
+  neutMuts$FST <- as.numeric(as.character(neutMuts$FST))
+  df.neutMuts <- neutMuts[!is.nan(neutMuts$FST),]
   
-  df.neutQtnMutstemp <- rbind(qtnMuts, neutMuts)
-  df.neutQtnMutstemp$FST <- as.numeric(as.character(df.neutQtnMutstemp$FST))
-  df.neutQtnMuts <- df.neutQtnMutstemp[!is.nan(df.neutQtnMutstemp$FST),]
+  #df.neutQtnMutstemp <- rbind(df.qtnMuts, neutMuts)
+  #df.neutQtnMutstemp$FST <- as.numeric(as.character(df.neutQtnMutstemp$FST))
+  #df.neutQtnMuts <- df.neutQtnMutstemp[!is.nan(df.neutQtnMutstemp$FST),]
+  
+  freq <- neutMuts$freq
+  altFreq <- 1 - freq
+  df.calc <- cbind(freq, altFreq)
+  neutMuts$MAF <- apply(df.calc, 1, min)
+  df.neutMuts.MAF <- subset(neutMuts, subset = MAF >= 0.01)
   
   ## No selection
-  for(i in 1:nrow(qtnMuts.NS)){
+  for(i in 1:nrow(df.qtnMuts.NS.MAF)){
     if(i %in% invWinQTNrows.NS){
-      qtnMuts.NS$inOut[i] <- "in"
+      df.qtnMuts.NS.MAF$inOut[i] <- "in"
     } else {
-      qtnMuts.NS$inOut[i] <- "out"
+      df.qtnMuts.NS.MAF$inOut[i] <- "out"
     } 
   }
   
   neutMuts.NS <- filter(df.muts.NS, type == "m1")
   neutMuts.NS$inOut <- "neut"
+  neutMuts.NS$FST <- as.numeric(as.character(neutMuts.NS$FST))
+  df.neutMuts.NS <- neutMuts.NS[!is.nan(neutMuts.NS$FST),]
+  
+  freq <- df.neutMuts.NS$freq
+  altFreq <- 1-freq
+  df.calc <- cbind(freq,altFreq)
+  df.neutMuts.NS$MAF <- apply(df.calc, 1, min)
+  df.neutMuts.NS.MAF <- subset(df.neutMuts.NS, subset = MAF >= 0.01)
+  
+  #df.neutQtnMuts.NS.MAFtemp <- rbind(df.qtnMuts.NS.MAF, df.neutMuts.NS.MAF)
+  #df.neutQtnMuts.NS.MAFtemp$FST <- as.numeric(as.character(df.neutQtnMuts.NS.MAFtemp$FST))
+  #df.neutQtnMuts.NS <- df.neutQtnMuts.NStemp[!is.nan(df.neutQtnMuts.NStemp$FST),]
+  
+### end identifying inversion window QTNs
+######################################################################################################  
   
   
-  df.neutQtnMuts.NStemp <- rbind(qtnMuts.NS, neutMuts.NS)
-  df.neutQtnMuts.NStemp$FST <- as.numeric(as.character(df.neutQtnMuts.NStemp$FST))
-  df.neutQtnMuts.NS <- df.neutQtnMuts.NStemp[!is.nan(df.neutQtnMuts.NStemp$FST),]
+  
+  
+######################################################################################################  
+### Identify adaptive inversions
+  
+## First we need to identify adaptive QTNs
+  # 1st QTN criteria -- addresses genetic drift causing false positive inversion outliers 
+  # (comparing selection sim to no selec)
+  # a) get the qtns from the no selection simulation inside inversions and record the FST values as our
+  # null distribution
+  # b) loop through all qtns in the final generation of selection simulation to get empirical p
+  
+  
+  # #) 2nd criteria -- addresses genetic drift in the same simulation (within selection sim)
+  # a) get all the neutral loci on the final chromosome and get the distribution of their FST values (calculate this outside the loop that I am stepping through for QTNs)
+  # b) for the qtns in the focal qtn (selection sim) 
+  # c) record the empirical p value :  1-rank(c(null, obs))[length(null)+1]/(length(null)+1)
+ 
+   # 3rd criteria -- added genetic variation for each mutation and the proportion/percent of added genetic variation
+  # #) sanity check: this should be zero for neutral mutations
+  
+  par(mfrow= c(1,2), mar = c(2,2,3,2), oma = c(1.5,1.5,3,0))
+  df.invQTNs <- subset(df.qtnMuts.MAF, subset = df.qtnMuts.MAF$inOut == "in")
+  df.invQTNs$FST <- as.numeric(as.character(df.invQTNs$FST))
+  hist(df.invQTNs$FST, main = "Selection",
+       xlab = "FST") 
+  
+  df.invQTNs.NS <- subset(df.qtnMuts.NS.MAF, subset = df.qtnMuts.NS.MAF$inOut == "in")
+  df.invQTNs.NS$FST <- as.numeric(as.character(df.invQTNs.NS$FST))
+  hist(df.invQTNs.NS$FST, main = "No Selection",
+       xlab = "FST") 
+  mtext(expression(bold("Inversion Window QTN FST values")), side = 3, outer = TRUE, cex = 1.5)
+  mtext(expression(bold("FST")), side = 1, outer = TRUE)
+  mtext(expression(bold("Frequency")), side = 2, outer = TRUE)
+  
+  null <- df.invQTNs.NS$FST[!is.nan(df.invQTNs.NS$FST)] # criteria 1: compare to a null distribution of inv QTNs in no-selec sim
+  null_neut <- as.numeric(as.character(df.neutMuts.MAF$FST)) # criteria 2: compare to a null distribution of neutral QTNs in selec sim
+  str(null)
+  df.qtnMuts.MAF$crit1_p.value <- NULL
+  df.qtnMuts.MAF$crit2_p.value <- NULL
+  df.qtnMuts.MAF$crit3_Va <- NULL
+  for(i in 1:nrow(df.qtnMuts.MAF)){
+    if(!is.nan(df.qtnMuts.MAF$FST[i])){
+      obs <- df.qtnMuts.MAF$FST[i]
+      df.qtnMuts.MAF$crit1_p.value[i] <- 1-rank(c(null, obs))[length(null)+1]/(length(null)+1)
+      df.qtnMuts.MAF$crit2_p.value[i] <- 1-rank(c(null_neut, obs))[length(null_neut)+1]/(length(null_neut)+1)
+      df.qtnMuts.MAF$crit3_Va[i] <- (df.qtnMuts.MAF$selCoef[i]^2)*df.qtnMuts.MAF$freq[i]*(1-df.qtnMuts.MAF$freq[i])
+    } else {
+      df.qtnMuts.MAF$crit1_p.value[i] <- NA
+      df.qtnMuts.MAF$crit2_p.value[i] <- NA
+      df.qtnMuts.MAF$crit3_Va[i] <- NA
+    }
+  }
+  
+  # 3rd criteria -- added genetic variation for each mutation and the proportion of added genetic variation
+  df.qtnMuts.MAF$crit3_Va_prop <- df.qtnMuts.MAF$crit3_Va/sum(df.qtnMuts.MAF$crit3_Va, na.rm = TRUE)
+  df.qtnMuts.MAF$crit3_Va_perc <- df.qtnMuts.MAF$crit3_Va_prop * 100
+  # side note: try to get some simulations to show drift play with parameters
 
+  # plot for criteria 1
+  df.qtnMuts.MAF$inOut <- recode_factor(df.qtnMuts.MAF$inOut, 'in' = 'In Inversion QTNs', 'out' = 'Outside Inversion QTNs')
+  ggplot(df.qtnMuts.MAF, aes(x = crit1_p.value, fill = inOut)) +
+    geom_histogram(color = "black") +
+    facet_grid(inOut~.) + 
+    theme(legend.position = "n") +
+    scale_fill_manual(values = c("red", "blue")) + 
+    labs(title = "Criteria 1 - compare to null of inversion QTNs \nno-selection simulation",
+         x = "empirical p-value")
+  
+  ggplot(df.qtnMuts.MAF, aes(x = crit1_p.value, fill = inOut)) +
+    geom_histogram(position = "identity", alpha = 0.8) + 
+    scale_fill_manual(values = c("red", "blue")) +
+    labs(title =  "Criteria 1 - compare to null of inversion QTNs \nno-selection simulation",
+         x = "empirical p-value")
+  
+  # plot for criteria 2
+  ggplot(df.qtnMuts.MAF, aes(x = crit2_p.value, fill = inOut)) +
+    geom_histogram(color = "black") +
+    facet_grid(inOut~.) + 
+    theme(legend.position = "n") +
+    scale_fill_manual(values = c("red", "blue")) + 
+    labs(title = "Criteria 2 - compare to null of neutral QTNs \nselection simulation",
+         x = "empirical p-value")
+  
+  ggplot(df.qtnMuts.MAF, aes(x = crit2_p.value, fill = inOut)) +
+    geom_histogram(position = "identity", alpha = 0.8) + 
+    scale_fill_manual(values = c("red", "blue")) +
+    labs(title =  "Criteria 2 - compare to null of neutral QTNs \nselection simulation",
+         x = "empirical p-value")
+  
+  # plot Va percent
+  ggplot(df.qtnMuts.MAF, aes(x = crit3_Va_perc, fill = inOut)) +
+    geom_histogram( colour = "black") +
+    facet_grid(inOut~.) +
+    theme(legend.position = "n") +
+    scale_fill_manual(values = c("red", "blue")) +
+    labs(title = "Criteria 3 - compare additive genetic variance percent within \nselection simulation",
+         x = "percent of Va explained")
+  
+  ggplot(df.qtnMuts.MAF, aes(x = crit3_Va_perc, fill = inOut)) +
+    geom_histogram(position = "identity", alpha = 0.8) + 
+    scale_fill_manual(values = c("red", "blue")) +
+    labs(title = "Criteria 3 - compare additive genetic variance percent within \nselection simulation",
+         x = "percent of Va explained")
+  
+  # plot Va percent - subset for above 0.01
+  ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$crit3_Va_perc > 0.01, ], aes(x = crit3_Va_perc, fill = inOut)) +
+    geom_histogram( colour = "black") +
+    facet_grid(inOut~.) +
+    theme(legend.position = "n") +
+    scale_fill_manual(values = c("red", "blue")) +
+    labs(title = "Criteria 3 - compare additive genetic variance percent within \nselection simulation subset for > 0.01",
+         x = "percent of Va explained")
+    
+  ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$crit3_Va_perc > 0.01, ], aes(x = crit3_Va_perc, fill = inOut)) +
+    geom_histogram(position = "identity", alpha = 0.8) + 
+    scale_fill_manual(values = c("red", "blue")) +
+    labs(title = "Criteria 3 - compare additive genetic variance percent within \nselection simulation subset for > 0.01",
+         x = "percent of Va explained")
+  
+
+  ## summarize criteria for each inversion
+  
+  # first find average for each criteria for non-inverted segments 
+  outQTNs <- df.qtnMuts.MAF[df.qtnMuts.MAF$inOut == "Outside Inversion QTNs",]
+  genome.sizeNoNeut <- 2000000
+  inverted.genome.size <- nrow(df.invWindowMAF)
+  non.inverted.genome.size <- genome.sizeNoNeut - inverted.genome.size
+  
+  non.inv.crit1 <- sum(outQTNs$crit1_p.value == 0)/non.inverted.genome.size
+  non.inv.crit2 <- sum(outQTNs$crit2_p.value == 0)/non.inverted.genome.size
+  Va_perc_Out <- sum(outQTNs$crit3_Va_perc)
+  non.inv.crit3 <- Va_perc_Out/non.inverted.genome.size
+  
+  ## loop over each inversion that is MAF filtered
+  df.invWindowMAF <- df.invWind[[2]]
+  inv.IDs <- unique(df.invWindowMAF$invIDMAF)
+  crit.output <- matrix(NA, nrow = length(inv.IDs), ncol = 12)
+  colnames(crit.output) <- c("invWindID", "length", "first.base", "final.base", "num.QTNs", "crit1", "crit2", 
+                             "inv_Va_perc", "crit3", "crit1_YN", "crit2_YN", "crit3_YN")
+  for(i in 1:length(inv.IDs)){
+    focalWindow <- df.invWindowMAF[df.invWindowMAF$invIDMAF == inv.IDs[i],]
+    wind.length <- nrow(focalWindow)
+    first.wind.base <- focalWindow$invWindBasesMAF[1]
+    final.wind.base <- focalWindow$invWindBasesMAF[wind.length]
+    focalWindQTNs <- subset(df.qtnMuts.MAF, subset = position >= first.wind.base & position <= final.wind.base)
+    focalWind.crit1 <- sum(focalWindQTNs$crit1_p.value == 0)/wind.length
+    focalWind.crit2 <- sum(focalWindQTNs$crit2_p.value == 0)/wind.length
+    Va_focInv <- sum(focalWindQTNs$crit3_Va_perc)
+    focalWind.crit3 <- sum(focalWindQTNs$crit3_Va_perc)/wind.length
+    crit1_YN <- ifelse(focalWind.crit1 > non.inv.crit1, 1, 0)
+    crit2_YN <- ifelse(focalWind.crit2 > non.inv.crit2, 1, 0)
+    crit3_YN <- ifelse(focalWind.crit3 > non.inv.crit3, 1, 0)
+    crit.output[i,]<- c(inv.IDs[i], wind.length, first.wind.base, final.wind.base, nrow(focalWindQTNs), 
+                    focalWind.crit1, focalWind.crit2, Va_focInv, focalWind.crit3, crit1_YN, crit2_YN, crit3_YN)
+  }
+  
+  Va_perc_In <- sum(crit.output[,8])
+  # summarize these criteria for each inversion
+  # 1st inv criteria 
+  #) loop through the inversions themselves 
+  # average -log10p in each inversion compared to the average -log10p for everything that is non-inverted (blue manh)
+  # count the number of FST outliers with p = 0 / inversion window size is > the number of FST outliers in blue / total
+  # blue region (do not include the neutral chromosome in that calculation)
+  
+  # 2nd criteria
+  # average -log10p in each inversion compared to the average -log10p for qtns on neutral chromosome
+  # count the number of FST outliers with p = 0 / inversion window size is > the number of FST outliers in neut / total
+  # neut region 
+  
+  
+  # if it has more outliers per unit map distance compared to outliers per unit map distance in non-inverted
+  # #) for the qtns in the focal inversion (selection sim) is the FST value greater than 99% of the FST values
+  # in the null distribution. If yes this is labeled as an outlier by this criteria.
+  # #) calculate the FST outliers compared to the null distributions from inversion windows in 
+  # the paired control simulation 
+  
+  #is the FST value greater than 99% of the FST values
+  # in the null distribution for neutral markers. If yes this is labeled as an outlier by this criteria.
+  
+  # make sure to include this see liines 400 -430 in the blank process single sim file
+  #Va_inv/Inv_perc
+  #Va_out/(1-Inv_perc)
+  
+  
+  
 ### end identifying inversion window QTNs
 ######################################################################################################  
   
@@ -750,6 +980,7 @@ g_legend<-function(myggplot){
   pdf(paste0(folderOut, seed, "_invOrigin.pdf"), height = 5, width = 12)
   ggarrange( plot.inv.orig.noleg, plot.inv.orig.NS, legInvOrig, ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
+  
 #### end plot origin dynamics
 ######################################################################################################  
 
@@ -1042,79 +1273,98 @@ g_legend<-function(myggplot){
 #### BigSnpr ####
 ## This chunk of code finds a quasi-independent set of SNPs
 # Identify chromosome ID for each mutation
-chromosome <- getCHROM(vcf.MAF)
+  chromosome <- getCHROM(vcf.MAF)
 
 # list the G matrix with the position of each mutation and the chromosome 
 # it is on. This is used for
-training <- list(G = G, 
-                 position = position,
-                 chromosome = chromosome)
+  training <- list(G = G, 
+                  position = position,
+                  chromosome = chromosome)
 
 # puts it in the raw format and stores likelihood genotype probability
-G_coded <- add_code256(big_copy(t(training$G),
-                                type = "raw"), 
-                       code=bigsnpr:::CODE_012)
+  G_coded <- add_code256(big_copy(t(training$G),
+                                  type = "raw"), 
+                        code=bigsnpr:::CODE_012)
 
 # this is doing SNP pruning - removing correlated SNPs
-newpc <- snp_autoSVD(G=G_coded, infos.chr = as.integer(training$chromosome),
-                     infos.pos = training$position)
+  newpc <- snp_autoSVD(G=G_coded, infos.chr = as.integer(training$chromosome),
+                       infos.pos = training$position)
   # take snps with highest MAF and correlate snps around it
   # Snps with R^2 > 0.2 are removed
   # the subset is the indexes of the remaining SNPs
+  str(newpc) #2760
 
 # These are the indexes of the quasi-independent 
 # set of loci that are kept after pruning for LD
-which_pruned = attr(newpc, which = "subset")
+  which_pruned = attr(newpc, which = "subset")
+  length(which_pruned)
 
-training$G_coded <- G_coded
-training$G_pruned <- training$G[which_pruned,]
-training$which_pruned <- which_pruned
+  training$G_coded <- G_coded
+  training$G_pruned <- training$G[which_pruned,]
+  training$which_pruned <- which_pruned
 
-df.mutsMAF$quasi_indep <- FALSE
-df.mutsMAF$quasi_indep[training$which_pruned] <- TRUE
+  df.mutsMAF$quasi_indep <- FALSE
+  df.mutsMAF$quasi_indep[training$which_pruned] <- TRUE
 
 #### end bigsnpr
 ######################################################################################################
   
 ######################################################################################################
 #### PCADAPT
-gename <- paste0(seed, "_genotypes.lfmm")
-write.lfmm(t(training$G), gename)
-pcafile <- read.pcadapt(gename, type="lfmm")
-pca_all <- pcadapt(pcafile,K=3)
-head(pca_all$loadings)
-df.mutsMAF$pca_ALL_PC1_loadings <- pca_all$loadings[,1]
-df.mutsMAF$pca_ALL_PC2_loadings <- pca_all$loadings[,2]
-df.mutsMAF$pca_ALL_PC3_loadings <- pca_all$loadings[,3]
-head(df.mutsMAF)
+  # calculate pca loadings from genotype matrix 
+  # first you need to convert to a lfmm file
+  gename <- paste0(seed, "_genotypes.lfmm")
+  write.lfmm(t(training$G), gename)
+  pcafile <- read.pcadapt(gename, type="lfmm")
+  pca_all <- pcadapt(pcafile,K=3)
+  head(pca_all$loadings)
+  
+  # add pca loadings to muts dataframe 
+  df.mutsMAF$pca_ALL_PC1_loadings <- pca_all$loadings[,1]
+  df.mutsMAF$pca_ALL_PC2_loadings <- pca_all$loadings[,2]
+  df.mutsMAF$pca_ALL_PC3_loadings <- pca_all$loadings[,3]
+  head(df.mutsMAF)
 
+  plot(df.mutsMAF$position, df.mutsMAF$pca_ALL_PC1_loadings)
 
-### PCA loadings if pruned data is used ####
-gename2 <- paste0(seed, "_genotypes_pruned.lfmm")
-write.lfmm(t(training$G_pruned), gename2)
-pcafile2 <- read.pcadapt(gename2, type="lfmm")
-pca_pruned <- pcadapt(pcafile2,K=3)
+### PCA loadings for pruned data ####
+  gename2 <- paste0(seed, "_genotypes_pruned.lfmm")
+  write.lfmm(t(training$G_pruned), gename2)
+  pcafile2 <- read.pcadapt(gename2, type="lfmm")
+  pca_pruned <- pcadapt(pcafile2,K=3)
+  
+  # add pca loadings to muts dataframe
+  df.mutsMAF$pca_PRUNED_PC1_loadings <- NA 
+  df.mutsMAF$pca_PRUNED_PC2_loadings <- NA
+  df.mutsMAF$pca_PRUNED_PC1_loadings[training$which_pruned] <- pca_pruned$loadings[,1]
+  df.mutsMAF$pca_PRUNED_PC2_loadings[training$which_pruned] <- pca_pruned$loadings[,2]  
+  
+  # look at the scree plot to see if I need to add more pops because of all the inversions
+  plot(df.mutsMAF$position, df.mutsMAF$pca_PRUNED_PC1_loadings)
+  plot(df.mutsMAF$position, df.mutsMAF$pca_PRUNED_PC2_loadings)
+  
+  
+  # check to see if pruned dataset correlates with pca results from full dataset
+  cor.test(df.mutsMAF$pca_ALL_PC1_loadings, df.mutsMAF$pca_PRUNED_PC1_loadings) # yes
+  cor.test(df.mutsMAF$pca_ALL_PC2_loadings, df.mutsMAF$pca_PRUNED_PC2_loadings) # no
 
-df.mutsMAF$pca_PRUNED_PC1_loadings <- NA 
-df.mutsMAF$pca_PRUNED_PC2_loadings <- NA
-df.mutsMAF$pca_PRUNED_PC1_loadings[training$which_pruned] <- pca_pruned$loadings[,1]
-df.mutsMAF$pca_PRUNED_PC2_loadings[training$which_pruned] <- pca_pruned$loadings[,2]  
+  ### outlier detection ###
+  ## all data
+  df.mutsMAF$pcadapt_4.3.3_ALL_chisq <- as.numeric(pca_all$chi2.stat)
+  df.mutsMAF$pcadapt_4.3.3_ALL_log10p <- -log10(pca_all$pvalues)
+  
+  # plot to look at results
+  plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_ALL_chisq)
+  plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_ALL_log10p)
 
-cor.test(df.mutsMAF$pca_ALL_PC1_loadings, df.mutsMAF$pca_PRUNED_PC1_loadings)
-cor.test(df.mutsMAF$pca_ALL_PC2_loadings, df.mutsMAF$pca_PRUNED_PC2_loadings)
+  ### outlier detection ### 
+  ## pruned data
+  test <- snp_gc(snp_pcadapt(training$G_coded, U.row = newpc$u[,1]))
+  df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p <- -predict(test,log10=T)
 
-df.mutsMAF$pcadapt_4.3.3_ALL_chisq <- as.numeric(pca_all$chi2.stat)
-df.mutsMAF$pcadapt_4.3.3_ALL_log10p <- -log10(pca_all$pvalues)
-
-plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_ALL_chisq)
-plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_ALL_log10p)
-
-test <- snp_gc(snp_pcadapt(training$G_coded, U.row = newpc$u[,1]))
-df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p <- -predict(test,log10=T)
-
-plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p )
-cor.test(df.mutsMAF$pcadapt_4.3.3_ALL_log10p, df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p, method = "spearman")
-plot(df.mutsMAF$position,df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p)
+  plot(df.mutsMAF$position, df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p )
+  cor.test(df.mutsMAF$pcadapt_4.3.3_ALL_log10p, df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p, method = "spearman")
+  plot(df.mutsMAF$position,df.mutsMAF$pcadapt_4.3.3_PRUNED_log10p)
 
 #### end PCADAPT
 ######################################################################################################
