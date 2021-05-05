@@ -1,4 +1,146 @@
 #########################################################################################################
+### Plots on inversions split by FST 
+# ## Average Inversion Length ##
+# # SELECTION #  
+# df.invlength <- pivot_longer(df.FSTsplit[, c(1,5,10)], cols = c(inv_lengthAdapt, inv_lengthNonAdapt),
+#                              names_to = "FSTsplit", values_to = "inv_length")
+# 
+# inv.length.plot <- ggplot(data = df.invlength, 
+#                           aes(x = sim_gen, y = inv_length, group = FSTsplit)) + 
+#   geom_line(aes(color = FSTsplit), size = 0.75, alpha = 0.9) + 
+#   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+#   labs(title = " ", y = "Average Inversion Length", x = "Generation") +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_color_manual(labels = c( "NonAdaptive", "Adaptive"),
+#                      values=c("lightsalmon3", "lightsalmon1")) +
+#   theme(legend.position = "none") +
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, 50000)) +
+#   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
+# 
+# 
+# # NO SELECTION #
+# df.invlength.NS <- pivot_longer(df.FSTsplit.NS[, c(1,5,10)], cols = c(inv_lengthT10, inv_lengthB90),
+#                                 names_to = "FSTsplit", values_to = "inv_length")
+# 
+# inv.length.plot.NS <- ggplot(data = df.invlength.NS, 
+#                              aes(x = sim_gen, y = inv_length, group = FSTsplit)) + 
+#   geom_line(aes(color = FSTsplit), size = 0.75, alpha= 0.9) + 
+#   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+#   labs(title = " ", y = "", x = "Generation") +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_color_manual(labels = c("Top 10%", "Bot 90%"),
+#                      values=c("lightsalmon1", "lightsalmon3")) +
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, 50000)) +
+#   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
+# 
+# legLeng <- g_legend(inv.length.plot.NS)
+# 
+# inv.length.plot.NS.noLeg <- inv.length.plot.NS + theme(legend.position = "none")
+# 
+# pdf(paste0(folderOut, seed, "_invLength.pdf"), height = 5, width = 7)
+# ggarrange(inv.length.plot, inv.length.plot.NS.noLeg, legLeng, labels = c("Selection", "No Selection"),
+#           ncol = 3, widths = c(2.3,2.3,0.8))
+# dev.off()
+# 
+# 
+# ggplot(data = final.inv, aes(x = adaptInv, y= inv_length, fill = adaptInv)) +
+#   geom_boxplot() + 
+#   scale_fill_manual(values = c("paleturquoise2","skyblue", "skyblue4")) + 
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   labs(title = " ", y = "Average Inversion Length", x = "Inversion Status") 
+
+### End Plots on inversions split by FST
+#########################################################################################################
+
+
+
+#########################################################################################################
+### Plots on inversion outlier
+# crit 1
+# ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$type == "m2",], aes(x = crit1_p.value, fill = inOut)) +
+#   geom_histogram(color = "black") +
+#   facet_grid(inOut~.) + 
+#   theme(legend.position = "n") +
+#   scale_fill_manual(values = c("red", "blue", "gold")) + 
+#   labs(title = "Criteria 1 - compare to null of inversion QTNs \nno-selection simulation",
+#        x = "empirical p-value")
+# 
+# # crit 2
+# ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$type == "m2",], aes(x = crit2_p.value, fill = inOut)) +
+#   geom_histogram(color = "black") +
+#   facet_grid(inOut~.) + 
+#   theme(legend.position = "n") +
+#   scale_fill_manual(values = c("red", "blue")) + 
+#   labs(title = "Criteria 2 - compare to null of neutral QTNs \nselection simulation",
+#        x = "empirical p-value")
+# 
+# # crit 3
+# ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$type == "m2",], aes(x = crit3_Va_perc, fill = inOut)) +
+#   geom_histogram( colour = "black") +
+#   facet_grid(inOut~.) +
+#   theme(legend.position = "n") +
+#   scale_fill_manual(values = c("red", "blue")) +
+#   labs(title = "Criteria 3 - compare additive genetic variance percent within \nselection simulation",
+#        x = "percent of Va explained")
+# # crit 3
+# ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$type == "m2" & df.qtnMuts.MAF$crit3_Va_perc >= 0.01, ],
+#        aes(x = crit3_Va_perc, fill = inOut)) +
+#   geom_histogram( colour = "black") +
+#   facet_grid(inOut~.) +
+#   theme(legend.position = "n") +
+#   scale_fill_manual(values = c("red", "blue")) +
+#   labs(title = "Criteria 3 - compare additive genetic variance percent within \nselection simulation subset for > 0.01",
+#        x = "percent of Va explained")
+# 
+
+
+### End Plots
+#########################################################################################################
+
+
+#########################################################################################################
+### Notes on adaptive inversions
+
+
+## First we need to identify adaptive QTNs
+# 1st QTN criteria -- addresses genetic drift causing false positive inversion outliers 
+# (comparing selection sim to no selec)
+# a) get the qtns from the no selection simulation inside inversions and record the FST values as our
+# null distribution
+# b) loop through all qtns in the final generation of selection simulation to get empirical p
+
+
+# #) 2nd criteria -- addresses genetic drift in the same simulation (within selection sim)
+# a) get all the neutral loci on the final chromosome and get the distribution of their FST values (calculate this outside the loop that I am stepping through for QTNs)
+# b) for the qtns in the focal qtn (selection sim) 
+# c) record the empirical p value :  1-rank(c(null, obs))[length(null)+1]/(length(null)+1)
+
+# 3rd criteria -- added genetic variation for each mutation and the proportion/percent of added genetic variation
+# #) sanity check: this should be zero for neutral mutations
+
+# summarize these criteria for each inversion
+# 1st inv criteria 
+#) loop through the inversions themselves 
+# average -log10p in each inversion compared to the average -log10p for everything that is non-inverted (blue manh)
+# count the number of FST outliers with p = 0 / inversion window size is > the number of FST outliers in blue / total
+# blue region (do not include the neutral chromosome in that calculation)
+
+# 2nd criteria
+# average -log10p in each inversion compared to the average -log10p for qtns on neutral chromosome
+# count the number of FST outliers with p = 0 / inversion window size is > the number of FST outliers in neut / total
+# neut region 
+
+
+
+#########################################################################################################
 ### CODE FOR AVERAGING RELICATES ###
 # 
 #   df.invLength.average <- NULL
@@ -67,13 +209,107 @@
 #############################################################################################################
 
 
-## violin plot inversion age
-# df.all.data$sim_gen_fact <- as.factor(as.character(df.all.data$sim_gen))
-# inv.Age.viol <- ggplot(data = df.all.data[df.all.data$sigmaK == 0.75 & df.all.data$alpha == 0.002 & df.all.data$mig1 == 0.001,], 
-#                        aes(x = sim_gen_fact, y = aveAge, fill = muBase)) +
-#                # facet_wrap(~ alpha + mig1, labeller = labeller(alpha = alpha.labels, mig1 = mig.labels)) + 
-#                 geom_violin() + 
-#                 stat_summary(fun=mean, geom="point", shape=23, size=2)
+#############################################################################################################
+### adaptive inversion split for No selection sims 
+#
+# adapt.inv.data.NS <- df.invAllData.NS %>%
+#    group_by(sim_gen) %>%
+#    filter(inv_id %in% adapt.inv.NS) %>%
+#    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length", "num_qtns_Lscaled"), 
+#                 mean, .groups = "keep") %>%
+#    rename(inv_ageAdapt = inv_age, mean_qtnSelCoefAdapt = mean_qtnSelCoef, 
+#           num_qtnsAdapt = num_qtns, inv_lengthAdapt = inv_length, 
+#           num_qtns_LscaledAdapt = num_qtns_Lscaled)
+#  
+#  adap.inv.data.nosum.NS <- df.invAllData.NS %>%
+#    group_by(sim_gen) %>%
+#    filter(inv_id %in% adapt.inv)
+#  
+#  ## Bottom 90 percent of FST values
+#  non.adap.inv.data.NS <- df.invAllData.NS %>%
+#    group_by(sim_gen) %>%
+#    filter(!inv_id %in% adapt.inv) %>%
+#    summarise_at(c("inv_age", "mean_qtnSelCoef", "num_qtns", "inv_length", "num_qtns_Lscaled"), 
+#                 mean, .groups = "keep") %>%
+#    rename(inv_ageB90 = inv_age, mean_qtnSelCoefB90 = mean_qtnSelCoef, 
+#           numqtnsB90 = num_qtns, inv_lengthB90 = inv_length, 
+#           num_qtns_LscaledB90 = num_qtns_Lscaled) 
+#  
+# non.adap.inv.data.nosum.NS <- df.invAllData.NS %>%
+#   group_by(sim_gen) %>%
+#   filter(!inv_id %in% adapt.inv) 
+# 
+# sd.Top10.NS <- aggregate(cbind(inv_age, mean_qtnSelCoef, num_qtns, inv_length, 
+#                                num_qtns_Lscaled)~sim_gen, data = top10.data.nosum.NS, FUN = sd)
+# colnames(sd.Top10.NS)[2:6] <- c("sd_inv_ageT10", "sd_qtnSelCoefT10", "sd_num_qtnsT10", 
+#                                 "sd_inv_lengthT10", "sd_num_qtns_LscaledT10")
+# sd.Bottom90.NS <- aggregate(cbind(inv_age, mean_qtnSelCoef, num_qtns, inv_length,
+#                                   num_qtns_Lscaled)~sim_gen, data = bot90.data.nosum.NS, FUN = sd)
+# colnames(sd.Bottom90.NS)[2:6] <- c("sd_inv_ageB90", "sd_qtnSelCoefB90", "sd_num_qtnsB90",
+#                                    "sd_inv_lengthB90", "sd_num_qtns_LscaledB90")
+# 
+# ## Join dataframes with parameters
+# df.FSTsplit.NSTb <- full_join(top10.data.NS, bottom90.data.NS, by = "sim_gen")
+# 
+# ## convert to data frame and factor parameter columns
+# df.FSTsplit.NStemp <- as.data.frame(df.FSTsplit.NSTb)  
+# df.FSTsplit.NStemp2 <- left_join(df.FSTsplit.NStemp, sd.Top10.NS, by = "sim_gen")
+# df.FSTsplit.NS <- left_join(df.FSTsplit.NStemp2, sd.Bottom90.NS, by = "sim_gen")
+
+### CLOSE CODE FOR AVERAGING REPS ###
+#############################################################################################################
+
+
+#############################################################################################################
+## Average number of QTNs in Inverison ##
+# SELECTION #
+# df.invQTNs <- pivot_longer(df.FSTsplit[, c(1,4,9)], cols = c(num_qtnsT10, numqtnsB90),
+#                            names_to = "FSTsplit", values_to = "inv_qtnNum")
+# 
+# inv.qtns.plot <- ggplot(data = df.invQTNs, 
+#                         aes(x = sim_gen, y = inv_qtnNum, group = FSTsplit)) + 
+#   geom_line(aes(color = FSTsplit), size = 0.75) + 
+#   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+#   labs(title = "",
+#        y = "Average Number of inversion QTNs",
+#        x = "Generation") +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_color_manual(labels = c( "Top 10%", "Bot 90%"), 
+#                      values=c( "thistle", "plum4")) +
+#   theme(legend.position = "none") +
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNs$inv_qtnNum))) + 
+#   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
 # 
 # 
+# # NO SELECTION #    
+# df.invQTNs.NS <- pivot_longer(df.FSTsplit.NS[, c(1,4,9)], cols = c(num_qtnsT10, numqtnsB90),
+#                               names_to = "FSTsplit", values_to = "inv_qtnNum")
 # 
+# inv.qtns.plot.NS <- ggplot(data = df.invQTNs.NS, 
+#                            aes(x = sim_gen, y = inv_qtnNum, group = FSTsplit)) + 
+#   geom_line(aes(color = FSTsplit), size = 0.75) + 
+#   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+#   labs(title = " ", y = "", x = "Generation") +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_color_manual(labels = c("Top 10%", "Bot 90%"), 
+#                      values=c("thistle", "plum4")) +
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNs$inv_qtnNum))) +
+#   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
+# 
+# legQTNs <- g_legend(inv.qtns.plot.NS)
+# 
+# inv.qtns.plot.NS.noleg <- inv.qtns.plot.NS + theme(legend.position = "none")
+# 
+# pdf(paste0(folderOut, seed, "_invQTNs.pdf"), height = 5, width = 7)
+# ggarrange(inv.qtns.plot, inv.qtns.plot.NS.noleg, legQTNs, labels = c("Selection", "No Selection"),
+#           ncol = 3, widths = c(2.3,2.3,0.8))
+# dev.off()
+### END num qtns in inversion 
+#############################################################################################################
+
