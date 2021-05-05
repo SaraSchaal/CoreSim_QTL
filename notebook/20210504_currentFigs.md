@@ -6,25 +6,25 @@ PDF that is 67KB
 ![LA plot](../figures/20210321_lowVhighMig/High_Mig/3384725_LA.pdf)  
 
 ## Phenotypes
-PDF that is 21KB
+PDF that is 21KB  
 ![phenotype plot](../figures/20210321_lowVhighMig/High_Mig/3384725_pheno.pdf) 
 
 ## Fitnesses
-PDF that is 21KB
+PDF that is 21KB  
 ![fitness plot](../figures/20210321_lowVhighMig/High_Mig/3384725_fitness.pdf) 
 
 ## Inversion Age  
-PDF that is 15KB  
+PDF that is 15KB    
 ![inv age time (my top)](../figures/20210321_lowVhighMig/High_Mig/3384725_invAge3.pdf)  
 ![inv age time second](../figures/20210321_lowVhighMig/High_Mig/3384725_invAge2.pdf)  
 ![inv age time original](../figures/20210321_lowVhighMig/High_Mig/3384725_invAge.pdf)  
 
-PDF that is 6KB
+PDF that is 6KB  
 ![inv age boxplot](../figures/20210321_lowVhighMig/High_Mig/3384725_invAgebox.pdf)  
 
 
 ## Inversion Length
-PDF that is 15KB
+PDF that is 15KB  
 ![inv length time](../figures/20210321_lowVhighMig/High_Mig/3384725_invLength.pdf) 
 ![inv length time original](../figures/20210321_lowVhighMig/High_Mig/3384725_invLength.png)  
 
@@ -32,7 +32,7 @@ PDF that is 5KB
 ![inv length boxplot](../figures/20210321_lowVhighMig/High_Mig/3384725_invLengthbox.pdf)  
 
 ## Inversion num QTNs
-PDF that is 15KB
+PDF that is 15KB  
 ![inv QTN lscaled time](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaled2.pdf) 
 ![inv QTN lscaled time original](../figures/20210321_lowVhighMig/High_Mig/3384725_invLscaled.png)  
 
@@ -40,7 +40,7 @@ PDF that is 15KB
 
 ## Manhattan 
 PNG that is 48KB  
-PDF that is 890 KB  
+PDF that is 890KB  
 ![manhattan](../figures/20210321_lowVhighMig/High_Mig/3384725_manh.pdf)  
 ![manhattan png](../figures/20210321_lowVhighMig/High_Mig/3384725_manh.png)  
 
