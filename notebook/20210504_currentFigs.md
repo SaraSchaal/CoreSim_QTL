@@ -33,8 +33,8 @@ PDF that is 5KB
 
 ## Inversion num QTNs
 PDF that is 15KB  
-![inv QTN lscaled time](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaled2.pdf) 
-![inv QTN lscaled time original](../figures/20210321_lowVhighMig/High_Mig/3384725_invLscaled.png)  
+![inv QTN lscaled time](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaled2.pdf)  
+![inv QTN lscaled time original](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaled.png)  
 
 ![inv QTN lscaled boxplot](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaledbox.pdf)  
 
@@ -61,6 +61,5 @@ PDF that is 7KB
 
 ## Outlier detection  
 PDF that is 1.7MB  
-![compare outlier tests](../figures/20210321_lowVhighMig/High_Mig/3384725_outlierTests.pdf)
-![compare outlier tests](../figures/20210321_lowVhighMig/High_Mig/3384725_outlierTests.pdf)
+![compare outlier tests](../figures/20210321_lowVhighMig/High_Mig/3384725_outlierTests.pdf)  
 
