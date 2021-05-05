@@ -227,6 +227,7 @@ mtext(expression(bold("Frequency")), side = 2, outer = TRUE)
 
 # create null distributions for outlier criteria
 null <- df.muts.NS.MAF$FST[!is.nan(df.muts.NS.MAF$FST) & df.muts.NS.MAF$type == "m2"] # criteria 1: compare to a null distribution of all QTNs in no-selec sim
+#null <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
 #null_crit1_2 <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
 null_neut <- df.muts.MAF$FST[df.muts.NS.MAF$type == "m1"] # criteria 2: compare to a null distribution of neutral QTNs in selec sim
 
@@ -599,6 +600,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   dev.off()
 
 ## Average Inversion Age ##
+  library("viridisLite")
   # SELECTION #
   df.invage.temp <- pivot_longer(df.AdaptNSsplit[,c(1,2,7,22)], cols = c(inv_ageAdapt, inv_ageNonAdapt, inv_age_NS),
                             names_to = "Adaptsplit", values_to = "inv_age")
@@ -616,10 +618,10 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     geom_line(data = df.invage, aes(color = Adaptsplit), size = 0.75) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin=  inv_ageAdaptLower, 
                                            ymax= inv_ageAdapt + sd_inv_ageAdapt), 
-               fill = "darkseagreen3", alpha=0.2, inherit.aes = FALSE) +
+               fill = "#3E4A89FF", alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin = inv_ageNonAdaptLower,
                                            ymax = inv_ageNonAdapt + sd_inv_ageNonAdapt),
-                fill = "darkseagreen4", alpha=0.2, inherit.aes = FALSE) +
+                fill = "firebrick", alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.inv.data.NS, aes(x = sim_gen, ymin =  inv_ageNSLower,
                                           ymax = inv_age_NS + sd_inv_age_NS),
                fill = "black", alpha=0.2, inherit.aes = FALSE) +
@@ -629,7 +631,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c("Adaptive", "Nonadaptive", "No Selection"), 
-                       values=c("darkseagreen3", "darkseagreen4",  "black")) +
+                       values=c( "#3E4A89FF", "red", "black")) +
     #theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invage$inv_age))) +
@@ -668,7 +670,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   pdf(paste0(folderOut, seed, "_invAgebox.pdf"), height = 5, width = 7)
     ggplot(data = final.inv, aes(x = adaptInv, y= inv_age, fill = adaptInv)) +
       geom_boxplot() + 
-      scale_fill_manual(values = c("darkseagreen3", "darkseagreen4", "black")) + 
+      scale_fill_manual(values = c( "#3E4A89FF", "firebrick", "black")) + 
       theme_classic() +
       theme(panel.background = element_blank(), 
             strip.background = element_rect(colour = "white", fill = "grey92")) +
@@ -687,26 +689,26 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.AdaptSplit$inv_lengthAdaptLower[df.AdaptSplit$inv_lengthAdaptLower<0] <- 0
   df.AdaptSplit$inv_lengthNonAdaptLower[df.AdaptSplit$inv_lengthNonAdaptLower<0] <- 0
   df.inv.data.NS$inv_lengthNSLower[df.inv.data.NS$inv_lengthNSLower<0] <- 0
-  
+  #"paleturquoise2", "skyblue", "skyblue4"
   inv.length.plot <- ggplot(data = df.invlength, 
                             aes(x = sim_gen, y = inv_length, group = Adaptsplit)) + 
     geom_line(aes(color = Adaptsplit), size = 0.75, alpha = 0.9) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin=  inv_lengthAdaptLower, 
                                           ymax= inv_lengthAdapt + sd_inv_lengthAdapt), 
-                fill = "paleturquoise2", alpha=0.2, inherit.aes = FALSE) +
+                fill = "#3E4A89FF", alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin = inv_lengthNonAdaptLower,
                                           ymax = inv_lengthNonAdapt + sd_inv_lengthNonAdapt),
-                fill = "skyblue", alpha=0.2, inherit.aes = FALSE) +
+                fill = "firebrick", alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.inv.data.NS, aes(x = sim_gen, ymin =  inv_lengthNSLower,
                                            ymax = inv_length_NS + sd_inv_length_NS),
-                fill = "skyblue4", alpha=0.2, inherit.aes = FALSE) +
+                fill = "black", alpha=0.2, inherit.aes = FALSE) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = " ", y = "Average Inversion Length", x = "Generation") +
     theme_classic() +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c( "Adaptive", "Nonadaptive","No Selection"),
-                       values=c("paleturquoise2", "skyblue", "skyblue4")) +
+                       values=c("#3E4A89FF", "firebrick", "black")) +
    # theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, 50000)) +
@@ -744,7 +746,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   pdf(paste0(folderOut, seed, "_invLengthbox.pdf"), height = 5, width = 7)
   ggplot(data = final.inv, aes(x = adaptInv, y= inv_length, fill = adaptInv)) +
     geom_boxplot() + 
-    scale_fill_manual(values = c("paleturquoise2","skyblue", "skyblue4")) + 
+    scale_fill_manual(values = c("#3E4A89FF", "firebrick", "black")) + 
     theme_classic() +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
@@ -763,19 +765,19 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.AdaptSplit$inv_numQTNsLscaledAdaptLower[df.AdaptSplit$inv_numQTNsLscaledAdaptLower<0] <- 0
   df.AdaptSplit$inv_numQTNsLscaledNonAdaptLower[df.AdaptSplit$inv_numQTNsLscaledNonAdaptLower<0] <- 0
   df.inv.data.NS$inv_numQTNsLscaledNSLower[df.inv.data.NS$inv_numQTNsLscaledNSLower<0] <- 0
-  
+  # thistle, plum4, thistle4
   inv.qtns.Lscaled.plot <- ggplot(data = df.invQTNsLscaled, 
                                   aes(x = sim_gen, y = inv_numQTNs, group = Adaptsplit)) + 
     geom_line(aes(color = Adaptsplit), size = 0.75) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin= inv_numQTNsLscaledAdaptLower, 
                                           ymax= num_qtns_LscaledAdapt + sd_num_qtns_LscaledAdapt), 
-                fill = "thistle", alpha=0.2, inherit.aes = FALSE) +
+                fill = "#3E4A89FF", alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin = inv_numQTNsLscaledNonAdaptLower,
                                           ymax = num_qtns_LscaledNonAdapt + sd_num_qtns_LscaledNonAdapt),
-                fill = "plum4", alpha=0.2, inherit.aes = FALSE) +
+                fill = "firebrick", alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.inv.data.NS, aes(x = sim_gen, ymin =  inv_numQTNsLscaledNSLower,
                                            ymax = num_qtns_Lscaled_NS + sd_num_qtns_Lscaled_NS),
-                fill = "thistle4", alpha=0.2, inherit.aes = FALSE) +
+                fill = "black", alpha=0.2, inherit.aes = FALSE) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = "",
          y = "Average number of inversion QTNs \nscaled by inversion length",
@@ -784,7 +786,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c( "Adaptive", "Nonadaptive","No Selection"),
-                       values=c("thistle", "plum4","thistle4")) +
+                       values=c("#3E4A89FF", "firebrick", "black")) +
     #theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_numQTNs))) +
@@ -821,7 +823,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   pdf(paste0(folderOut, seed, "_invQTNsLscaledbox.pdf"), height = 5, width = 7)
     ggplot(data = final.inv, aes(x = adaptInv, y= num_qtns_Lscaled, fill = adaptInv)) +
       geom_boxplot() + 
-      scale_fill_manual(values = c( "thistle", "plum4","thistle4")) + 
+      scale_fill_manual(values = c("#3E4A89FF", "firebrick", "black")) + 
       theme_classic() +
       theme(panel.background = element_blank(), 
             strip.background = element_rect(colour = "white", fill = "grey92")) +
@@ -1266,14 +1268,14 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   table(G_ref1)
   table(G_ref2)
 
-  pdf(paste0("figures/", seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
   
   heatmap(t(G_ref1[,pop1_order]), Rowv = NA,  main="Pop1 genotypes",cexCol = 0.3,
           Colv = NA, useRaster=TRUE,
           scale="none")
   dev.off()
   
-  pdf(paste0("figures/", seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
+  pdf(paste0(folderOut, seed, "_heatmapPop2geno.pdf"), height = 5, width = 7)
   heatmap(t(G_ref2[,pop2_order]), Rowv = NA,  main="Pop2 genotypes",cexCol = 0.3,
           Colv = NA, useRaster=TRUE,
           scale="none")
@@ -1447,7 +1449,7 @@ outflank.fst <- ggplot(df.out, aes(x = position_vcf, y = FST_outflank)) +
   labs(title ="OutFLANK",
        y = "FST",
        x = "Genome Position") + 
-  ylim(c(0, max(c(df.out$FST_outflank, df.neutQtnMuts$FST)))) +
+  ylim(c(0, max(c(df.out$FST_outflank, df.neutQTNmuts$FST)))) +
   theme(legend.position = "none")
 
 
@@ -1467,9 +1469,10 @@ outflank.log10p <- ggplot(df.out, aes(x = position_vcf, y = OutFLANK_0.2_PRUNED_
 manh.plot.slim <- manh.plot + labs(title = "Simulation Output") +
   geom_point(aes(color = inOut), alpha = 0.8) + 
   scale_color_manual(values=c( "firebrick", "goldenrod", "navy")) +
-  theme(legend.position = "none") + ylim(c(0, max(c(df.out$FST_outflank, df.neutQtnMuts$FST))))
-
+  theme(legend.position = "none") + ylim(c(0, max(c(df.out$FST_outflank, df.neutQTNmuts$FST))))
+pdf(paste0(folderOut, seed, "_outlierTests.pdf"), height = 7, width = 5)
 ggarrange(manh.plot.slim, outflank.fst, outflank.log10p, pcadapt.log10p, nrow = 4, ncol = 1)
+dev.off()
 
 #### end OutFLANK
 ######################################################################################################
@@ -1479,13 +1482,11 @@ ggarrange(manh.plot.slim, outflank.fst, outflank.log10p, pcadapt.log10p, nrow = 
 
 colnames(df.qtnMuts.MAF)[2] <- "LocusName"
 df.outlierComp <- merge(df.qtnMuts.MAF[c(2,12:ncol(df.qtnMuts.MAF))], df.out, by = "LocusName")
-for(i in 1:nrow(df.outlierComp))
-ifelse(is.na(df.outlierComp$OutlierFlag), )
-
+head(df.outlierComp)
 df.outlierComp$testNum <- NA
 df.outlierComp$whichTests <- NA
 for(i in 1:nrow(df.outlierComp)){
-  if(!is.na(df.outlierComp$OutlierFlag[i]) & !is.na(df.outlierComp$pcadapt_outlier[i] == TRUE)){
+  if(!is.na(df.outlierComp$OutlierFlag[i]) & !is.na(df.outlierComp$pcadapt_outlier[i])){
     if(df.outlierComp$crit1_p.value[i] != 0 | df.outlierComp$crit2_p.value[i] != 0 & df.outlierComp$OutlierFlag[i] == FALSE & df.outlierComp$pcadapt_outlier[i] == FALSE){
       df.outlierComp$testNum[i] <- 0
       df.outlierComp$whichTests[i] <- "none"
@@ -1498,7 +1499,6 @@ for(i in 1:nrow(df.outlierComp)){
     } else if(df.outlierComp$crit1_p.value[i] == 0 & df.outlierComp$crit2_p.value[i] == 0 & df.outlierComp$OutlierFlag[i] == FALSE & df.outlierComp$pcadapt_outlier[i] == TRUE){
       df.outlierComp$testNum[i] <- 2
       df.outlierComp$whichTests[i] <- "crit_PCAdapt"
-    
     } else if(df.outlierComp$crit1_p.value[i] != 0 | df.outlierComp$crit2_p.value[i] != 0 & df.outlierComp$OutlierFlag[i] == TRUE & df.outlierComp$pcadapt_outlier[i] == FALSE){
       df.outlierComp$testNum[i] <- 1
       df.outlierComp$whichTests[i] <- "OutFLANK"
@@ -1510,10 +1510,10 @@ for(i in 1:nrow(df.outlierComp)){
 }
 df.outlierComp$whichTests <- as.factor(df.outlierComp$whichTests)
 df.outlierComp$whichTests <- relevel(df.outlierComp$whichTests, "none")
-
+levels(df.outlierComp$inOut)
 overall.outliers <- ggplot(df.outlierComp[!is.na(df.outlierComp$whichTests),], aes(x = position_vcf, y = FST_slim)) + 
-  geom_point(aes(color = whichTests)) +
-  facet_wrap(~inOut, nrow = 2, ncol = 1) + 
+  geom_point(aes(color = whichTests), alpha = 0.8) +
+  facet_wrap(~inOut, nrow = 4, ncol = 1) + 
   scale_color_manual(values = c("black", "blue", "red", "goldenrod")) +
   theme_classic() +
   theme(panel.background = element_blank(), 
@@ -1544,7 +1544,7 @@ overall.outliers <- ggplot(df.outlierComp[!is.na(df.outlierComp$whichTests),], a
 
 ######################################################################################################    
 ## COPY AND PASTE WHERE NEEDED
-pdf(paste0("figures/", seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
+pdf(paste0(outFolder, seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
 
 dev.off()
 
