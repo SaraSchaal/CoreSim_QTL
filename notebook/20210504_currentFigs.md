@@ -9,15 +9,21 @@ PDF that is 67KB
 PDF that is 21KB  
 ![phenotype plot](../figures/20210321_lowVhighMig/High_Mig/3384725_pheno.pdf) 
 
+> _Make one line dotted so it works in B&W_
+
 ## Fitnesses
 PDF that is 21KB  
 ![fitness plot](../figures/20210321_lowVhighMig/High_Mig/3384725_fitness.pdf) 
+
+> _Make one line dotted to be consistent with last graph_
 
 ## Inversion Age  
 PDF that is 15KB    
 ![inv age time (my top)](../figures/20210321_lowVhighMig/High_Mig/3384725_invAge3.pdf)  
 ![inv age time second](../figures/20210321_lowVhighMig/High_Mig/3384725_invAge2.pdf)  
 ![inv age time original](../figures/20210321_lowVhighMig/High_Mig/3384725_invAge.pdf)  
+
+> _Make the black lines dotted so it works in B&W on this and similar line graphs_
 
 PDF that is 6KB  
 ![inv age boxplot](../figures/20210321_lowVhighMig/High_Mig/3384725_invAgebox.pdf)  
@@ -31,6 +37,8 @@ PDF that is 15KB
 PDF that is 5KB  
 ![inv length boxplot](../figures/20210321_lowVhighMig/High_Mig/3384725_invLengthbox.pdf)  
 
+> _legend is redundant on this and other similar boxplots_
+
 ## Inversion num QTNs
 PDF that is 15KB  
 ![inv QTN lscaled time](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaled2.pdf)  
@@ -43,6 +51,8 @@ PNG that is 48KB
 PDF that is 890KB  
 ![manhattan](../figures/20210321_lowVhighMig/High_Mig/3384725_manh.pdf)  
 ![manhattan png](../figures/20210321_lowVhighMig/High_Mig/3384725_manh.png)  
+
+> _can you make this graph a bit wider so it stretches out a bit, and add arrows or grey panels in the background to indicate which inversions are adaptive? Also, change the shape of the points so it works in B&W - it may be hard to see if you use solid shapes, outlined shapes might work better_
 
 ## Inversion Origin 
 PDF that is 30 KB  
@@ -61,5 +71,7 @@ PDF that is 7KB
 
 ## Outlier detection  
 PDF that is 1.7MB  
-![compare outlier tests](../figures/20210321_lowVhighMig/High_Mig/3384725_outlierTests.pdf)  
+![compare outlier tests](../figures/20210321_lowVhighMig/High_Mig/3384725_outlierTests.pdf) 
+
+> _Can you output this as a jpeg, and think about a way to present it that highlights the adaptive inversions (e.g. grey panel in background) and is compatible with B&W_
 
