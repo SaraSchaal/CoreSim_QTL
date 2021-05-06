@@ -613,25 +613,26 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.AdaptSplit$inv_ageNonAdaptLower[df.AdaptSplit$inv_ageNonAdaptLower<0] <- 0
   df.inv.data.NS$inv_ageNSLower[df.inv.data.NS$inv_ageNSLower<0] <- 0
   
+  ## change the second (no selection) line to dotted line 
   inv.age.plot <- ggplot(data = df.invage, 
                          aes(x = sim_gen, y = inv_age, group = Adaptsplit)) + 
     geom_line(data = df.invage, aes(color = Adaptsplit), size = 0.75) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin=  inv_ageAdaptLower, 
                                            ymax= inv_ageAdapt + sd_inv_ageAdapt), 
-               fill = "#3E4A89FF", alpha=0.2, inherit.aes = FALSE) +
+               fill = inferno(4)[3], alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin = inv_ageNonAdaptLower,
                                            ymax = inv_ageNonAdapt + sd_inv_ageNonAdapt),
-                fill = "firebrick", alpha=0.2, inherit.aes = FALSE) +
+                fill = inferno(4)[2], alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.inv.data.NS, aes(x = sim_gen, ymin =  inv_ageNSLower,
                                           ymax = inv_age_NS + sd_inv_age_NS),
-               fill = "black", alpha=0.2, inherit.aes = FALSE) +
+               fill = inferno(4)[1], alpha=0.2, inherit.aes = FALSE) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = " ", y = "Average Inversion Age", x = "Generation") +
     theme_classic() +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c("Adaptive", "Nonadaptive", "No Selection"), 
-                       values=c( "#3E4A89FF", "red", "black")) +
+                       values=inferno(4)[3:1]) +
     #theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invage$inv_age))) +
@@ -670,7 +671,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   pdf(paste0(folderOut, seed, "_invAgebox.pdf"), height = 5, width = 7)
     ggplot(data = final.inv, aes(x = adaptInv, y= inv_age, fill = adaptInv)) +
       geom_boxplot() + 
-      scale_fill_manual(values = c( "#3E4A89FF", "firebrick", "black")) + 
+      scale_fill_manual(values = inferno(4)[3:1]) + 
       theme_classic() +
       theme(panel.background = element_blank(), 
             strip.background = element_rect(colour = "white", fill = "grey92")) +
@@ -695,20 +696,20 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     geom_line(aes(color = Adaptsplit), size = 0.75, alpha = 0.9) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin=  inv_lengthAdaptLower, 
                                           ymax= inv_lengthAdapt + sd_inv_lengthAdapt), 
-                fill = "#3E4A89FF", alpha=0.2, inherit.aes = FALSE) +
+                fill = inferno(4)[3], alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin = inv_lengthNonAdaptLower,
                                           ymax = inv_lengthNonAdapt + sd_inv_lengthNonAdapt),
-                fill = "firebrick", alpha=0.2, inherit.aes = FALSE) +
+                fill = inferno(4)[2], alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.inv.data.NS, aes(x = sim_gen, ymin =  inv_lengthNSLower,
                                            ymax = inv_length_NS + sd_inv_length_NS),
-                fill = "black", alpha=0.2, inherit.aes = FALSE) +
+                fill = inferno(4)[1], alpha=0.2, inherit.aes = FALSE) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = " ", y = "Average Inversion Length", x = "Generation") +
     theme_classic() +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c( "Adaptive", "Nonadaptive","No Selection"),
-                       values=c("#3E4A89FF", "firebrick", "black")) +
+                       values=inferno(4)[3:1]) +
    # theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, 50000)) +
@@ -746,7 +747,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   pdf(paste0(folderOut, seed, "_invLengthbox.pdf"), height = 5, width = 7)
   ggplot(data = final.inv, aes(x = adaptInv, y= inv_length, fill = adaptInv)) +
     geom_boxplot() + 
-    scale_fill_manual(values = c("#3E4A89FF", "firebrick", "black")) + 
+    scale_fill_manual(values = inferno(4)[3:1]) + 
     theme_classic() +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
@@ -771,13 +772,13 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     geom_line(aes(color = Adaptsplit), size = 0.75) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin= inv_numQTNsLscaledAdaptLower, 
                                           ymax= num_qtns_LscaledAdapt + sd_num_qtns_LscaledAdapt), 
-                fill = "#3E4A89FF", alpha=0.2, inherit.aes = FALSE) +
+                fill = inferno(4)[3], alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin = inv_numQTNsLscaledNonAdaptLower,
                                           ymax = num_qtns_LscaledNonAdapt + sd_num_qtns_LscaledNonAdapt),
-                fill = "firebrick", alpha=0.2, inherit.aes = FALSE) +
+                fill = inferno(4)[2], alpha=0.2, inherit.aes = FALSE) +
     geom_ribbon(data = df.inv.data.NS, aes(x = sim_gen, ymin =  inv_numQTNsLscaledNSLower,
                                            ymax = num_qtns_Lscaled_NS + sd_num_qtns_Lscaled_NS),
-                fill = "black", alpha=0.2, inherit.aes = FALSE) +
+                fill = inferno(4)[1], alpha=0.2, inherit.aes = FALSE) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = "",
          y = "Average number of inversion QTNs \nscaled by inversion length",
@@ -786,7 +787,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c( "Adaptive", "Nonadaptive","No Selection"),
-                       values=c("#3E4A89FF", "firebrick", "black")) +
+                       values=inferno(4)[3:1]) +
     #theme(legend.position = "none") +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_numQTNs))) +
@@ -823,7 +824,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   pdf(paste0(folderOut, seed, "_invQTNsLscaledbox.pdf"), height = 5, width = 7)
     ggplot(data = final.inv, aes(x = adaptInv, y= num_qtns_Lscaled, fill = adaptInv)) +
       geom_boxplot() + 
-      scale_fill_manual(values = c("#3E4A89FF", "firebrick", "black")) + 
+      scale_fill_manual(values = inferno(4)[3:1]) + 
       theme_classic() +
       theme(panel.background = element_blank(), 
             strip.background = element_rect(colour = "white", fill = "grey92")) +
@@ -931,13 +932,13 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.invFinalsubset <- df.invFinalAllDataPop %>% filter(sim_gen %in% seq(0, 50000, by = 1000)) 
   df.invFinalsubset.NS <- df.invFinalAllDataPop.NS %>% filter(sim_gen %in% seq(0, 50000, by = 1000)) 
   
+  df.invFinalsubset$inv_id <- as.factor(df.invFinalsubset$inv_id)
   plot.inv.orig <- ggplot(df.invFinalsubset, aes(x = sim_gen, y = qtnSelCoefsum)) + 
-    geom_point(aes(color = pop, size = inv_FST, alpha = inv_id)) + 
-    geom_line(aes(color = pop, group = inv_id, alpha = inv_id)) + 
+    geom_point(aes(color = pop, size = inv_FST, shape = inv_id), alpha = 0.5) + 
+    geom_line(aes(color = pop, group = inv_id), alpha = 0.5) + 
     scale_color_manual(values=c("navy", "red")) + 
-    scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) +   
+    #scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) +   
     #scale_alpha(range = c( 1, 0.2)) +
-    #scale_alpha_discrete(range = c(0.35, 0.9)) +
     theme_classic() +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92"),
@@ -952,14 +953,16 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     guides(size = guide_legend(title = "Inversion FST")) +
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"))
   
+  df.invFinalsubset.NS$inv_id <- as.factor(df.invFinalsubset.NS$inv_id)
   plot.inv.orig.NS <- ggplot(df.invFinalsubset.NS, aes(x = sim_gen, y = qtnSelCoefsum)) + 
-    geom_point(aes(color = pop, size = inv_FST), alpha = 0.8) + 
+    geom_point(aes(color = pop, size = inv_FST, shape = inv_id), alpha = 0.5) + 
     geom_line(aes(color = pop, group = inv_id), alpha = 0.8) + 
     scale_color_manual(values=c("navy", "red")) + 
+    #scale_color_discrete() + 
     #scale_color_gradient(low = "gainsboro", high = "darkorange", 
-                         #name = "Days Since \nStart of \nExperiment", 
+                         #name = "", 
                          #breaks = c(4, 8, 12, 16), 
-                         #labels = c("Day 6 PM", "Day 8 AM", "Day 10 AM", "Day 13 PM")) + 
+                         #labels = c()) + 
     scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) + 
     theme_classic() +
     theme(panel.background = element_blank(), 
