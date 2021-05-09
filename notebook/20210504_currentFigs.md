@@ -41,6 +41,7 @@ PDF that is 5KB
 
 ## Inversion num QTNs
 PDF that is 15KB  
+![inv QTN lscaled time](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaled_line.pdf)  
 ![inv QTN lscaled time](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaled2.pdf)  
 ![inv QTN lscaled time original](../figures/20210321_lowVhighMig/High_Mig/3384725_invQTNsLscaled.png)  
 
