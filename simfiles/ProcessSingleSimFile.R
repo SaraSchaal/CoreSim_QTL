@@ -226,8 +226,8 @@ mtext(expression(bold("FST")), side = 1, outer = TRUE)
 mtext(expression(bold("Frequency")), side = 2, outer = TRUE)
 
 # create null distributions for outlier criteria
-null <- df.muts.NS.MAF$FST[!is.nan(df.muts.NS.MAF$FST) & df.muts.NS.MAF$type == "m2"] # criteria 1: compare to a null distribution of all QTNs in no-selec sim
-#null <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
+#null <- df.muts.NS.MAF$FST[!is.nan(df.muts.NS.MAF$FST) & df.muts.NS.MAF$type == "m2"] # criteria 1: compare to a null distribution of all QTNs in no-selec sim
+null <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
 #null_crit1_2 <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
 null_neut <- df.muts.MAF$FST[df.muts.NS.MAF$type == "m1"] # criteria 2: compare to a null distribution of neutral QTNs in selec sim
 
@@ -327,12 +327,15 @@ crit.output <- matrix(NA, nrow = length(inv.IDs), ncol = 12)
 colnames(crit.output) <- c("invWindID", "length", "first.base", "final.base", "num.QTNs", "crit1", "crit2", 
                            "inv_Va_perc", "crit3", "crit1_YN", "crit2_YN", "crit3_YN")
 adapt.inv <- NULL
-
+center.bases <- NULL
+first.bases <- NULL
+final.bases <- NULL
 for(i in 1:length(inv.IDs)){
   focalWindow <- invWindBases.MAF[invWindBases.MAF$invIDMAF == inv.IDs[i],]
   wind.length <- nrow(focalWindow)
   first.wind.base <- focalWindow$invWindBasesMAF[1]
   final.wind.base <- focalWindow$invWindBasesMAF[wind.length]
+  center.base <-  (first.wind.base + final.wind.base)/2
   focalWindQTNs <- subset(df.qtnMuts.MAF, subset = position >= first.wind.base & position <= final.wind.base)
   focalWind.crit1 <- sum(focalWindQTNs$crit1_p.value == 0)/wind.length
   focalWind.crit2 <- sum(focalWindQTNs$crit2_p.value == 0)/wind.length
@@ -345,6 +348,9 @@ for(i in 1:length(inv.IDs)){
                       focalWind.crit1, focalWind.crit2, Va_focInv, focalWind.crit3, crit1_YN, crit2_YN, crit3_YN)
   if(sum(crit1_YN, crit2_YN, crit3_YN) == 3){
     adapt.inv <- c(adapt.inv, inv.IDs[i])
+    center.bases <- c(center.bases, center.base)
+    first.bases <- c(first.bases, first.wind.base)
+    final.bases <- c(final.bases, final.wind.base)
   }
 }
 df.crit.output <- as.data.frame(crit.output)
@@ -404,13 +410,8 @@ non.adapt.inv.data.nosum <- df.invAllData %>%
   filter(!inv_id %in% adapt.inv)
 non.adapt.inv.data.nosum$adaptInv <- "Nonadaptive"
 
-# bind together adaptive and non adaptive column together 
-#adaptInvCol <- as.data.frame(c(adapt.inv.data.nosum$adaptInv, non.adapt.inv.data.nosum$adaptInv))
-
 # bind together datasets for boxplots 
 df.adaptSplitbox <- rbind(as.data.frame(adapt.inv.data.nosum), as.data.frame(non.adapt.inv.data.nosum))
-#df.adaptSplitbox <- cbind(df.adaptSplitbox, adaptInvCol)
-#colnames(df.adaptSplitbox)[ncol(df.adaptSplitbox)] <- "adaptInv"
 
 # Standard deviation
 sd.Adapt <- aggregate(cbind(inv_age, mean_qtnSelCoef, num_qtns, inv_length, num_qtns_Lscaled)~sim_gen, 
@@ -502,7 +503,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
                             names_to = "pop", values_to = "meanPheno")
   pheno.plot.leg <- ggplot(data = df.pheno, 
                         aes(x = sim_gen, y = meanPheno, group = pop)) + 
-    geom_line(aes(color = pop), size = 0.75) + 
+    geom_line(aes(color = pop, linetype = pop), size = 0.75) + 
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = expression(bold("Selection")), y = "Phenotype", x = "Generation") +
     theme_classic() +
@@ -514,12 +515,15 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) + 
     scale_color_manual(name = "Population",
                        values = c( "cadetblue3", "navy"),
-                       labels = c("Pop 1", "Pop 2"))
+                       labels = c("Pop 1", "Pop 2")) +
+    scale_linetype_manual(name = "Population",
+                          values = c("solid", "dotted"),
+                          labels = c("Pop 1", "Pop 2"))
 
   pheno.plot <- ggplot(data = df.popDyn, 
                          aes(x = sim_gen, y = meanPhenoP1)) + 
-    geom_line(color = "cadetblue3", size = 0.75) + 
-    geom_line(aes(y = meanPhenoP2, x = sim_gen), color = "navy") + 
+    geom_line(color = "cadetblue3", linetype = "solid", size = 0.75) + 
+    geom_line(aes(y = meanPhenoP2, x = sim_gen), color = "navy", linetype = "dotted") + 
     geom_ribbon(aes(ymin= meanPhenoP1 - sdPhenoP1, ymax= meanPhenoP1 + sdPhenoP1), fill = "cadetblue3", alpha=0.2) +
     geom_ribbon(aes(ymin= meanPhenoP2 - sdPhenoP2, ymax= meanPhenoP2 + sdPhenoP2), fill = "navy", alpha=0.2) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
@@ -536,9 +540,9 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
 
   pheno.plot.NS <- ggplot(data = df.popDyn.NS, 
                             aes(x = sim_gen, y = meanPhenoP1)) + 
-    geom_line(size = 0.75, color = "cadetblue3") + 
+    geom_line(size = 0.75, color = "cadetblue3", linetype = "solid") + 
     geom_ribbon(aes(ymin= meanPhenoP1 - sdPhenoP1, ymax= meanPhenoP1 + sdPhenoP1), fill = "cadetblue3", alpha=0.2) +
-    geom_line(aes(y = meanPhenoP2, x = sim_gen), color = "navy") + 
+    geom_line(aes(y = meanPhenoP2, x = sim_gen), color = "navy", linetype = "dotted") + 
     geom_ribbon(aes(ymin= meanPhenoP2 - sdPhenoP2, ymax= meanPhenoP2 + sdPhenoP2), fill = "navy", alpha=0.2) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = expression(bold("No Selection")), y = " ", x = "Generation") +
@@ -562,7 +566,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
 ## Fitnesses ##
   fitP1.plot <- ggplot(data = df.popDyn, 
                        aes(x = sim_gen, y = meanFitP1)) + 
-    geom_line(color = "cadetblue3", size = 0.75) + 
+    geom_line(color = "cadetblue3", size = 0.75, linetype = "solid") + 
     geom_ribbon(aes(ymin=  meanFitP1 - sdFitP1, ymax= meanFitP1 + sdFitP1), fill = "cadetblue3", alpha=0.2) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = expression(bold("Population 1")), y = "Fitness", x = "Generation") +
@@ -579,7 +583,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
 
   fitP2.plot <- ggplot(data = df.popDyn, 
                        aes(x = sim_gen, y = meanFitP2)) + 
-    geom_line(color = "navy", size = 0.75) + 
+    geom_line(color = "navy", size = 0.75, linetype = "dotted") + 
     geom_ribbon(aes(ymin=  meanFitP2 - sdFitP2, ymax= meanFitP2 + sdFitP2), fill = "navy", alpha=0.2) +
     geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
     labs(title = expression(bold("Population 2")), y = " ", x = "Generation") +
@@ -616,7 +620,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   ## change the second (no selection) line to dotted line 
   inv.age.plot <- ggplot(data = df.invage, 
                          aes(x = sim_gen, y = inv_age, group = Adaptsplit)) + 
-    geom_line(data = df.invage, aes(color = Adaptsplit), size = 0.75) + 
+    geom_line(data = df.invage, aes(color = Adaptsplit, linetype = Adaptsplit), alpha = 0.9) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin=  inv_ageAdaptLower, 
                                            ymax= inv_ageAdapt + sd_inv_ageAdapt), 
                fill = inferno(4)[3], alpha=0.2, inherit.aes = FALSE) +
@@ -633,32 +637,12 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c("Adaptive", "Nonadaptive", "No Selection"), 
                        values=inferno(4)[3:1]) +
-    #theme(legend.position = "none") +
+    scale_linetype_manual(name = "", labels = c("Adaptive", "Nonadaptive","No Selection"), 
+                          values = c("solid", "solid", "dotted")) + 
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invage$inv_age))) +
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
   
-  
-  # NO SELECTION #
-  #df.invage.NS <- pivot_longer(df.AdaptSplit.NS[, c(1,2,7)], cols = c(inv_ageAdapt, inv_ageNonAdapt),
-                              # names_to = "AdaptSplit", values_to = "inv_age")
-  # 
-  # inv.age.plot.NS <- ggplot(data = inv.data.NS, 
-  #                           aes(x = sim_gen, y = inv_age)) + 
-  #   geom_line(aes(color = FSTsplit), size = 0.75) + 
-  #   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
-  #   labs(title = " ", y = "", x = "Generation") +
-  #   theme_classic() +
-  #   theme(panel.background = element_blank(), 
-  #         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  #   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  #   scale_y_continuous(expand = c(0, 0), limits = c(0, max(inv.data.NS$inv_age))) +
-  #   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
-  # 
-  # leg <- g_legend(inv.age.plot.NS)
-  # 
-  # inv.age.plot.NS.noleg <- inv.age.plot.NS + theme(legend.position = "none")
-  # 
   pdf(paste0(folderOut, seed, "_invAge3.pdf"), height = 5, width = 7)
    inv.age.plot
   dev.off()
@@ -673,6 +657,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
       geom_boxplot() + 
       scale_fill_manual(values = inferno(4)[3:1]) + 
       theme_classic() +
+      theme(legend.position = "none") + 
       theme(panel.background = element_blank(), 
             strip.background = element_rect(colour = "white", fill = "grey92")) +
       labs(title = " ", y = "Average Inversion Age", x = "Inversion Status") 
@@ -690,10 +675,10 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.AdaptSplit$inv_lengthAdaptLower[df.AdaptSplit$inv_lengthAdaptLower<0] <- 0
   df.AdaptSplit$inv_lengthNonAdaptLower[df.AdaptSplit$inv_lengthNonAdaptLower<0] <- 0
   df.inv.data.NS$inv_lengthNSLower[df.inv.data.NS$inv_lengthNSLower<0] <- 0
-  #"paleturquoise2", "skyblue", "skyblue4"
+
   inv.length.plot <- ggplot(data = df.invlength, 
                             aes(x = sim_gen, y = inv_length, group = Adaptsplit)) + 
-    geom_line(aes(color = Adaptsplit), size = 0.75, alpha = 0.9) + 
+    geom_line(aes(color = Adaptsplit, linetype = Adaptsplit), alpha = 0.9) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin=  inv_lengthAdaptLower, 
                                           ymax= inv_lengthAdapt + sd_inv_lengthAdapt), 
                 fill = inferno(4)[3], alpha=0.2, inherit.aes = FALSE) +
@@ -710,37 +695,13 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c( "Adaptive", "Nonadaptive","No Selection"),
                        values=inferno(4)[3:1]) +
-   # theme(legend.position = "none") +
+    scale_linetype_manual(name = "", labels = c("Adaptive", "Nonadaptive","No Selection"), 
+                          values = c("solid", "solid", "dotted")) + 
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, 50000)) +
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
   
-  
-  # NO SELECTION #
-  # df.invlength.NS <- pivot_longer(df.FSTsplit.NS[, c(1,5,10)], cols = c(inv_lengthT10, inv_lengthB90),
-  #                                 names_to = "FSTsplit", values_to = "inv_length")
-  # 
-  # inv.length.plot.NS <- ggplot(data = df.invlength.NS, 
-  #                              aes(x = sim_gen, y = inv_length, group = FSTsplit)) + 
-  #   geom_line(aes(color = FSTsplit), size = 0.75, alpha= 0.9) + 
-  #   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
-  #   labs(title = " ", y = "", x = "Generation") +
-  #   theme_classic() +
-  #   theme(panel.background = element_blank(), 
-  #         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  #   scale_color_manual(labels = c("Top 10%", "Bot 90%"),
-  #                      values=c("lightsalmon1", "lightsalmon3")) +
-  #   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  #   scale_y_continuous(expand = c(0, 0), limits = c(0, 50000)) +
-  #   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
-  # 
-  # legLeng <- g_legend(inv.length.plot.NS)
-  # 
-  # inv.length.plot.NS.noLeg <- inv.length.plot.NS + theme(legend.position = "none")
-  # 
   pdf(paste0(folderOut, seed, "_invLength.pdf"), height = 5, width = 7)
-  # ggarrange(inv.length.plot, inv.length.plot.NS.noLeg, legLeng, labels = c("Selection", "No Selection"),
-  #           ncol = 3, widths = c(2.3,2.3,0.8))
     inv.length.plot
   dev.off()
 
@@ -749,10 +710,13 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     geom_boxplot() + 
     scale_fill_manual(values = inferno(4)[3:1]) + 
     theme_classic() +
+    theme(legend.position = "none") + 
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     labs(title = " ", y = "Average Inversion Length", x = "Inversion Status") 
   dev.off()
+  
+  
 ## Inversion QTNs Length Scaled ##
   # Selection
   df.invQTNsLscaled.temp <- pivot_longer(df.AdaptNSsplit[, c(1,6,11,26)], cols = c(num_qtns_LscaledAdapt, num_qtns_LscaledNonAdapt, num_qtns_Lscaled_NS),
@@ -766,10 +730,10 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.AdaptSplit$inv_numQTNsLscaledAdaptLower[df.AdaptSplit$inv_numQTNsLscaledAdaptLower<0] <- 0
   df.AdaptSplit$inv_numQTNsLscaledNonAdaptLower[df.AdaptSplit$inv_numQTNsLscaledNonAdaptLower<0] <- 0
   df.inv.data.NS$inv_numQTNsLscaledNSLower[df.inv.data.NS$inv_numQTNsLscaledNSLower<0] <- 0
-  # thistle, plum4, thistle4
+  
   inv.qtns.Lscaled.plot <- ggplot(data = df.invQTNsLscaled, 
                                   aes(x = sim_gen, y = inv_numQTNs, group = Adaptsplit)) + 
-    geom_line(aes(color = Adaptsplit), size = 0.75) + 
+    geom_line(aes(color = Adaptsplit, linetype = Adaptsplit), alpha = 0.9) + 
     geom_ribbon(data = df.AdaptSplit, aes(x = sim_gen, ymin= inv_numQTNsLscaledAdaptLower, 
                                           ymax= num_qtns_LscaledAdapt + sd_num_qtns_LscaledAdapt), 
                 fill = inferno(4)[3], alpha=0.2, inherit.aes = FALSE) +
@@ -788,37 +752,13 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
           strip.background = element_rect(colour = "white", fill = "grey92")) +
     scale_color_manual(name = "", labels = c( "Adaptive", "Nonadaptive","No Selection"),
                        values=inferno(4)[3:1]) +
-    #theme(legend.position = "none") +
+    scale_linetype_manual(name = "", labels = c("Adaptive", "Nonadaptive","No Selection"), values = c("solid", "solid", "dotted")) + 
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_numQTNs))) +
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
   
-  # No Selection    
-  # df.invQTNs.Lscaled.NS <- pivot_longer(df.FSTsplit.NS[, c(1,6,11)], cols = c(num_qtns_LscaledT10, num_qtns_LscaledB90),
-  #                                       names_to = "FSTsplit", values_to = "inv_qtnNum")
-  # 
-  # inv.qtns.Lscaled.plot.NS <- ggplot(data = df.invQTNs.Lscaled.NS, 
-  #                                    aes(x = sim_gen, y = inv_qtnNum, group = FSTsplit)) + 
-  #   geom_line(aes(color = FSTsplit), size = 0.75) + 
-  #   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
-  #   labs(title = " ", y = "", x = "Generation") +
-  #   theme_classic() +
-  #   theme(panel.background = element_blank(), 
-  #         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  #   scale_color_manual(labels = c("Top 10%", "Bot 90%"), 
-  #                      values=c("plum4", "thistle")) +
-  #   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  #   scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_qtnNum))) +
-  #   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
-  # 
-  # legQTNsLscaled <- g_legend(inv.qtns.Lscaled.plot.NS)
-  # 
-  # inv.qtns.Lscaled.plot.NS.noleg <- inv.qtns.Lscaled.plot.NS + theme(legend.position = "none")
-  # 
-  pdf(paste0(folderOut, seed, "_invQTNsLscaled2.pdf"), height = 5, width = 7)
-  inv.qtns.Lscaled.plot
-  # ggarrange(inv.qtns.Lscaled.plot, inv.qtns.Lscaled.plot.NS.noleg, legQTNsLscaled, labels = c("Selection", "No Selection"),
-  #           ncol = 3, widths = c(2.3,2.3,0.8))
+  pdf(paste0(folderOut, seed, "_invQTNsLscaled_line.pdf"), height = 5, width = 7)
+    inv.qtns.Lscaled.plot
   dev.off()
   
   pdf(paste0(folderOut, seed, "_invQTNsLscaledbox.pdf"), height = 5, width = 7)
@@ -826,6 +766,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
       geom_boxplot() + 
       scale_fill_manual(values = inferno(4)[3:1]) + 
       theme_classic() +
+      theme(legend.position = "none") + 
       theme(panel.background = element_blank(), 
             strip.background = element_rect(colour = "white", fill = "grey92")) +
       labs(title = " ", y = "Average number of inversion QTNs \nscaled by inversion length", x = "Inversion Status") 
@@ -838,49 +779,43 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
  
 ######################################################################################################  
 #### Manhattan plot ####
-  # SELECTION #
-  df.neutQTNmuts <- df.muts.MAF[df.muts.MAF$inOut != "inv",]
-  df.neutQTNmuts$inOut <- factor(df.neutQTNmuts$inOut)
-  manh.plot <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, group = inOut)) + 
-    geom_point(aes(color = inOut)) + 
-    scale_color_manual(values=c( "red", "goldenrod", "navy")) +
-    xlim(0, 2100000) + 
-    ylim(0, max(df.neutQTNmuts$FST)) +
-    labs(title = expression(bold("Selection"))) + 
-    theme(legend.position = "none") +
-    theme_classic() +
-    theme(panel.background = element_blank(), 
-          strip.background = element_rect(colour = "white", fill = "grey92"),
-          text = element_text(size = 11)) 
+  #add chromosome number
+  options(scipen = 999)
+  chrom_num <- 21
+  chrom_len <-  100000
   
-  # NO SELECTION #
-  df.neutQTNmuts.NS <- df.muts.NS.MAF[df.muts.NS.MAF$inOut != "inv",]
-  df.neutQTNmuts.NS$inOut <- factor(df.neutQTNmuts.NS$inOut)
-  manh.plot.NS <- ggplot(df.neutQTNmuts.NS, aes(x = position, y = FST, group = inOut)) + 
-    geom_point(aes(color = inOut)) + 
-    scale_color_manual(values=c( "red", "goldenrod", "navy")) +
-    xlim(0, 2100000) + 
-    ylim(0, max(df.neutQTNmuts$FST)) +
-    labs(title = expression(bold("No Selection")))  + 
-    theme_classic() +
-    theme(panel.background = element_blank(), 
-          strip.background = element_rect(colour = "white", fill = "grey92"),
-          text = element_text(size = 11)) 
+  df.muts.MAF$chrom <- NA
+  df.muts.NS.MAF$chrom <- NA
+  for(i in 1:chrom_num){
+    if(i != chrom_num){
+      chrom_end <- as.numeric(paste0(i, "00000"))
+      chrom_start <- chrom_end - chrom_len
+    } else {
+      chrom_end <- chrom_num*chrom_len 
+      chrom_start <- chrom_end - chrom_len
+    }
+    
+    ## SELECTION
+    for(j in 1:nrow(df.muts.MAF)){
+      if(i != chrom_num & df.muts.MAF$position[j] <= chrom_end & df.muts.MAF$position[j] > chrom_start){
+        df.muts.MAF$chrom[j] <- i
+      } else if(i == chrom_num & df.muts.MAF$position[j] > chrom_start){
+        df.muts.MAF$chrom[j] <- i
+      }
+    }
+    
+    ## NO SELECTION
+    for(j in 1:nrow(df.muts.NS.MAF)){
+      if(i != chrom_num & df.muts.NS.MAF$position[j] <= chrom_end & df.muts.NS.MAF$position[j] > chrom_start){
+        df.muts.NS.MAF$chrom[j] <- i
+      } else if(i == chrom_num & df.muts.NS.MAF$position[j] > chrom_start){
+        df.muts.NS.MAF$chrom[j] <- i
+      }
+    }
+    
+  }
   
-  # No legend
-  manh.plot.NS.noleg <- manh.plot.NS + theme(legend.position = "none")
-  manh.plot.noleg <-  manh.plot+ theme(legend.position = "none")
-  legManh <- g_legend(manh.plot.NS)
-  
-  ## TO DO: ADD CHROMOSOME COLORS
-  png(paste0(folderOut, seed, "_manh.png"), width = 700, height = 400, units = "px")
-  ggarrange(manh.plot.noleg, manh.plot.NS.noleg, legManh, ncol = 3, widths = c(2.3,2.3,0.8))
-  dev.off()
-  
-  pdf(paste0(folderOut, seed, "_manh.pdf"), height = 5, width = 7)
-  ggarrange(manh.plot.noleg, manh.plot.NS.noleg, legManh, ncol = 3, widths = c(2.3,2.3,0.8))
-  dev.off()
-  
+ 
 #### end manhattan plot
 ######################################################################################################  
 
@@ -898,91 +833,141 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.InvDataOriginMAF <- df.InvDataOrigin[df.InvDataOrigin$freq > 0.01,]
   for(i in 1:nrow(df.InvDataOriginMAF)){
     if(df.InvDataOriginMAF$freq_p1[i] > df.InvDataOriginMAF$freq_p2[i]){
-      df.InvDataOriginMAF$pop[i] <- "pop1"
+      df.InvDataOriginMAF$pop[i] <- "Pop 1"
     } else {
-      df.InvDataOriginMAF$pop[i] <- "pop2"
-      
+      df.InvDataOriginMAF$pop[i] <- "Pop 2"
     }
   }
   
   df.InvDataOriginMAF.NS <- df.InvDataOrigin.NS[df.InvDataOrigin.NS$freq > 0.01,]
   for(i in 1:nrow(df.InvDataOriginMAF.NS)){
     if(df.InvDataOriginMAF.NS$freq_p1[i] > df.InvDataOriginMAF.NS$freq_p2[i]){
-      df.InvDataOriginMAF.NS$pop[i] <- "pop1"
+      df.InvDataOriginMAF.NS$pop[i] <- "Pop 1"
     } else {
-      df.InvDataOriginMAF.NS$pop[i] <- "pop2"
-      
+      df.InvDataOriginMAF.NS$pop[i] <- "Pop 2"
     }
   }
   
   ## Subset dataframe to get how the MAF filtered inversions change through time
+  ## Then subset for each population for plotting separate color scales
+  ## SELECTION
   inv.IDs <- as.vector(df.InvDataOriginMAF$inv_id)
   df.invFinalAllData <- df.invTime[df.invTime$inv_id %in% inv.IDs, ]
   df.invFinalAllData$qtnSelCoefsum <- df.invFinalAllData$mean_qtnSelCoef*df.invFinalAllData$num_qtns
   df.invFinalAllDataPop <- left_join(df.invFinalAllData,
                                      df.InvDataOriginMAF[c(2,13:19)], 
                                      by = "inv_id")
+  df.invFinalsubset <- df.invFinalAllDataPop %>% filter(sim_gen %in% seq(0, 50000, by = 1000))
+  df.invFinalsubset$inv_id <- as.factor(df.invFinalsubset$inv_id)
+  df.invFinalsubset$adaptInv <- "Nonadaptive"
+  df.invFinalsubset$adaptInv[df.invFinalsubset$inv_id %in% adapt.inv] <- "Adaptive"
+  df.invFinalsubset$adaptInv <- as.factor(df.invFinalsubset$adaptInv)
+  df.pop1 <- df.invFinalsubset[df.invFinalsubset$pop == "Pop 1",]
+  df.pop2 <- df.invFinalsubset[df.invFinalsubset$pop == "Pop 2",]
+  df.pop1$pop <- as.factor(df.pop1$pop)
+  df.pop2$pop <- as.factor(df.pop2$pop)
+  
+  ## NO SELECTION
   inv.IDs.NS <- as.vector(df.InvDataOriginMAF.NS$inv_id)
   df.invFinalAllData.NS <- df.invTime.NS[df.invTime.NS$inv_id %in% inv.IDs.NS, ]
   df.invFinalAllData.NS$qtnSelCoefsum <- df.invFinalAllData.NS$mean_qtnSelCoef*df.invFinalAllData.NS$num_qtns
   df.invFinalAllDataPop.NS <- left_join(df.invFinalAllData.NS,
                                      df.InvDataOriginMAF.NS[c(2,13:19)], 
                                      by = "inv_id")
-  
-  df.invFinalsubset <- df.invFinalAllDataPop %>% filter(sim_gen %in% seq(0, 50000, by = 1000)) 
   df.invFinalsubset.NS <- df.invFinalAllDataPop.NS %>% filter(sim_gen %in% seq(0, 50000, by = 1000)) 
+  df.invFinalsubset.NS$inv_id <- as.factor(df.invFinalsubset.NS$inv_id)
+  df.pop1.NS <- df.invFinalsubset.NS[df.invFinalsubset.NS$pop == "Pop 1",]
+  df.pop2.NS <- df.invFinalsubset.NS[df.invFinalsubset.NS$pop == "Pop 2",]
+  df.pop1.NS$pop <- as.factor(df.pop1.NS$pop)
+  df.pop2.NS$pop <- as.factor(df.pop2.NS$pop)
+
+
+  ## plot using pop as separate dataframe
+  library(RColorBrewer)
+  library(ggnewscale)
+  colorCountBlue <- length(unique(df.pop1$inv_id))
+  getPaletteBlue <-  colorRampPalette(brewer.pal(9, "Blues"))
+  colorCountRed <- length(unique(df.pop2$inv_id))
+  getPaletteRed <-  colorRampPalette(brewer.pal(9, "Reds"))
   
-  df.invFinalsubset$inv_id <- as.factor(df.invFinalsubset$inv_id)
-  plot.inv.orig <- ggplot(df.invFinalsubset, aes(x = sim_gen, y = qtnSelCoefsum)) + 
-    geom_point(aes(color = pop, size = inv_FST, shape = inv_id), alpha = 0.5) + 
-    geom_line(aes(color = pop, group = inv_id), alpha = 0.5) + 
-    scale_color_manual(values=c("navy", "red")) + 
-    #scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) +   
-    #scale_alpha(range = c( 1, 0.2)) +
-    theme_classic() +
+  plot.inv.orig.col <- ggplot(df.pop1, aes(x = sim_gen, y = qtnSelCoefsum)) +
+    geom_point(aes(color = inv_id, size = inv_FST, alpha= adaptInv)) + 
+    geom_line(aes(color = inv_id, group = interaction(adaptInv, inv_id), alpha = adaptInv)) + 
+    scale_color_manual(values = getPaletteBlue(colorCountBlue)[colorCountBlue:1]) + 
+    scale_alpha_manual(values = c(0.95, 0.55)) +
+    new_scale_color() +
+    new_scale("alpha") + 
+    geom_point(data = df.pop2, aes(x = sim_gen, y = qtnSelCoefsum, color = inv_id, 
+                                   size = inv_FST, alpha = adaptInv), 
+               inherit.aes = FALSE) + 
+    geom_line(data = df.pop2, aes(x = sim_gen, y = qtnSelCoefsum, color = inv_id, 
+                                  group = interaction(adaptInv, inv_id), alpha = adaptInv), 
+              inherit.aes = FALSE) + 
+    scale_color_manual(values = getPaletteRed(colorCountRed)[colorCountRed:1]) + 
+    scale_alpha_manual(values = c(0.95, 0.55)) +
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92"),
           text = element_text(size = 15)) +
+    theme(axis.line.x = element_line(color="black", size = 0.2),
+          axis.line.y = element_line(color="black", size = 0.2)) + 
     labs(title = expression(bold("Selection")),
          y = "sum of each Inversion QTNs \neffects on phenotype",
          x = "Generation") +
-    ylim(-0.2, 0.2) +
-    xlim(0,50000) +
-    #theme(legend.position = "none")
-    guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
-    guides(size = guide_legend(title = "Inversion FST")) +
-    theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"))
+    ylim(-max(df.invFinalsubset$qtnSelCoefsum), max(df.invFinalsubset$qtnSelCoefsum)) +
+    xlim(0, 50000) +
+    theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) + 
+    theme(legend.position = "none")
   
-  df.invFinalsubset.NS$inv_id <- as.factor(df.invFinalsubset.NS$inv_id)
-  plot.inv.orig.NS <- ggplot(df.invFinalsubset.NS, aes(x = sim_gen, y = qtnSelCoefsum)) + 
-    geom_point(aes(color = pop, size = inv_FST, shape = inv_id), alpha = 0.5) + 
-    geom_line(aes(color = pop, group = inv_id), alpha = 0.8) + 
-    scale_color_manual(values=c("navy", "red")) + 
-    #scale_color_discrete() + 
-    #scale_color_gradient(low = "gainsboro", high = "darkorange", 
-                         #name = "", 
-                         #breaks = c(4, 8, 12, 16), 
-                         #labels = c()) + 
-    scale_size(range = c(0.5, 4), breaks = c(0.00001, 0.05, 0.15, 0.2)) + 
-    theme_classic() +
+  colorCountBlue.NS <- length(unique(df.pop1.NS$inv_id))
+  colorCountRed.NS <- length(unique(df.pop2.NS$inv_id))
+  
+  plot.inv.orig.col.NS <- ggplot(df.pop1.NS, aes(x = sim_gen, y = qtnSelCoefsum)) +
+    geom_point(aes(color = inv_id, size = inv_FST), alpha = 0.55) + 
+    geom_line(aes(color = inv_id, group = inv_id), alpha = 0.55) + 
+    scale_color_manual(values = getPaletteBlue(colorCountBlue.NS)[colorCountBlue.NS:1]) + 
+    new_scale_color() +
+    geom_point(data = df.pop2.NS, aes(x = sim_gen, y = qtnSelCoefsum, color = inv_id, size = inv_FST), 
+               alpha = 0.55, inherit.aes = FALSE) + 
+    geom_line(data = df.pop2.NS, aes(x = sim_gen, y = qtnSelCoefsum, color = inv_id, group = inv_id), 
+              alpha = 0.55, inherit.aes = FALSE) + 
+    scale_color_manual(values = getPaletteRed(colorCountRed.NS)[colorCountRed.NS:1]) + 
     theme(panel.background = element_blank(), 
           strip.background = element_rect(colour = "white", fill = "grey92"),
           text = element_text(size = 15)) +
+    theme(axis.line.x = element_line(color="black", size = 0.2),
+          axis.line.y = element_line(color="black", size = 0.2)) + 
     labs(title = expression(bold("No Selection")),
          y = "",
          x = "Generation") +
-    ylim(-0.2, 0.2) +
-    xlim(0,50000) +
-    theme(legend.position = "none") +
+    ylim(-max(df.invFinalsubset$qtnSelCoefsum), max(df.invFinalsubset$qtnSelCoefsum)) +
+    xlim(0, 50000) +
+    theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) + 
+    theme(legend.position = "none")
+  
+  plot.inv.orig <- ggplot(df.invFinalsubset, aes(x = sim_gen, y = qtnSelCoefsum)) +
+    geom_point(aes(color = pop, size = inv_FST, alpha = adaptInv)) +
+    geom_line(aes(color = pop, group = inv_id, alpha = adaptInv)) +
+    scale_color_manual(values=c("navy", "red")) + 
+    scale_alpha_manual(values=c(0.95,0.55)) +
+    theme_classic() +
+    theme(panel.background = element_blank(),
+          strip.background = element_rect(colour = "white", fill = "grey92"),
+          text = element_text(size = 15)) +
+    labs(title = expression(bold("Selection")),
+         y = "",
+         x = "Generation") +
+    ylim(-max(df.invFinalsubset$qtnSelCoefsum), max(df.invFinalsubset$qtnSelCoefsum)) +
+    xlim(0, 50000) +
+    scale_colour_gradient(high = "navy", low = "lightblue") +
+    guides(color = guide_legend(title = "Pop with Highest\nFrequency of \nInversion"),
+           names = c("Pop 1", "Pop 2")) +
+    guides(alpha = guide_legend(title = "Inversion Status")) +
+    guides(size = guide_legend(title = "Inversion FST")) +
     theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"))
-    #guides(color = guide_legend(title = "Pop with Highest\nFrequency of Inv")) +
-    #guides(size = guide_legend(title = "Inversion FST")) 
-  
-  plot.inv.orig.noleg <- plot.inv.orig + theme(legend.position = "none")
-  
+ 
   legInvOrig <- g_legend(plot.inv.orig)
-  pdf(paste0(folderOut, seed, "_invOrigin.pdf"), height = 5, width = 12)
-  ggarrange( plot.inv.orig.noleg, plot.inv.orig.NS, legInvOrig, ncol = 3, widths = c(2.3,2.3,0.8))
+  pdf(paste0(folderOut, seed, "_invOrigin.pdf"), height = 7, width = 15)
+  ggarrange( plot.inv.orig.col, plot.inv.orig.col.NS, legInvOrig, ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
   
 #### end plot origin dynamics
@@ -1397,19 +1382,6 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   
   plot(newpc$u[,1], newpc$u[,2], col = c(rep("red", 1000), rep("blue", 1000)))
   
-  pcadapt.log10p <- ggplot(df.mutsMAFord, aes(x = position_vcf, y = pcadapt_4.3.3_PRUNED_log10p)) +
-    geom_point(aes(color = pcadapt_outlier)) +
-    scale_color_manual(values = c("black",  "red")) +
-    theme_classic() +
-    theme(panel.background = element_blank(), 
-          strip.background = element_rect(colour = "white", fill = "grey92"),
-          text = element_text(size = 11)) +
-    labs(title = "PCAdapt",
-         y = "-log10(p-value)",
-         x = "Genome Position") + 
-    ylim(c(0,30))+
-    theme(legend.position = "none")
- 
 #### end PCADAPT
 ######################################################################################################
 
@@ -1442,7 +1414,79 @@ df.out$OutFLANK_0.2_PRUNED_log10p_add <- -log10(df.out$pvaluesRightTail + 1/1000
 
 OutFLANKResultsPlotter(out_pruned, Zoom = T)
 
+#### end OutFLANK
+######################################################################################################
+
+
+
+######################################################################################################
+#### start Outlier Plotting
+
+### Manhattan plots 
+# SELECTION #
+df.neutQTNmuts <- df.muts.MAF[df.muts.MAF$inOut != "inv",]
+df.neutQTNmuts$inOut <- factor(df.neutQTNmuts$inOut)
+df.neutQTNmuts$chrom <- factor(df.neutQTNmuts$chrom)
+
+manh.plot <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, 
+                                        group = interaction(inOut, chrom))) + 
+  geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
+                                          ymax=max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05), 
+            fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE) +
+  geom_point(data = df.neutQTNmuts, aes(color = chrom, shape = inOut)) + 
+  scale_shape_manual(name = "QTN location", 
+                     labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
+                     values=c(19, 15, 1)) +
+  scale_color_manual(name = "Chromosome", values = c(rep(c("navy", "lightblue"), 10), "goldenrod")) + 
+  labs(title = expression(bold("Selection"))) + 
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92"),
+        text = element_text(size = 11)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05)) 
+ # annotate("segment", x = center.bases, y = rep(max(c(df.out$FST_outflank, df.neutQTNmuts$FST)), length(center.bases)), 
+           #xend = center.bases, yend = rep(max(df.neutQTNmuts$FST + 0.01), length(center.bases)),
+           #arrow = arrow(length = unit(0.5, "cm")))
+
+
+# NO SELECTION #
+df.neutQTNmuts.NS <- df.muts.NS.MAF[df.muts.NS.MAF$inOut != "inv",]
+df.neutQTNmuts.NS$inOut <- factor(df.neutQTNmuts.NS$inOut)
+df.neutQTNmuts.NS$chrom <- factor(df.neutQTNmuts.NS$chrom)
+
+manh.plot.NS <- ggplot(df.neutQTNmuts.NS, aes(x = position, y = FST, 
+                                              group = interaction(inOut, chrom))) + 
+  geom_point(aes(color = chrom, shape = inOut)) + 
+  scale_color_manual(name = "Chromosome",
+                     values = c(rep(c("navy", "lightblue"), 10), "goldenrod")) +
+  scale_shape_manual(name = "QTN location", labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
+                     values=c(19, 15, 1)) +
+  labs(title = expression(bold("No Selection"))) + 
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92"),
+        text = element_text(size = 11)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.neutQTNmuts$FST + 0.05)))
+
+# No legend
+manh.plot.NS.noleg <- manh.plot.NS + theme(legend.position = "none")
+manh.plot.noleg <-  manh.plot+ theme(legend.position = "none")
+legManh <- g_legend(manh.plot)
+
+png(paste0(folderOut, seed, "_manh.png"), width = 1000, height = 400, units = "px")
+ggarrange(manh.plot.noleg, manh.plot.NS.noleg, legManh, ncol = 3, widths = c(2.3,2.3,0.8))
+dev.off()
+
+df.adaptInv <- as.data.frame(cbind(ID = adapt.inv, center_bases = center.bases, first_bases = first.bases, 
+                                   final_bases = final.bases))
+
 outflank.fst <- ggplot(df.out, aes(x = position_vcf, y = FST_outflank)) +
+  geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
+                                          ymax=max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05), fill = "tan1", 
+            color="black", alpha=0.5, inherit.aes = FALSE) +
   geom_point(aes(color = OutlierFlag))+
   scale_color_manual(values = c("black", "red")) +
   theme_classic() +
@@ -1452,12 +1496,18 @@ outflank.fst <- ggplot(df.out, aes(x = position_vcf, y = FST_outflank)) +
   labs(title ="OutFLANK",
        y = "FST",
        x = "Genome Position") + 
-  ylim(c(0, max(c(df.out$FST_outflank, df.neutQTNmuts$FST)))) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0,max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05))
 
+max_value_log10 <- max(c(df.out$OutFLANK_0.2_PRUNED_log10p_add[!is.na(df.out$OutFLANK_0.2_PRUNED_log10p_add)], 
+                         df.out$pcadapt_4.3.3_PRUNED_log10p[!is.na(df.out$pcadapt_4.3.3_PRUNED_log10p)])) + 2
 
 outflank.log10p <- ggplot(df.out, aes(x = position_vcf, y = OutFLANK_0.2_PRUNED_log10p_add)) + 
-  geom_point(aes(color = OutlierFlag))+
+  geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
+                                          ymax=max_value_log10), fill = "tan1", 
+            color="black", alpha=0.5, inherit.aes = FALSE) +
+  geom_point(data = df.out, aes(color = OutlierFlag))+
   scale_color_manual(values = c("black", "red")) +
   theme_classic() +
   theme(panel.background = element_blank(), 
@@ -1466,19 +1516,36 @@ outflank.log10p <- ggplot(df.out, aes(x = position_vcf, y = OutFLANK_0.2_PRUNED_
   labs(title = "OutFLANK",
        y = "-log10(p-values)",
        x = "Genome Position") + 
-  ylim(c(0, 30)) + 
+  theme(legend.position = "none") + 
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0,max_value_log10))
+
+pcadapt.log10p <- ggplot(df.mutsMAFord, aes(x = position_vcf, y = pcadapt_4.3.3_PRUNED_log10p)) +
+  geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
+                                          ymax=max_value_log10), fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE) +
+  geom_point(data = df.mutsMAFord, aes(color = pcadapt_outlier)) +
+  scale_color_manual(values = c("black",  "red")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "dimgrey"),
+        text = element_text(size = 11)) +
+  labs(title = "PCAdapt",
+       y = "-log10(p-value)",
+       x = "Genome Position") + 
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, max_value_log10)) + 
   theme(legend.position = "none")
 
 manh.plot.slim <- manh.plot + labs(title = "Simulation Output") +
-  geom_point(aes(color = inOut), alpha = 0.8) + 
-  scale_color_manual(values=c( "firebrick", "goldenrod", "navy")) +
-  theme(legend.position = "none") + ylim(c(0, max(c(df.out$FST_outflank, df.neutQTNmuts$FST))))
-pdf(paste0(folderOut, seed, "_outlierTests.pdf"), height = 7, width = 5)
-ggarrange(manh.plot.slim, outflank.fst, outflank.log10p, pcadapt.log10p, nrow = 4, ncol = 1)
+  theme(legend.position = "none") 
+
+png(paste0(folderOut, seed, "_outlierTests.png"), height = 1000, width = 600, units = "px")
+  ggarrange(manh.plot.slim, outflank.log10p, pcadapt.log10p, nrow = 3, ncol = 1)
 dev.off()
 
-#### end OutFLANK
+#### end outlier plotting
 ######################################################################################################
+
 
 ######################################################################################################    
 ## Outlier identification from genome scans
