@@ -71,7 +71,8 @@ PDF that is 7KB
 
 ## Outlier detection  
 PDF that is 1.7MB  
-![compare outlier tests](../figures/20210321_lowVhighMig/High_Mig/3384725_outlierTests.pdf) 
-
+PNG that is 102 KB
+![compare outlier tests](../figures/20210321_lowVhighMig/High_Mig/3384725_outlierTests.pdf)  
+![compare outlier tests png](../figures/20210321_lowVhighMig/High_Mig/3384725_outlierTests.png)  
 > _Can you output this as a jpeg, and think about a way to present it that highlights the adaptive inversions (e.g. grey panel in background) and is compatible with B&W_
 
