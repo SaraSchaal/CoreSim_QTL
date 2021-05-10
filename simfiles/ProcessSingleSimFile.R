@@ -4,9 +4,9 @@
 ######################################################################################################
 ### Load Packages and Download Data Files ###
 ## List Packages Needed 
-packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", 
-                     "MultivariateRandomForest", "gridExtra", "akima", "fields",
-                     "MLmetrics", "ash", "plotly", "stringr", "tidyverse",
+packages_needed <- c("IntegratedMRF", "vcfR", "distances","ggplot2", "metR", "RColorBrewer",
+                     "MultivariateRandomForest", "gridExtra", "akima", "fields", "ggnewscale",
+                     "MLmetrics", "ash", "plotly", "stringr", "tidyverse", "viridisLite",
                      "bigsnpr", "bigstatsr", "ggpubr", "purrr", "dplyr", "lfmm", "pcadapt" )
 
 ## Install packages that aren't installed already
@@ -226,10 +226,9 @@ mtext(expression(bold("FST")), side = 1, outer = TRUE)
 mtext(expression(bold("Frequency")), side = 2, outer = TRUE)
 
 # create null distributions for outlier criteria
-#null <- df.muts.NS.MAF$FST[!is.nan(df.muts.NS.MAF$FST) & df.muts.NS.MAF$type == "m2"] # criteria 1: compare to a null distribution of all QTNs in no-selec sim
-null <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
-#null_crit1_2 <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
-null_neut <- df.muts.MAF$FST[df.muts.NS.MAF$type == "m1"] # criteria 2: compare to a null distribution of neutral QTNs in selec sim
+null <- df.muts.NS.MAF$FST[!is.nan(df.muts.NS.MAF$FST) & df.muts.NS.MAF$type == "m2"] # criteria 1: compare to a null distribution of all QTNs in no-selec sim
+#null <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
+null_neut <- df.muts.MAF$FST[df.muts.MAF$type == "m1"] # criteria 2: compare to a null distribution of neutral QTNs in selec sim
 
 # subset for just qtns
 df.qtnMuts.MAF <- df.muts.MAF[df.muts.MAF$type == "m2" | df.muts.MAF$type == "m1",]
@@ -237,19 +236,16 @@ df.qtnMuts.NS.MAF <- df.muts.MAF[df.muts.MAF$type == "m2" | df.muts.MAF$type == 
 
 # criteria calculation loop 
 df.qtnMuts.MAF$crit1_p.value <- NULL
-#df.qtnMuts.MAF$crit1_p.value.2 <- NULL
 df.qtnMuts.MAF$crit2_p.value <- NULL
 df.qtnMuts.MAF$crit3_Va <- NULL
 for(i in 1:nrow(df.qtnMuts.MAF)){
   if(!is.nan(df.qtnMuts.MAF$FST[i])){
     obs <- df.qtnMuts.MAF$FST[i]
     df.qtnMuts.MAF$crit1_p.value[i] <- 1-rank(c(null, obs))[length(null)+1]/(length(null)+1)
-    #df.qtnMuts.MAF$crit1_p.value.2[i] <- 1-rank(c(null_crit1_2, obs))[length(null_crit1_2)+1]/(length(null_crit1_2)+1)
     df.qtnMuts.MAF$crit2_p.value[i] <- 1-rank(c(null_neut, obs))[length(null_neut)+1]/(length(null_neut)+1)
     df.qtnMuts.MAF$crit3_Va[i] <- (df.qtnMuts.MAF$selCoef[i]^2)*df.qtnMuts.MAF$freq[i]*(1-df.qtnMuts.MAF$freq[i])
   } else {
     df.qtnMuts.MAF$crit1_p.value[i] <- NA
-    #df.qtnMuts.MAF$crit1_p.value.2[i] <- NA
     df.qtnMuts.MAF$crit2_p.value[i] <- NA
     df.qtnMuts.MAF$crit3_Va[i] <- NA
   }
@@ -489,7 +485,6 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(-0.1, 1))
 
-  par(mar = c(1,1,1,2))
   
   pdf(paste0(folderOut, seed, "_LA.pdf"), height = 5, width = 7)
 
@@ -604,7 +599,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   dev.off()
 
 ## Average Inversion Age ##
-  library("viridisLite")
+
   # SELECTION #
   df.invage.temp <- pivot_longer(df.AdaptNSsplit[,c(1,2,7,22)], cols = c(inv_ageAdapt, inv_ageNonAdapt, inv_age_NS),
                             names_to = "Adaptsplit", values_to = "inv_age")
@@ -778,8 +773,8 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   
  
 ######################################################################################################  
-#### Manhattan plot ####
-  #add chromosome number
+#### Add Chromosome Number ####
+  
   options(scipen = 999)
   chrom_num <- 21
   chrom_len <-  100000
@@ -812,7 +807,6 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
         df.muts.NS.MAF$chrom[j] <- i
       }
     }
-    
   }
   
  
@@ -830,7 +824,11 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.InvDataOrigin.NS <- left_join(df.invFinalGen.NS, df.invData.NS, by = "inv_id")
   
   # subset for MAF > 0.01
-  df.InvDataOriginMAF <- df.InvDataOrigin[df.InvDataOrigin$freq > 0.01,]
+  freq <- df.InvDataOrigin$freq
+  altFreq <- 1-freq
+  df.calc <- cbind(freq, altFreq)
+  df.InvDataOrigin$MAF <- apply(df.calc, 1, min)
+  df.InvDataOriginMAF <- subset(df.InvDataOrigin, subset = MAF >= 0.01)
   for(i in 1:nrow(df.InvDataOriginMAF)){
     if(df.InvDataOriginMAF$freq_p1[i] > df.InvDataOriginMAF$freq_p2[i]){
       df.InvDataOriginMAF$pop[i] <- "Pop 1"
@@ -839,7 +837,11 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
     }
   }
   
-  df.InvDataOriginMAF.NS <- df.InvDataOrigin.NS[df.InvDataOrigin.NS$freq > 0.01,]
+  freq <- df.InvDataOrigin.NS$freq
+  altFreq <- 1-freq
+  df.calc <- cbind(freq, altFreq)
+  df.InvDataOrigin.NS$MAF <- apply(df.calc, 1, min)
+  df.InvDataOriginMAF.NS <- subset(df.InvDataOrigin.NS, subset = MAF >= 0.01)
   for(i in 1:nrow(df.InvDataOriginMAF.NS)){
     if(df.InvDataOriginMAF.NS$freq_p1[i] > df.InvDataOriginMAF.NS$freq_p2[i]){
       df.InvDataOriginMAF.NS$pop[i] <- "Pop 1"
@@ -855,7 +857,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.invFinalAllData <- df.invTime[df.invTime$inv_id %in% inv.IDs, ]
   df.invFinalAllData$qtnSelCoefsum <- df.invFinalAllData$mean_qtnSelCoef*df.invFinalAllData$num_qtns
   df.invFinalAllDataPop <- left_join(df.invFinalAllData,
-                                     df.InvDataOriginMAF[c(2,13:19)], 
+                                     df.InvDataOriginMAF[c(2,13:20)], 
                                      by = "inv_id")
   df.invFinalsubset <- df.invFinalAllDataPop %>% filter(sim_gen %in% seq(0, 50000, by = 1000))
   df.invFinalsubset$inv_id <- as.factor(df.invFinalsubset$inv_id)
@@ -872,7 +874,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.invFinalAllData.NS <- df.invTime.NS[df.invTime.NS$inv_id %in% inv.IDs.NS, ]
   df.invFinalAllData.NS$qtnSelCoefsum <- df.invFinalAllData.NS$mean_qtnSelCoef*df.invFinalAllData.NS$num_qtns
   df.invFinalAllDataPop.NS <- left_join(df.invFinalAllData.NS,
-                                     df.InvDataOriginMAF.NS[c(2,13:19)], 
+                                     df.InvDataOriginMAF.NS[c(2,13:20)], 
                                      by = "inv_id")
   df.invFinalsubset.NS <- df.invFinalAllDataPop.NS %>% filter(sim_gen %in% seq(0, 50000, by = 1000)) 
   df.invFinalsubset.NS$inv_id <- as.factor(df.invFinalsubset.NS$inv_id)
@@ -883,8 +885,6 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
 
 
   ## plot using pop as separate dataframe
-  library(RColorBrewer)
-  library(ggnewscale)
   colorCountBlue <- length(unique(df.pop1$inv_id))
   getPaletteBlue <-  colorRampPalette(brewer.pal(9, "Blues"))
   colorCountRed <- length(unique(df.pop2$inv_id))
@@ -958,7 +958,6 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
          x = "Generation") +
     ylim(-max(df.invFinalsubset$qtnSelCoefsum), max(df.invFinalsubset$qtnSelCoefsum)) +
     xlim(0, 50000) +
-    scale_colour_gradient(high = "navy", low = "lightblue") +
     guides(color = guide_legend(title = "Pop with Highest\nFrequency of \nInversion"),
            names = c("Pop 1", "Pop 2")) +
     guides(alpha = guide_legend(title = "Inversion Status")) +
@@ -967,7 +966,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
  
   legInvOrig <- g_legend(plot.inv.orig)
   pdf(paste0(folderOut, seed, "_invOrigin.pdf"), height = 7, width = 15)
-  ggarrange( plot.inv.orig.col, plot.inv.orig.col.NS, legInvOrig, ncol = 3, widths = c(2.3,2.3,0.8))
+    ggarrange( plot.inv.orig.col, plot.inv.orig.col.NS, legInvOrig, ncol = 3, widths = c(2.3,2.3,0.8))
   dev.off()
   
 #### end plot origin dynamics
@@ -1214,10 +1213,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
           main="Pop1 G*a+-*FST",cexCol = 0.3,
           Colv = NA, useRaster=TRUE,
           scale="none",
-          # Rowv = NA, 
           col=two.colors(100, start = "blue", end="red", middle="white"))
-  # ADDING BREAKS SCREWS UP EVERYTHING
-  #breaks=seq(-0.005, 0.005, length.out = 101))
   dev.off()
   
   pdf(paste0(folderOut, seed, "_heatmapPop2alphaFST.pdf"), height = 5, width = 7)
@@ -1226,7 +1222,6 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
           main="Pop2 G*a+-*FST",cexCol = 0.3,
           Colv = NA, useRaster=TRUE,
           scale="none",
-          #  Rowv = NA, 
           col=two.colors(100, start = "blue", end="red", middle="white") )
   
   dev.off()
@@ -1257,17 +1252,17 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   table(G_ref2)
 
   pdf(paste0(folderOut, seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
-  
-  heatmap(t(G_ref1[,pop1_order]), Rowv = NA,  main="Pop1 genotypes",cexCol = 0.3,
-          Colv = NA, useRaster=TRUE,
-          scale="none")
+    heatmap(t(G_ref1[,pop1_order]), Rowv = NA,  main="Pop1 genotypes",cexCol = 0.3,
+            Colv = NA, useRaster=TRUE,
+            scale="none")
   dev.off()
   
   pdf(paste0(folderOut, seed, "_heatmapPop2geno.pdf"), height = 5, width = 7)
-  heatmap(t(G_ref2[,pop2_order]), Rowv = NA,  main="Pop2 genotypes",cexCol = 0.3,
-          Colv = NA, useRaster=TRUE,
-          scale="none")
+    heatmap(t(G_ref2[,pop2_order]), Rowv = NA,  main="Pop2 genotypes",cexCol = 0.3,
+            Colv = NA, useRaster=TRUE,
+            scale="none")
   dev.off()
+  
 #### end plot heatmanps
 ######################################################################################################    
 
@@ -1277,7 +1272,7 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   ## the g matrix needs to be order by position in the genome can not reorder by any other value
 
 # list the G matrix with the position of each mutation and the chromosome 
-# it is on. This is used for
+# it is on. 
   training <- list(G = G, 
                   position = df.ord$position,
                   chromosome = df.ord$chromosome)
@@ -1328,7 +1323,9 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   head(pca_all$loadings)
   str(pca_all)
   
-  plot(pca_all$scores[,1], pca_all$scores[,2], col = c(rep("red", 1000), rep("blue", 1000)))
+  pdf(paste0(folderOut, seed, "_pcaScores.pdf"), width =5, height = 5)
+    plot(pca_all$scores[,1], pca_all$scores[,2], col = c(rep("red", 1000), rep("blue", 1000)))
+  dev.off()
   
   head(df.mutsMAF)
   head(pca_all)
@@ -1337,16 +1334,20 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.mutsMAFord$pca_ALL_PC1_loadings <- pca_all$loadings[,1]
   df.mutsMAFord$pca_ALL_PC2_loadings <- pca_all$loadings[,2]
   head(df.mutsMAFord)
-
-  plot(df.mutsMAFord$position_vcf, df.mutsMAFord$pca_ALL_PC1_loadings)
-
+  
+  pdf(paste0(folderOut, seed, "_pcaLoadingsPos.pdf"), width = 5, height = 5)
+    plot(df.mutsMAFord$position_vcf, df.mutsMAFord$pca_ALL_PC1_loadings)
+  dev.off()
+  
 ### PCA loadings for pruned data ####
   gename2 <- paste0(seed, "_genotypes_pruned.lfmm")
   write.lfmm(t(training$G_pruned), gename2)
   pcafile2 <- read.pcadapt(gename2, type="lfmm")
   pca_pruned <- pcadapt(pcafile2,K=2)
   
-  plot(pca_pruned$scores[,1], pca_pruned$scores[,2], col = c(rep("red", 1000), rep("blue", 1000)))
+  pdf(paste0(folderOut, seed, "_pcaScoresPruned.pdf"), width =5, height = 5)
+    plot(pca_pruned$scores[,1], pca_pruned$scores[,2], col = c(rep("red", 1000), rep("blue", 1000)))
+  dev.off()
   
   # add pca loadings to muts dataframe
   df.mutsMAFord$pca_PRUNED_PC1_loadings <- NA 
@@ -1354,23 +1355,11 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   df.mutsMAFord$pca_PRUNED_PC1_loadings[training$which_pruned] <- pca_pruned$loadings[,1]
   df.mutsMAFord$pca_PRUNED_PC2_loadings[training$which_pruned] <- pca_pruned$loadings[,2] 
   
-  # look at the scree plot to see if I need to add more pops because of all the inversions
-  plot(df.mutsMAFord$position_vcf, df.mutsMAFord$pca_PRUNED_PC1_loadings)
-  plot(df.mutsMAFord$position_vcf, df.mutsMAFord$pca_PRUNED_PC2_loadings)
-  
-  # check to see if pruned dataset correlates with pca results from full dataset
-  cor.test(df.mutsMAFord$pca_ALL_PC1_loadings, df.mutsMAFord$pca_PRUNED_PC1_loadings) # yes
-  cor.test(df.mutsMAFord$pca_ALL_PC2_loadings, df.mutsMAFord$pca_PRUNED_PC2_loadings) # no
-
   ### outlier detection ###
   ## all data
   df.mutsMAFord$pcadapt_4.3.3_ALL_chisq <- as.numeric(pca_all$chi2.stat)
   df.mutsMAFord$pcadapt_4.3.3_ALL_log10p <- -log10(pca_all$pvalues)
-  
-  # plot to look at results
-  plot(df.mutsMAFord$position_vcf, df.mutsMAFord$pcadapt_4.3.3_ALL_chisq)
-  plot(df.mutsMAFord$position_vcf, df.mutsMAFord$pcadapt_4.3.3_ALL_log10p)
-
+ 
   ### outlier detection ### 
   ## pruned data
   test <- snp_gc(snp_pcadapt(training$G_coded, U.row = newpc$u[,1]))
@@ -1390,29 +1379,31 @@ df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
 ######################################################################################################
 #### OutFLANK
 
-FstDataFrame <- MakeDiploidFSTMat(t(training$G),rownames(training$G),
-                                  c(rep("Pop1", 1000), rep("Pop2", 1000)))
-colnames(FstDataFrame)[3] <- "FST_outflank"
-
-# ask about qthreshold and trim fraction
-out_pruned <- OutFLANK(FstDataFrame[training$which_pruned,], NumberOfSamples=2, 
-                       LeftTrimFraction=0.05, RightTrimFraction=0.05,
-                        Hmin=0.1, qthreshold=0.01)     
-str(out_pruned)
-head(df.mutsMAFord)
-colnames(df.mutsMAFord)[10] <- "FST_slim"
-df.FST.temp <- merge(df.mutsMAFord, FstDataFrame, by = "LocusName")
-df.FST <- df.FST.temp[order(df.FST.temp$position_vcf),]
-head(df.FST)
-
-df.out <- pOutlierFinderChiSqNoCorr(df.FST, 
-                                Fstbar = out_pruned$FSTNoCorrbar, 
-                                dfInferred = out_pruned$dfInferred, Hmin=0.1)
-
-df.out$OutFLANK_0.2_PRUNED_log10p <- -log10(df.out$pvaluesRightTail)
-df.out$OutFLANK_0.2_PRUNED_log10p_add <- -log10(df.out$pvaluesRightTail + 1/10000000000000000000)
-
-OutFLANKResultsPlotter(out_pruned, Zoom = T)
+  FstDataFrame <- MakeDiploidFSTMat(t(training$G),rownames(training$G),
+                                    c(rep("Pop1", 1000), rep("Pop2", 1000)))
+  colnames(FstDataFrame)[3] <- "FST_outflank"
+  
+  # ask about qthreshold and trim fraction
+  out_pruned <- OutFLANK(FstDataFrame[training$which_pruned,], NumberOfSamples=2, 
+                         LeftTrimFraction=0.05, RightTrimFraction=0.05,
+                          Hmin=0.1, qthreshold=0.01)     
+  str(out_pruned)
+  head(df.mutsMAFord)
+  colnames(df.mutsMAFord)[10] <- "FST_slim"
+  df.FST.temp <- merge(df.mutsMAFord, FstDataFrame, by = "LocusName")
+  df.FST <- df.FST.temp[order(df.FST.temp$position_vcf),]
+  head(df.FST)
+  
+  df.out <- pOutlierFinderChiSqNoCorr(df.FST, 
+                                  Fstbar = out_pruned$FSTNoCorrbar, 
+                                  dfInferred = out_pruned$dfInferred, Hmin=0.1)
+  
+  df.out$OutFLANK_0.2_PRUNED_log10p <- -log10(df.out$pvaluesRightTail)
+  df.out$OutFLANK_0.2_PRUNED_log10p_add <- -log10(df.out$pvaluesRightTail + 1/10000000000000000000)
+  
+  pdf(paste0(folderOut, seed, "_outflankFstHist.pdf"), width =5, height = 5)
+    OutFLANKResultsPlotter(out_pruned, Zoom = T)
+  dev.off()
 
 #### end OutFLANK
 ######################################################################################################
@@ -1422,126 +1413,118 @@ OutFLANKResultsPlotter(out_pruned, Zoom = T)
 ######################################################################################################
 #### start Outlier Plotting
 
-### Manhattan plots 
-# SELECTION #
-df.neutQTNmuts <- df.muts.MAF[df.muts.MAF$inOut != "inv",]
-df.neutQTNmuts$inOut <- factor(df.neutQTNmuts$inOut)
-df.neutQTNmuts$chrom <- factor(df.neutQTNmuts$chrom)
+#########################
+#### Manhattan plots ####
+  
+  # SELECTION #
+  df.neutQTNmuts <- df.muts.MAF[df.muts.MAF$inOut != "inv",]
+  df.neutQTNmuts$inOut <- factor(df.neutQTNmuts$inOut)
+  df.neutQTNmuts$chrom <- factor(df.neutQTNmuts$chrom)
+  
+  manh.plot <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, 
+                                          group = interaction(inOut, chrom))) + 
+    geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
+                                            ymax=max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05), 
+              fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE) +
+    geom_point(data = df.neutQTNmuts, aes(color = chrom, shape = inOut)) + 
+    scale_shape_manual(name = "QTN location", 
+                       labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
+                       values=c(19, 15, 1)) +
+    scale_color_manual(name = "Chromosome", values = c(rep(c("navy", "lightblue"), 10), "goldenrod")) + 
+    labs(title = expression(bold("Selection"))) + 
+    theme(legend.position = "none") +
+    theme_classic() +
+    theme(panel.background = element_blank(), 
+          strip.background = element_rect(colour = "white", fill = "grey92"),
+          text = element_text(size = 11)) +
+    scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05)) 
+  
 
-manh.plot <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, 
-                                        group = interaction(inOut, chrom))) + 
-  geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
-                                          ymax=max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05), 
-            fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE) +
-  geom_point(data = df.neutQTNmuts, aes(color = chrom, shape = inOut)) + 
-  scale_shape_manual(name = "QTN location", 
-                     labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
-                     values=c(19, 15, 1)) +
-  scale_color_manual(name = "Chromosome", values = c(rep(c("navy", "lightblue"), 10), "goldenrod")) + 
-  labs(title = expression(bold("Selection"))) + 
-  theme(legend.position = "none") +
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92"),
-        text = element_text(size = 11)) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05)) 
- # annotate("segment", x = center.bases, y = rep(max(c(df.out$FST_outflank, df.neutQTNmuts$FST)), length(center.bases)), 
-           #xend = center.bases, yend = rep(max(df.neutQTNmuts$FST + 0.01), length(center.bases)),
-           #arrow = arrow(length = unit(0.5, "cm")))
+  # NO SELECTION #
+  df.neutQTNmuts.NS <- df.muts.NS.MAF[df.muts.NS.MAF$inOut != "inv",]
+  df.neutQTNmuts.NS$inOut <- factor(df.neutQTNmuts.NS$inOut)
+  df.neutQTNmuts.NS$chrom <- factor(df.neutQTNmuts.NS$chrom)
+  
+  manh.plot.NS <- ggplot(df.neutQTNmuts.NS, aes(x = position, y = FST, 
+                                                group = interaction(inOut, chrom))) + 
+    geom_point(aes(color = chrom, shape = inOut)) + 
+    scale_color_manual(name = "Chromosome",
+                       values = c(rep(c("navy", "lightblue"), 10), "goldenrod")) +
+    scale_shape_manual(name = "QTN location", labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
+                       values=c(19, 15, 1)) +
+    labs(title = expression(bold("No Selection"))) + 
+    theme_classic() +
+    theme(panel.background = element_blank(), 
+          strip.background = element_rect(colour = "white", fill = "grey92"),
+          text = element_text(size = 11)) +
+    scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.neutQTNmuts$FST + 0.05)))
+  
+  ## No legend
+  manh.plot.NS.noleg <- manh.plot.NS + theme(legend.position = "none")
+  manh.plot.noleg <-  manh.plot+ theme(legend.position = "none")
+  legManh <- g_legend(manh.plot)
+  
+  ## Print plot
+  png(paste0(folderOut, seed, "_manh.png"), width = 1000, height = 400, units = "px")
+    ggarrange(manh.plot.noleg, manh.plot.NS.noleg, legManh, ncol = 3, widths = c(2.3,2.3,0.8))
+  dev.off()
 
+#######################
+#### Outlier Plots ####
+  df.adaptInv <- as.data.frame(cbind(ID = adapt.inv, center_bases = center.bases, first_bases = first.bases, 
+                                     final_bases = final.bases))
+  
+  ## Get max value for scales on outlier plots
+  max_value_log10 <- max(c(df.out$OutFLANK_0.2_PRUNED_log10p_add[!is.na(df.out$OutFLANK_0.2_PRUNED_log10p_add)], 
+                           df.out$pcadapt_4.3.3_PRUNED_log10p[!is.na(df.out$pcadapt_4.3.3_PRUNED_log10p)])) + 2
+  
+  ## Outflank
+  outflank.log10p <- ggplot(df.out, aes(x = position_vcf, y = OutFLANK_0.2_PRUNED_log10p_add)) + 
+    geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
+                                            ymax=max_value_log10), fill = "tan1", 
+              color="black", alpha=0.5, inherit.aes = FALSE) +
+    geom_point(data = df.out, aes(color = OutlierFlag, shape = OutlierFlag))+
+    scale_color_manual(values = c("black", "red")) +
+    scale_shape_manual(values = c(19, 1)) +
+    theme_classic() +
+    theme(panel.background = element_blank(), 
+          strip.background = element_rect(colour = "white", fill = "grey92"),
+          text = element_text(size = 11)) +
+    labs(title = "OutFLANK",
+         y = "-log10(p-values)",
+         x = "Genome Position") + 
+    theme(legend.position = "none") + 
+    scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0,max_value_log10))
 
-# NO SELECTION #
-df.neutQTNmuts.NS <- df.muts.NS.MAF[df.muts.NS.MAF$inOut != "inv",]
-df.neutQTNmuts.NS$inOut <- factor(df.neutQTNmuts.NS$inOut)
-df.neutQTNmuts.NS$chrom <- factor(df.neutQTNmuts.NS$chrom)
-
-manh.plot.NS <- ggplot(df.neutQTNmuts.NS, aes(x = position, y = FST, 
-                                              group = interaction(inOut, chrom))) + 
-  geom_point(aes(color = chrom, shape = inOut)) + 
-  scale_color_manual(name = "Chromosome",
-                     values = c(rep(c("navy", "lightblue"), 10), "goldenrod")) +
-  scale_shape_manual(name = "QTN location", labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
-                     values=c(19, 15, 1)) +
-  labs(title = expression(bold("No Selection"))) + 
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92"),
-        text = element_text(size = 11)) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.neutQTNmuts$FST + 0.05)))
-
-# No legend
-manh.plot.NS.noleg <- manh.plot.NS + theme(legend.position = "none")
-manh.plot.noleg <-  manh.plot+ theme(legend.position = "none")
-legManh <- g_legend(manh.plot)
-
-png(paste0(folderOut, seed, "_manh.png"), width = 1000, height = 400, units = "px")
-ggarrange(manh.plot.noleg, manh.plot.NS.noleg, legManh, ncol = 3, widths = c(2.3,2.3,0.8))
-dev.off()
-
-df.adaptInv <- as.data.frame(cbind(ID = adapt.inv, center_bases = center.bases, first_bases = first.bases, 
-                                   final_bases = final.bases))
-
-outflank.fst <- ggplot(df.out, aes(x = position_vcf, y = FST_outflank)) +
-  geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
-                                          ymax=max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05), fill = "tan1", 
-            color="black", alpha=0.5, inherit.aes = FALSE) +
-  geom_point(aes(color = OutlierFlag))+
-  scale_color_manual(values = c("black", "red")) +
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92"),
-        text = element_text(size = 11)) +
-  labs(title ="OutFLANK",
-       y = "FST",
-       x = "Genome Position") + 
-  theme(legend.position = "none") + 
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0,max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05))
-
-max_value_log10 <- max(c(df.out$OutFLANK_0.2_PRUNED_log10p_add[!is.na(df.out$OutFLANK_0.2_PRUNED_log10p_add)], 
-                         df.out$pcadapt_4.3.3_PRUNED_log10p[!is.na(df.out$pcadapt_4.3.3_PRUNED_log10p)])) + 2
-
-outflank.log10p <- ggplot(df.out, aes(x = position_vcf, y = OutFLANK_0.2_PRUNED_log10p_add)) + 
-  geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
-                                          ymax=max_value_log10), fill = "tan1", 
-            color="black", alpha=0.5, inherit.aes = FALSE) +
-  geom_point(data = df.out, aes(color = OutlierFlag))+
-  scale_color_manual(values = c("black", "red")) +
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92"),
-        text = element_text(size = 11)) +
-  labs(title = "OutFLANK",
-       y = "-log10(p-values)",
-       x = "Genome Position") + 
-  theme(legend.position = "none") + 
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0,max_value_log10))
-
-pcadapt.log10p <- ggplot(df.mutsMAFord, aes(x = position_vcf, y = pcadapt_4.3.3_PRUNED_log10p)) +
-  geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
-                                          ymax=max_value_log10), fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE) +
-  geom_point(data = df.mutsMAFord, aes(color = pcadapt_outlier)) +
-  scale_color_manual(values = c("black",  "red")) +
-  theme_classic() +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "dimgrey"),
-        text = element_text(size = 11)) +
-  labs(title = "PCAdapt",
-       y = "-log10(p-value)",
-       x = "Genome Position") + 
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, max_value_log10)) + 
-  theme(legend.position = "none")
-
-manh.plot.slim <- manh.plot + labs(title = "Simulation Output") +
-  theme(legend.position = "none") 
-
-png(paste0(folderOut, seed, "_outlierTests.png"), height = 1000, width = 600, units = "px")
-  ggarrange(manh.plot.slim, outflank.log10p, pcadapt.log10p, nrow = 3, ncol = 1)
-dev.off()
+  ## PCAdapt
+  pcadapt.log10p <- ggplot(df.mutsMAFord, aes(x = position_vcf, y = pcadapt_4.3.3_PRUNED_log10p)) +
+    geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
+                                            ymax=max_value_log10), fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE) +
+    geom_point(data = df.mutsMAFord, aes(color = pcadapt_outlier, shape = pcadapt_outlier)) +
+    scale_color_manual(values = c("black",  "red")) +
+    scale_shape_manual(values = c(19, 1)) +
+    theme_classic() +
+    theme(panel.background = element_blank(), 
+          strip.background = element_rect(colour = "white", fill = "dimgrey"),
+          text = element_text(size = 11)) +
+    labs(title = "PCAdapt",
+         y = "-log10(p-value)",
+         x = "Genome Position") + 
+    scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, max_value_log10)) + 
+    theme(legend.position = "none")
+  
+  ## Manhattan plot
+  manh.plot.slim <- manh.plot + labs(title = "Simulation Output") +
+    theme(legend.position = "none") 
+  
+  ## Print plots
+  png(paste0(folderOut, seed, "_outlierTests.png"), height = 1000, width = 600, units = "px")
+    ggarrange(manh.plot.slim, outflank.log10p, pcadapt.log10p, nrow = 3, ncol = 1)
+  dev.off()
 
 #### end outlier plotting
 ######################################################################################################
@@ -1549,7 +1532,7 @@ dev.off()
 
 ######################################################################################################    
 ## Outlier identification from genome scans
-
+  
 colnames(df.qtnMuts.MAF)[2] <- "LocusName"
 df.outlierComp <- merge(df.qtnMuts.MAF[c(2,12:ncol(df.qtnMuts.MAF))], df.out, by = "LocusName")
 head(df.outlierComp)
@@ -1612,12 +1595,3 @@ overall.outliers <- ggplot(df.outlierComp[!is.na(df.outlierComp$whichTests),], a
 ######################################################################################################
 
 
-######################################################################################################    
-## COPY AND PASTE WHERE NEEDED
-pdf(paste0(outFolder, seed, "_heatmapPop1geno.pdf"), height = 5, width = 7)
-
-dev.off()
-
-png(paste0("figures/", seed, "XXXX.png"), width = 480, height = 480, units = "px")
-
-dev.off()
