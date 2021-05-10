@@ -1,4 +1,40 @@
 #########################################################################################################
+### start outflank fst plot
+# 
+# outflank.fst <- ggplot(df.out, aes(x = position_vcf, y = FST_outflank)) +
+#   geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
+#                                           ymax=max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05), fill = "tan1", 
+#             color="black", alpha=0.5, inherit.aes = FALSE) +
+#   geom_point(aes(color = OutlierFlag, shape = OutlierFlag))+
+#   scale_color_manual(values = c("black", "red")) +
+#   scale_shape_manual(values = c(19, 1)) +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92"),
+#         text = element_text(size = 11)) +
+#   labs(title ="OutFLANK",
+#        y = "FST",
+#        x = "Genome Position") + 
+#   theme(legend.position = "none") + 
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0,max(c(df.out$FST_outflank, df.neutQTNmuts$FST)) + 0.05))
+
+### end outflank fst plot
+#########################################################################################################
+
+
+#########################################################################################################
+### start arrows on plot
+
+# annotate("segment", x = center.bases, y = rep(max(c(df.out$FST_outflank, df.neutQTNmuts$FST)), length(center.bases)), 
+#xend = center.bases, yend = rep(max(df.neutQTNmuts$FST + 0.01), length(center.bases)),
+#arrow = arrow(length = unit(0.5, "cm")))
+
+### end arrows on plot
+#########################################################################################################
+
+
+#########################################################################################################
 ### Plots on inversions split by FST 
 # ## Average Inversion Length ##
 # # SELECTION #  
@@ -56,6 +92,81 @@
 #   theme(panel.background = element_blank(), 
 #         strip.background = element_rect(colour = "white", fill = "grey92")) +
 #   labs(title = " ", y = "Average Inversion Length", x = "Inversion Status") 
+
+
+# NO SELECTION #
+#df.invage.NS <- pivot_longer(df.AdaptSplit.NS[, c(1,2,7)], cols = c(inv_ageAdapt, inv_ageNonAdapt),
+# names_to = "AdaptSplit", values_to = "inv_age")
+# 
+# inv.age.plot.NS <- ggplot(data = inv.data.NS, 
+#                           aes(x = sim_gen, y = inv_age)) + 
+#   geom_line(aes(color = FSTsplit), size = 0.75) + 
+#   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+#   labs(title = " ", y = "", x = "Generation") +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, max(inv.data.NS$inv_age))) +
+#   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
+# 
+# leg <- g_legend(inv.age.plot.NS)
+# 
+# inv.age.plot.NS.noleg <- inv.age.plot.NS + theme(legend.position = "none")
+# 
+
+# NO SELECTION #
+# df.invlength.NS <- pivot_longer(df.FSTsplit.NS[, c(1,5,10)], cols = c(inv_lengthT10, inv_lengthB90),
+#                                 names_to = "FSTsplit", values_to = "inv_length")
+# 
+# inv.length.plot.NS <- ggplot(data = df.invlength.NS, 
+#                              aes(x = sim_gen, y = inv_length, group = FSTsplit)) + 
+#   geom_line(aes(color = FSTsplit), size = 0.75, alpha= 0.9) + 
+#   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+#   labs(title = " ", y = "", x = "Generation") +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_color_manual(labels = c("Top 10%", "Bot 90%"),
+#                      values=c("lightsalmon1", "lightsalmon3")) +
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, 50000)) +
+#   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
+# 
+# legLeng <- g_legend(inv.length.plot.NS)
+# 
+# inv.length.plot.NS.noLeg <- inv.length.plot.NS + theme(legend.position = "none")
+# 
+
+# ggarrange(inv.length.plot, inv.length.plot.NS.noLeg, legLeng, labels = c("Selection", "No Selection"),
+#           ncol = 3, widths = c(2.3,2.3,0.8))
+
+
+# No Selection    
+# df.invQTNs.Lscaled.NS <- pivot_longer(df.FSTsplit.NS[, c(1,6,11)], cols = c(num_qtns_LscaledT10, num_qtns_LscaledB90),
+#                                       names_to = "FSTsplit", values_to = "inv_qtnNum")
+# 
+# inv.qtns.Lscaled.plot.NS <- ggplot(data = df.invQTNs.Lscaled.NS, 
+#                                    aes(x = sim_gen, y = inv_qtnNum, group = FSTsplit)) + 
+#   geom_line(aes(color = FSTsplit), size = 0.75) + 
+#   geom_vline(xintercept = 10000, linetype = "dashed", color = "black") +
+#   labs(title = " ", y = "", x = "Generation") +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_color_manual(labels = c("Top 10%", "Bot 90%"), 
+#                      values=c("plum4", "thistle")) +
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.invQTNsLscaled$inv_qtnNum))) +
+#   theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) 
+# 
+# legQTNsLscaled <- g_legend(inv.qtns.Lscaled.plot.NS)
+# 
+# inv.qtns.Lscaled.plot.NS.noleg <- inv.qtns.Lscaled.plot.NS + theme(legend.position = "none")
+# 
+
+# ggarrange(inv.qtns.Lscaled.plot, inv.qtns.Lscaled.plot.NS.noleg, legQTNsLscaled, labels = c("Selection", "No Selection"),
+#           ncol = 3, widths = c(2.3,2.3,0.8))
 
 ### End Plots on inversions split by FST
 #########################################################################################################
