@@ -49,9 +49,13 @@ PNG that is 48KB
 
 > _can you make this graph a bit wider so it stretches out a bit, and add arrows or grey panels in the background to indicate which inversions are adaptive? Also, change the shape of the points so it works in B&W - it may be hard to see if you use solid shapes, outlined shapes might work better_
 
+>_Sara: the grey didn't look great in the background I think mainly because of the inversions that overlap I liked the yellow/tan color best hwen I was going through options. Let me know if that is okay_
+
 ## Inversion Origin 
 PDF that is 32 KB  
 ![Origin Dynamics](../figures/20210321_lowVhighMig/High_Mig/3384725_invOrigin.pdf)  
+
+>_Sara: Hopefully the scale is okay like it is for color. I made the scale separate from the graph that is printed. I couldn't figure out how to make a continous color scale for a discrete population variable. The only way we could maybe hack this is in powerpoint after the fact for whichever graph we want to put in the manuscript._
 
 ## Heatmaps
 PDF that is 1.6-1.9 MB  
