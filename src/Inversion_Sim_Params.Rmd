@@ -66,18 +66,163 @@ output: html_document
 
 seeds <- seq(first.seed, (first.seed+nrow(params)-1), by = 1)
 df.params <- cbind(seeds, params)
+
 colnames(df.params) <- columns
 rownames(df.params) <- NULL
 head(df.params)
 tail(df.params)
 dim(df.params)
-write.table(df.params, "invSimParams.txt", row.names = FALSE)
-# test.data <- head(df.params)
-# write.table(test.data, "testINVparamslist.txt", row.names = FALSE)
+write.table(df.params, "src/invSimParams.txt", row.names = FALSE)
+test.data #<- df.params[c(1,2155, sample(1:2000, 2)),]
+write.table(test.data, "src/test_invSimParams.txt", row.names = FALSE)
 df.params <- as.data.frame(df.params)
-df.params[df.params$muInv == 0.001 & df.params$muBase == 0.0000001 & sigmaK,]
+
+df.params.rerun <- rbind(df.params[df.params$seed %in% seq(from = 3384362, to = 3384781, by = 2),], 
+                     df.params[df.params$seed >= 3384780,])
+
+df.params.rerun2 <- rbind(df.params[df.params$seed <= 3385439 & df.params$seed >= 3385143,])
+
+write.table(df.params.rerun2, "src/rerun2_invSimParams.txt", row.names = FALSE)
+
+rerun3 <- c("3385076", "3385052", "3385061", "3385037", "3385079", "3385070", "3385073", "3385058", "3385064", "3385043",
+            "3385055", "3385022", "3385046", "3385031", "3385049", "3385016", "3385067", "3385019", "3385028", "3385034",
+            "3385040", "3385010", "3385007", "3385013", "3385004", "3384998", "3384989", "3384986", "3385001", "3384995",
+            "3384992", "3384977", "3384968", "3384959", "3384956", "3384953", "3384950", "3384947", "3384935", "3384920",
+            "3384896", "3384902", "3384890", "3384899", "3384926", "3384929", "3384923", "3384884", "3384911", "3384893",
+            "3384908", "3384887", "3384881", "3384836", "3384839", "3384824", "3384833", "3384842", "3384830", "3384815",
+            "3384827", "3384812", "3384818", "3384821", "3384800", "3384803", "3384791", "3384797", "3384794", "3384806",
+            "3384809")
+
+df.params.rerun3 <- df.params[df.params$seed %in% rerun3, ]
+
+write.table(df.params.rerun3, "src/rerun3_invSimParams.txt", row.names = FALSE)
+
+df.params[df.params$mig1 == 0.1 & df.params$muBase ==  0.000001 
+            & df.params$sigmaK == .75 & df.params$alpha == 0.002 
+            & df.params$enVar == 0 & df.params$muInv == 0, ]
+
+#3384602 poly low low mig weak select - no island
+#3384603 poly low mig weak select - no island
+#3384604 poly mod mig weak select - no island
+#3384605 poly high mig weak select - no island
+#3384606 poly high high mig weak select - no island
+
+#3384482 poly low low mig mod select - no island
+#3384483 poly low mig mod select - island
+#3384484 poly mod mig mod select - no island
+#3384485 poly high mig mod select - no island
+#3384486 poly high high mig mod select - no island
+
+#3384362 poly low low mig strong select - no islands just high fst across all
+#3384363 poly low mig strong select - no islands just high fsts
+#3384364 poly mod mig strong select - islands
+#3384365 poly high mig strong select - no islands
+#3384366 poly high high mig strong select - no islands
+
+
+df.params.2[df.params.2$mig1 == 0.25 & df.params.2$muBase ==  0.00000001 
+            & df.params.2$sigmaK == 0.75 & df.params.2$alpha == 0.2 
+            & df.params.2$enVar == 0 & df.params.2$muInv == 0.001, ]
+
+# semi oligo 0.5 mig 3385447 (3385537) 
+# semi oligo 0.25 mig 3385445 (3385535)
+
+
+# mono low low mig weak select 
+# mono low mig weak select - 
+# mono mod mig weak select - no island
+# mono high mig weak select - no island
+# mono high high mig weak select - no island
+
+# mono low low mig mod select - no island
+# mono low mig mod select - island
+# 3385654 mono mod mig mod select - no island (3385744)
+# mono high mig mod select - no island
+# mono high high mig mod select - no island
+
+# mono low low mig strong select - no islands just high fst across all
+# mono low mig strong select - no islands just high fsts
+# mono mod mig strong select - islands (3385714)
+# 3385625 mono high mig strong select - no islands (3385715)
+# 3385626 mono high high mig strong select - no islands (3385716)
+#3385627 (3385717)
+#cp 3385445_outputMutations.txt ../noInvControls/
+#cp 3385445noSel_outputMutations.txt ../noInvControls/
+```
+
+## additional parameters
+```{r}
+
+### Number of Parameters that vary
+  num_param <- 15
+  
+## List of Parameters in model
+  first.seed.2 <- 3385442 #runif(1, 0, 10000000)
+  mu_base <- c(1e-08, 1e-09) #, 1e-04, 1e-03)
+  mu_inv <- c(0, 1e-03)#1e-05, 1e-07) #orders of magnitude higher or lower than mu_base
+  sigmaK <- c(0.75, 1.5, 3) # reduce to 3 values
+  alpha <- 0.2 #sd of effect sizes of QTN mutations
+    # 0.2 because 95% of observations will be <0.4, and a mutation of 0.5 in a homozygote will give 1.0 optimum
+  reps <- c(1:5)
+  N <- 1000 # some subset we will do 10,000 interesting cases
+  envar <- 0 # should we run this? if heritability was less does that impact do a subset! 
+  
+  ## note migration rates are set up to take on two different values need to edit 
+  ## for loop and num_sim below if you want to alter migration rates between populations
+  mig1 <- c(0.001, 0.01, 0.1, 0.25, 0.4, 0.5)
+  mig2 <- c(0.001, 0.01, 0.1, 0.25, 0.4, 0.5)
+  chrom_num <- 21
+  recom <- 1e-6
+  burnin <- 10000
+  theta1 <- 1
+  theta2 <- -1
+  dom <- 2 # 2 is false and 1 is true in the code there is an issue with the letter F converting to FALSE
+  
+## Number of total simulations
+  num_sims <- length(mu_base)*length(mu_inv)*length(sigmaK)*length(alpha)*length(reps)*length(N)*length(envar)*length(mig1)*length(recom)*length(burnin)*length(theta1)*length(theta2)*length(chrom_num)
+  
+## colnames vector
+  columns <- c("seed", "muBase", "muInv", "sigmaK", "alpha", "rep", "n", "enVar", "mig1", "mig2", "theta1", "theta2", "burnin", "chromNum", "r", "dom")
+
+##
+
+params <- matrix(nrow = 0, ncol = num_param)
+  for(b in 1:length(mu_base)){
+    for(i in 1:length(mu_inv)){
+      for(k in 1:length(sigmaK)){
+        for(a in 1:length(alpha)){
+          for(r in 1:length(reps)){
+            for(n in 1:length(N)){
+              for(e in 1:length(envar)){
+                for(m in 1:length(mig1)){
+                  new.row <- c(mu_base[b], mu_inv[i], sigmaK[k], alpha[a],
+                              reps[r], N[n], envar[e], mig1[m], mig2[m], theta1, 
+                              theta2, burnin, chrom_num, recom, dom)
+                  params <- rbind(params, new.row)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+seeds <- seq(first.seed.2, (first.seed.2+nrow(params)-1), by = 1)
+df.params.2 <- as.data.frame(cbind(seeds, params))
+str(df.params.2 )
+colnames(df.params.2) <- columns
+rownames(df.params.2) <- NULL
+head(df.params.2)
+tail(df.params.2)
+dim(df.params.2)
+write.table(df.params.2, "src/invSimParams_2.txt", row.names = FALSE)
+
+rerun1 <- c(3385626, 3385639, 3385670, 3385688, 3385703, 3385720)
+df.params.3<- df.params.2[df.params.2$seed %in% rerun1,]
 
 ```
+
 
 ## Visualization of Parameter's effects
 ```{r}
@@ -90,7 +235,7 @@ df.params[df.params$muInv == 0.001 & df.params$muBase == 0.0000001 & sigmaK,]
  plot(x,dnorm(x, mean = 1, sd=0.2), xlim=c(-2,2), col = "cornflowerblue")
  points(x,dnorm(x,mean = -1, sd = 0.2), col = "limegreen")
  
-
+df.summary[df.summary$seed == 3383871, ]
 ```
 
 ### Test Parameters

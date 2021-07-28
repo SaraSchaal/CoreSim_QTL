@@ -1,4 +1,54 @@
 #########################################################################################################
+### start outlier detection
+# df.outlierComp$testNum <- NA
+# df.outlierComp$whichTests <- NA
+# for(i in 1:nrow(df.outlierComp)){
+#   if(!is.na(df.outlierComp$OutlierFlag[i]) & !is.na(df.outlierComp$pcadapt_outlier[i])){
+#     if(df.outlierComp$crit1_p.value[i] != 0 | df.outlierComp$crit2_p.value[i] != 0 & df.outlierComp$OutlierFlag[i] == FALSE & df.outlierComp$pcadapt_outlier[i] == FALSE){
+#       df.outlierComp$testNum[i] <- 0
+#       df.outlierComp$whichTests[i] <- "none"
+#     } else if(df.outlierComp$crit1_p.value[i] == 0 & df.outlierComp$crit2_p.value[i] == 0 & df.outlierComp$OutlierFlag[i] == TRUE & df.outlierComp$pcadapt_outlier[i] == TRUE){
+#       df.outlierComp$testNum[i] <- 3
+#       df.outlierComp$whichTests[i] <- "crit_OutFLANK_PCAdapt"
+#     } else if(df.outlierComp$crit1_p.value[i] == 0 & df.outlierComp$crit2_p.value[i] == 0 & df.outlierComp$OutlierFlag[i] == TRUE & df.outlierComp$pcadapt_outlier[i] == FALSE){
+#       df.outlierComp$testNum[i] <- 2
+#       df.outlierComp$whichTests[i] <- "crit_OutFLANK"
+#     } else if(df.outlierComp$crit1_p.value[i] == 0 & df.outlierComp$crit2_p.value[i] == 0 & df.outlierComp$OutlierFlag[i] == FALSE & df.outlierComp$pcadapt_outlier[i] == TRUE){
+#       df.outlierComp$testNum[i] <- 2
+#       df.outlierComp$whichTests[i] <- "crit_PCAdapt"
+#     } else if(df.outlierComp$crit1_p.value[i] != 0 | df.outlierComp$crit2_p.value[i] != 0 & df.outlierComp$OutlierFlag[i] == TRUE & df.outlierComp$pcadapt_outlier[i] == FALSE){
+#       df.outlierComp$testNum[i] <- 1
+#       df.outlierComp$whichTests[i] <- "OutFLANK"
+#     } else if(df.outlierComp$crit1_p.value[i] != 0 | df.outlierComp$crit2_p.value[i] != 0 & df.outlierComp$OutlierFlag[i] == FALSE & df.outlierComp$pcadapt_outlier[i] == TRUE){ 
+#       df.outlierComp$testNum[i] <- 1
+#       df.outlierComp$whichTests[i] <- "PCAdapt"
+#     }
+#   }
+# }
+# 
+# df.outlierComp$whichTests <- as.factor(df.outlierComp$whichTests)
+# df.outlierComp$whichTests <- relevel(df.outlierComp$whichTests, "none")
+# levels(df.outlierComp$inOut)
+# overall.outliers <- ggplot(df.outlierComp[!is.na(df.outlierComp$whichTests),], aes(x = position_vcf, y = FST_slim)) + 
+#   geom_point(aes(color = whichTests), alpha = 0.8) +
+#   facet_wrap(~inOut, nrow = 4, ncol = 1) + 
+#   scale_color_manual(values = c("black", "blue", "red", "goldenrod")) +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92"),
+#         text = element_text(size = 11)) +
+#   labs(title = "Outlier Comparison",
+#        y = "FST",
+#        x = "Genome Position") + 
+#   ylim(c(0, 0.3))
+### end outlier detection
+#########################################################################################################
+
+
+
+
+
+#########################################################################################################
 ### start outflank fst plot
 # 
 # outflank.fst <- ggplot(df.out, aes(x = position_vcf, y = FST_outflank)) +

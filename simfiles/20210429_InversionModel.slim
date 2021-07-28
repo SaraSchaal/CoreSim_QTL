@@ -31,7 +31,7 @@ initialize(){
 	
 	} else {
 		
-		setwd("/scratch/schaal.s/InversionSimulations/results");
+		setwd("/scratch/schaal.s/InversionSimulations/results/test/");
 		path = getwd();
 		defineConstant("MYSEED", seed);						// set random number generator can be fixed at earlier argument for reproducibility
 		setSeed(seed);
@@ -623,57 +623,58 @@ late(){
 	// Neutral Loci Calculations //
 	///////////////////////////////	
 	m_neut = unique(c(g.mutationsOfType(m1)), preserveOrder = F);
-	m_neut_p1freqs = sim.mutationFrequencies(p1, m_neut);
-	m_neut_p2freqs = sim.mutationFrequencies(p2, m_neut);
-	m_neut_freqs = sim.mutationFrequencies(NULL, m_neut);	
-
-	// expected Heterozygosity
-	neut_expH_p1 = m_neut_p1freqs * (1 - m_neut_p1freqs) * 2;
-	neut_expH_p2 = m_neut_p2freqs * (1 - m_neut_p2freqs) * 2;
-	// HS
-	neut_HS = (neut_expH_p1 * N + neut_expH_p2 * N)/(N * 2);
-	// HT calculate overall heterozygosity
-	neut_pBar = (m_neut_p1freqs * N + m_neut_p2freqs * N)/(N * 2);
-	// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
-	neut_qBar = 1 - neut_pBar;
-	neut_HT = 2 * neut_pBar * neut_qBar;
-	// FST
-	neut_FST = 1 - (neut_HS/neut_HT);
+	if(size(m_neut)){
+		m_neut_p1freqs = sim.mutationFrequencies(p1, m_neut);
+		m_neut_p2freqs = sim.mutationFrequencies(p2, m_neut);
+		m_neut_freqs = sim.mutationFrequencies(NULL, m_neut);	
 	
-	for(i in 0:(size(m_neut)-1)){
-		out_m = out_m + m_neut.position[i] + " " + m_neut.id[i] + " " + 0 + " " +
-			m_neut.originGeneration[i] + " " + "m1 " + m_neut_freqs[i] + " " + m_neut_p1freqs[i] + " " +
-			m_neut_p2freqs[i] + " " + 0 + " " + neut_FST[i] + "\n";
+		// expected Heterozygosity
+		neut_expH_p1 = m_neut_p1freqs * (1 - m_neut_p1freqs) * 2;
+		neut_expH_p2 = m_neut_p2freqs * (1 - m_neut_p2freqs) * 2;
+		// HS
+		neut_HS = (neut_expH_p1 * N + neut_expH_p2 * N)/(N * 2);
+		// HT calculate overall heterozygosity
+		neut_pBar = (m_neut_p1freqs * N + m_neut_p2freqs * N)/(N * 2);
+		// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
+		neut_qBar = 1 - neut_pBar;
+		neut_HT = 2 * neut_pBar * neut_qBar;
+		// FST
+		neut_FST = 1 - (neut_HS/neut_HT);
+		
+		for(i in 0:(size(m_neut)-1)){
+			out_m = out_m + m_neut.position[i] + " " + m_neut.id[i] + " " + 0 + " " +
+				m_neut.originGeneration[i] + " " + "m1 " + m_neut_freqs[i] + " " + m_neut_p1freqs[i] + " " +
+				m_neut_p2freqs[i] + " " + 0 + " " + neut_FST[i] + "\n";
+		}
 	}
-	
 	////////////////////////////
 	// Inversion Calculations //
 	////////////////////////////
 	m_inv = unique(c(g.mutationsOfType(m3)), preserveOrder = F);
-	m_inv_p1freqs = sim.mutationFrequencies(p1, m_inv);
-	m_inv_p2freqs = sim.mutationFrequencies(p2, m_inv);
-	m_inv_freqs = sim.mutationFrequencies(NULL, m_inv);
+	if(size(m_inv)){
+		m_inv_p1freqs = sim.mutationFrequencies(p1, m_inv);
+		m_inv_p2freqs = sim.mutationFrequencies(p2, m_inv);
+		m_inv_freqs = sim.mutationFrequencies(NULL, m_inv);
 		
-	// expected Heterozygosity
-	inv_expH_p1 = m_inv_p1freqs * (1 - m_inv_p1freqs) * 2;
-	inv_expH_p2 = m_inv_p2freqs * (1 - m_inv_p2freqs) * 2;
-	// HS
-	inv_HS = (inv_expH_p1 * N + inv_expH_p2 * N)/(N * 2);
-	// HT calculate overall heterozygosity
-	inv_pBar = (m_inv_p1freqs * N + m_inv_p2freqs * N)/(N * 2);
-	// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
-	inv_qBar = 1 - inv_pBar;
-	inv_HT = 2 * inv_pBar * inv_qBar;
-	// FST
-	inv_FST = 1 - (inv_HS/inv_HT);
+		// expected Heterozygosity
+		inv_expH_p1 = m_inv_p1freqs * (1 - m_inv_p1freqs) * 2;
+		inv_expH_p2 = m_inv_p2freqs * (1 - m_inv_p2freqs) * 2;
+		// HS
+		inv_HS = (inv_expH_p1 * N + inv_expH_p2 * N)/(N * 2);
+		// HT calculate overall heterozygosity
+		inv_pBar = (m_inv_p1freqs * N + m_inv_p2freqs * N)/(N * 2);
+		// adding N in in case anyone uses this with unequal pop sizes not needed for my simulation
+		inv_qBar = 1 - inv_pBar;
+		inv_HT = 2 * inv_pBar * inv_qBar;
+		// FST
+		inv_FST = 1 - (inv_HS/inv_HT);
 	
-	out_m_inv = NULL;
-	for(i in 0:(size(m_inv)-1)){
-		out_m = out_m + m_inv.position[i] + " " + m_inv.id[i] + " " + 0 + " " +
-			m_inv.originGeneration[i] + " " + "m3 " + m_inv_freqs[i] + " " + m_inv_p1freqs[i] + " " +
-			m_inv_p2freqs[i] + " " + 0 + " " + inv_FST[i] + "\n";
+		for(i in 0:(size(m_inv)-1)){
+			out_m = out_m + m_inv.position[i] + " " + m_inv.id[i] + " " + 0 + " " +
+				m_inv.originGeneration[i] + " " + "m3 " + m_inv_freqs[i] + " " + m_inv_p1freqs[i] + " " +
+				m_inv_p2freqs[i] + " " + 0 + " " + inv_FST[i] + "\n";
+		}
 	}
-	
 	writeFile(paste(c(MYPATH, "/", MYSEED, "_outputMutations.txt"), sep = ""), out_m);
 
 }

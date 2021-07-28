@@ -4,6 +4,39 @@
   library(ggplot2)
   folder <- "results/Inversion/20201115_FullSet/"
 
+  ## Inversion Through Time
+  df.invTime <- NULL
+  count <- 0
+  for(i in 1:nrow(df.params)){
+    seed <- df.params$seed[i]
+    invTimeNewFile <- read.table(paste(folder, seed, "_outputInvTime.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+    if(nrow(invTimeNewFile) > 0){
+      invTimeNewFile$seed <- seed
+      df.invTime <-  rbind(df.invTime, invTimeNewFile)
+    }
+    count <- count + 1
+    print(count)
+  }
+  write.table(df.invTime, "FullSet_invTime.txt", row.names = FALSE)
+  
+  ## Inversion Summary Data
+  df.invData <- NULL
+  count <- 0
+  for(i in 1:nrow(df.params)){
+    seed <- df.params$seed[i]
+    invData <- read.table(paste(folder, seed, "_outputInvSumInfo.txt", sep=""), header = TRUE,
+                          stringsAsFactors = FALSE)
+    if(nrow(invData) > 0){
+      invData$seed <- seed
+      df.invData <- rbind(df.invData, invData)
+    }
+    count <- count + 1
+    print(count)
+  }
+  write.table(df.invData, "FullSet_invData.txt", row.names = FALSE)
+  
+  
+  
 # download data
   df.invTime <- read.table(paste(folder, "FullSet_invTime.txt", sep = ""), header = TRUE)
   df.invData <- read.table(paste(folder, "FullSet_invData.txt", sep = ""), header = TRUE)
