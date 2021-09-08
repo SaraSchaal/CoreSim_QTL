@@ -1,0 +1,3 @@
+Why do we see adaptive inversions that are neutral in our origins graph?
+
+This is because this graph is made with data that includes both the inversion window and the inversion haplotypes. An inversion is deemed as adaptive based on the inversion window which can include the cases where the inversion haplotypes do not carry any qtns but the uninverted haplotype does.  This results in the case where an inversion identified as adaptive can arise neutrally and remain neutral in its evolutionary history.

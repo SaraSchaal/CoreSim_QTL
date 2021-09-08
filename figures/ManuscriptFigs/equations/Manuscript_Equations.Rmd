@@ -1,0 +1,18 @@
+---
+title: "Paper Equations"
+author: "Sara Michele Schaal"
+date: "9/4/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Equation 6
+$$
+\bar{z}_{inv} = \frac{
+\sum_{1}^{i}{}
+\sum_{1}^{m}{}
+\sum_{1}^{k}{z_{imk}}
+}{n_i}
+$$
+

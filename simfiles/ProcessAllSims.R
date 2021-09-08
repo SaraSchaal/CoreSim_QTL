@@ -154,9 +154,10 @@ colnames(df.summary) <- c("seed", "Va_perc_In", "LA_final", "num_inv", "num_inv_
                           "true_neg_pcadapt_NS",  "false_pos_pcadapt_NS", 
                           "true_neg_outflank_NS", "false_pos_outflank_NS")
 
-df.simStats_2 <- read.table("src/invSimParams_2.txt", header = TRUE)
-df.simStats_1 <- read.table("src/invSimParams.txt", header = TRUE)
-df.simStats <- rbind(df.simStats_1, df.simStats_2)
+#df.simStats_2 <- read.table("src/invSimParams_2.txt", header = TRUE)
+#df.simStats_1 <- read.table("src/invSimParams.txt", header = TRUE)
+#df.simStats <- rbind(df.simStats_1, df.simStats_2)
+df.simStats <- read.table("src/invSimParams.txt", header = TRUE)
 df.invCharFinalGen <- read.table(paste0(folderIn, "outputInvChar_finalGen.txt"))
 colnames(df.invCharFinalGen) <- c("seed", "inv_id", "inv_age", "inv_length", "num_qtns_Lscaled", "adaptInv")
 df.invCharAllData <- read.table(paste0(folderIn, "outputInvChar_allData.txt"), fill = TRUE)
@@ -164,7 +165,7 @@ df.invCharAllData <- read.table(paste0(folderIn, "outputInvChar_allData.txt"), f
 #### END Run the following code chunk once to get full data files to do further analyses on ####
 ######################################################################################################  
 
-
+## Sanity check this should be 0
 dim(df.simStats[!df.simStats$seed %in% df.summary$seed,])
 
 ######################################################################################################  
@@ -182,7 +183,8 @@ for(i in 1:nrow(unique.params)){
 
 df.simStats$params <- NULL
 for(i in 1:nrow(df.simStats)){
-  df.simStats$params[i] <- paste(df.simStats[i,c(14, 9, 10, 7, 2, 3, 15, 5, 4, 11, 12, 13, 16, 8)], collapse = " ")
+  df.simStats$params[i] <- paste(df.simStats[i,c(14, 9, 10, 7, 2, 3, 15, 5, 4, 11, 12, 13, 16, 8)], 
+                                 collapse = " ")
 }
 
 reps <- 5
@@ -374,7 +376,8 @@ for(i in 1:6){
 }
 
 # recode necessary factor levels for plotting 
-df.muInv3_0_av$muBase <- recode_factor(df.muInv3_0_av$muBase, "0.000000001" = '0.000002', "0.00000001" = '0.00002', '0.0000001' = '0.0002', '0.000001' = '0.002')
+df.muInv3_0_av$muBase <- recode_factor(df.muInv3_0_av$muBase,'0.0000001' = '0.0002', '0.000001' = '0.002')
+df.muInv3_0_av$muBase <- recode_factor(df.muInv3_0_av$muBase,'1e-07' = '0.0002', '1e-06' = '0.002')
 df.muInv3_0_av$sigmaK <- factor(df.muInv3_0_av$sigmaK, c(3, 1.5, 0.75))
   
 #### Local Adaptation Plots ####
@@ -393,7 +396,9 @@ plot.LA_diff_inv3_pgen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
   theme_classic() +
   theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=viridis(4)[2]) +
@@ -412,7 +417,9 @@ plot.LA_diff_inv3_ogen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
   labs(x = " ", y = " ") + 
   theme_classic() +
   theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=viridis(4)[4]) +
@@ -438,7 +445,9 @@ for(i in 1:7 ){
   df.invGenome_av[,i] <- as.factor(df.invGenome_av[,i])
 }
 
-df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '0.000000001' = '0.000002', '0.00000001' = '0.00002', '0.0000001' = '0.0002', '0.000001' = '0.002')
+#df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
+df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '1e-07' = '0.0002', '1e-06' = '0.002')
+
 df.invGenome_av$sigmaK <- factor(df.invGenome_av$sigmaK, c(3, 1.5, 0.75))
 df.VA <- left_join(df.muInv3_0_av, df.invGenome_av[df.invGenome_av$muInv == 0.001,], by = c("muBase", "sigmaK", "alpha", 
                                                   "enVar", "mig1", "mig2"))
@@ -454,12 +463,14 @@ plot.VA_in_inv3_pgen <- ggplot(df.VA[df.VA$enVar == 0 &
   geom_point(aes(color = muBase), shape = 19, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
   labs(y = expression("%VA"[inv]),
-       x = "Migration Rate") +
+       x = " ") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
   theme_classic() +
   theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=viridis(4)[2]) + 
@@ -475,12 +486,14 @@ plot.VA_in_inv3_ogen <- ggplot(df.VA[df.VA$enVar == 0 &
   geom_point(aes(color = muBase, shape = muBase), size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
   labs(y = " ",
-       x = "Migration Rate") +
+       x = " ") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
   theme_classic() +
   theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=viridis(4)[4]) + 
@@ -504,7 +517,9 @@ plot.totalLA_pgen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
   theme_classic() +
   theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold")) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=viridis(4)[2]) + 
@@ -526,21 +541,20 @@ plot.totalLA_ogen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
   theme_classic() +
   theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold"),
+        plot.title = element_text(size=18,)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=viridis(4)[4]) + 
   ylim(c(-0.01,1))
-folderOutFig <- "./figures/ManuscriptFigs/"
-pdf(file = paste0(folderOutFig, "fig1_LAplots.pdf"), width = 10, height = 15)
-ggarrange(plot.totalLA_pgen, plot.totalLA_ogen, plot.LA_diff_inv3_pgen, plot.LA_diff_inv3_ogen, plot.VA_in_inv3_pgen, plot.VA_in_inv3_ogen,
-            nrow = 3, ncol = 2, labels = c("A", "B", "C", "D", "E", "F"))
-dev.off()
+
 #### Number of Inversions Plots ####
 numInv_av <- aggregate(num_inv~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
-          FUN=mean, data = df.muInv3)
+                       FUN=mean, data = df.muInv3)
 numInv_sd <- aggregate(num_inv~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
-          FUN=sd, data = df.muInv3)
+                       FUN=sd, data = df.muInv3)
 #numInv6_av <- aggregate(num_inv~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
 #                       FUN=mean, data = df.muInv6)
 #numInv6_sd <- aggregate(num_inv~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
@@ -554,117 +568,59 @@ for(i in 1:6 ){
   numInv_av[,i] <- as.factor(numInv_av[,i])
 }
 
-numInv_av$muBase <- recode_factor(numInv_av$muBase, '0.000000001' = '0.000002', '0.00000001' = '0.00002', '0.0000001' = '0.0002', '0.000001' = '0.002')
+#numInv_av$muBase <- recode_factor(numInv_av$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
+numInv_av$muBase <- recode_factor(numInv_av$muBase,  '1e-07' = '0.0002', '1e-06' = '0.002')
+
 numInv_av$sigmaK <- factor(numInv_av$sigmaK, c(3, 1.5, 0.75))
-plot.numInv <- ggplot(numInv_av[numInv_av$enVar == 0 & numInv_av$alpha == 0.002 & 
-                                  numInv_av$muBase == 0.002,], 
-                          aes(x = mig1, y = num_inv, group = sigmaK)) + 
+plot.numInv.pgen <- ggplot(numInv_av[numInv_av$enVar == 0 & numInv_av$alpha == 0.002 & 
+                                  numInv_av$muBase == 0.002 & numInv_av$num_inv != 0,], 
+                      aes(x = mig1, y = num_inv, group = sigmaK)) + 
   geom_errorbar(aes(ymin=numInv_lowSD, ymax=numInv_upSD), width=.5) +
   geom_point(color = viridis(4)[2], size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
-  labs(title = "Polygenic Architecture",
-       y = "Number of Adaptive Inversions",
+  labs(y = expression(bar(N)[inv]),
        x = "Migration Rate") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=viridis(4)[2]) + ylim(-0.5, 15)
-  #ylim(c(min(numInv_av$numInv_lowSD[!is.na(numInv_av$numInv_lowSD)]), 
-  #       max(numInv_av$numInv_upSD[!is.na(numInv_av$numInv_upSD)]) + 10))
 
-plot.numInv_largeAlpha <- ggplot(numInv_av[numInv_av$enVar == 0 & numInv_av$alpha == 0.2
-                                           & numInv_av$muBase == 0.0002,], 
-                      aes(x = mig1, y = num_inv, group = sigmaK)) + 
+
+plot.numInv.ogen <- ggplot(numInv_av[numInv_av$enVar == 0 & numInv_av$alpha == 0.2
+                                           & numInv_av$muBase == "0.0002" & numInv_av$num_inv != 0,], 
+                                 aes(x = mig1, y = num_inv, group = sigmaK)) + 
   geom_errorbar(aes(ymin=numInv_lowSD, ymax=numInv_upSD), width=.5) +
   geom_point(color = viridis(4)[4], shape = 17, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) ) + 
-  labs(title = "Oligogenic Architecture",
-       y = " ",
+  labs(y = " ",
        x = "Migration Rate") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   scale_color_manual(values=viridis(4)[4]) + ylim(-0.5, 15)
 
 
-ggarrange(plot.numInv, plot.numInv_largeAlpha, labels = c("A",  "B"))
+folderOutFig <- "./figures/ManuscriptFigs/"
+pdf(file = paste0(folderOutFig, "fig1_LAplots.pdf"), width = 15, height = 15)
+ggarrange(plot.totalLA_pgen, plot.totalLA_ogen, plot.LA_diff_inv3_pgen, plot.LA_diff_inv3_ogen, 
+          plot.VA_in_inv3_pgen, plot.VA_in_inv3_ogen, plot.numInv.pgen, plot.numInv.ogen,
+            nrow = 4, ncol = 2, labels = c("A", "B", "C", "D", "E", "F", "G", "H"))
+dev.off()
 
-#### Amount of inverted regions Plots ####
-# df.invGenome <- read.table(paste0(folderIn, "outputInvGenome_allData.txt"))
-# head(df.invGenome)
-# colnames(df.invGenome) <- c("seed", "uniqueBases", "numOverlap", "percGenome")
-# df.invGenomeParam <- full_join(df.invGenome, df.simStats, by = "seed")
-# df.invGenome_av <- aggregate(percGenome~muBase + sigmaK + muInv + alpha + enVar + mig1 + mig2, 
-#                             FUN=mean, data = df.invGenomeParam)
-# df.invGenome_sd <- aggregate(percGenome~muBase + sigmaK + muInv + alpha + enVar + mig1 + mig2, 
-#                              FUN=sd, data = df.invGenomeParam)
-# df.invGenome_av$percGenome_sd <- df.invGenome_sd$percGenome
-# df.invGenome_av$percGenome_lowSD <- df.invGenome_av$percGenome - df.invGenome_av$percGenome_sd
-# df.invGenome_av$percGenome_upSD <- df.invGenome_av$percGenome + df.invGenome_av$percGenome_sd
-# 
-# for(i in 1:6 ){
-#   df.invGenome_av[,i] <- as.factor(df.invGenome_av[,i])
-# }
-# df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, "0.000000001" = '0.000002', "0.00000001" = '0.00002', '0.0000001' = '0.0002', '0.000001' = '0.002')
-# plot.percInvGenome <- ggplot(df.invGenome_av[df.invGenome_av$enVar == 0 & df.invGenome_av$alpha == 0.002 & df.invGenome_av$muInv == 0.001,], 
-#                                  aes(x = mig1, y = percGenome, group = interaction(muBase, sigmaK))) + 
-#   geom_errorbar(aes(ymin=percGenome_lowSD, ymax=percGenome_upSD), width=.2) +
-#   geom_point(aes(color = muBase, shape = muBase), size = 3) + 
-#   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
-#   labs(title = "Percent of Inverted Genome",
-#        y = "Percent of Inverted Genome",
-#        x = "Migration Rate") +
-#   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
-#          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
-#   theme_classic() +
-#   theme(legend.position = "none") +
-#   theme(axis.text.x = element_text(angle = 90))  +
-#   theme(panel.background = element_blank(), 
-#         strip.background = element_rect(colour = "white", fill = "grey92")) +
-#   scale_color_manual(values=viridis(4)[c(2,4)]) + 
-#   ylim(c(0, 
-#          max(df.muInv3_0_av$VA_perc_In_3[!is.na(df.muInv3_0_av$VA_perc_upSD)]) + 10))
-# 
-# plot.percInvGenome_largeAlpha <- ggplot(df.invGenome_av[df.invGenome_av$enVar == 0 & df.invGenome_av$alpha == 0.2 & df.invGenome_av$muInv == 0.001,], 
-#                                         aes(x = mig1, y = percGenome, group = interaction(muBase, sigmaK))) + 
-#   geom_errorbar(aes(ymin=percGenome_lowSD, ymax=percGenome_upSD), width=.2) +
-#   geom_point(aes(color = muBase, shape = muBase), size = 3) + 
-#   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
-#   labs(title = "Percent of Inverted Genome",
-#        y = "Percent of Inverted Genome",
-#        x = "Migration Rate") +
-#   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
-#          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
-#   theme_classic() +
-#   theme(legend.position = "none") +
-#   theme(axis.text.x = element_text(angle = 90))  +
-#   theme(panel.background = element_blank(), 
-#         strip.background = element_rect(colour = "white", fill = "grey92")) +
-#   scale_color_manual(values=viridis(4)[c(2,4)]) + 
-#   ylim(c(0, 
-#          max(df.muInv3_0_av$VA_perc_In_3[!is.na(df.muInv3_0_av$VA_perc_upSD)]) + 10))
-# 
-# plot.numInv.leg <- g_legend(plot.numInv)
-# plot.numInv.noLeg <- plot.numInv + theme(legend.position = "none")
-# 
-# plot.numInv_largeAlpha.noLeg <- plot.numInv_largeAlpha + theme(legend.position = "none")
-# plot.numInv_largeAlpha.leg <- g_legend(plot.numInv_largeAlpha)
-# 
-# ggarrange(plot.LA_diff_inv3_av, plot.VA_in_inv3, plot.percInvGenome, plot.numInv.noLeg, plot.numInv.leg, 
-#           nrow = 1, ncol = 5, widths = c(2.3,2.3,2.3,2.3,0.8))
-# ggarrange(plot.LA_diff_inv3_largeAlpha_av, plot.VA_in_inv3_largeAlpha, plot.percInvGenome_largeAlpha, plot.numInv_largeAlpha.noLeg, 
-#           plot.numInv_largeAlpha.leg, 
-#           nrow = 1, ncol = 5, widths = c(2.3,2.3,2.3,2.3,0.8))
-# 
-# ggarrange(plot.LA_diff_inv3_pgen, plot.VA_in_inv3, blank, plot.LA_diff_inv3_mgen, 
-#           plot.VA_in_inv3_largeAlpha, plot.numInv.leg, widths = c(2.3,2.3,0.8,2.3,2.3,0.8), ncol = 3, nrow = 2)
-# 
+
+#ggarrange(plot.numInv, plot.numInv_largeAlpha, labels = c("A",  "B"))
+
+
 # # I could think of main figure that is a 5 row plot, with migration rate on the x-axis 
 # (and other subsets of sims that we decide on), showing on the y axis in each row: 
 # (i) the amount of local adaptation relative to no inversions, 
@@ -673,6 +629,10 @@ ggarrange(plot.numInv, plot.numInv_largeAlpha, labels = c("A",  "B"))
 # (iv) the average age of inversions in different categories, 
 # (v) the length of inversions in different categories.
   
+
+## Summarize the additive genetic variation and Local adaptation difference across replicates 
+# muInv = 1e-06
+ 
 #### end Q1 & 2 plotting
 ######################################################################################################
 
@@ -681,13 +641,17 @@ ggarrange(plot.numInv, plot.numInv_largeAlpha, labels = c("A",  "B"))
 
 head(df.muInv3)
 dim(df.muInv3)
+df.muInv3$capture_gain_count <- df.muInv3$num_inv*df.muInv3$capture_gain_p
+df.muInv3$capture_no_gain_count <- df.muInv3$num_inv*df.muInv3$capture_no_gain_p
+df.muInv3$neutral_gain_count <- df.muInv3$num_inv*df.muInv3$neutral_gain_p
+df.muInv3$neutral_no_gain_count <- df.muInv3$num_inv*df.muInv3$neutral_no_gain_p
 
-df.ev.hist.av <- aggregate(cbind(capture_gain_p, capture_no_gain_p, 
-                neutral_gain_p, neutral_no_gain_p)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
+df.ev.hist.av <- aggregate(cbind(capture_gain_count, capture_no_gain_count, 
+                neutral_gain_count, neutral_no_gain_count)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
           FUN=mean, data = df.muInv3)
-df.ev.hist.long <- as.data.frame(pivot_longer(df.ev.hist.av, cols = c(capture_gain_p, capture_no_gain_p, 
-                                     neutral_gain_p, neutral_no_gain_p),
-             names_to = "evHist", values_to = "prop"))
+df.ev.hist.long <- as.data.frame(pivot_longer(df.ev.hist.av, cols = c(capture_gain_count, capture_no_gain_count, 
+                                     neutral_gain_count, neutral_no_gain_count),
+             names_to = "evHist", values_to = "count"))
 for(i in 1:7){
   df.ev.hist.long[,i] <- as.factor(df.ev.hist.long[,i])
 }
@@ -768,20 +732,34 @@ for(i in 2:ncol(df.simStats)){
   df.simStats[,i] <- as.factor(as.character(df.simStats[,i]))
 }
 df.invCharParam <- left_join(df.invCharFinalGen, df.simStats, by = "seed")
-df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 1e-06 & df.invChar.muInv3$alpha == 0.002 & df.invChar.muInv3$mig1 == 0.001 
-                  & df.invChar.muInv3$sigmaK == 0.75,]
 df.invChar.muInv3 <- df.invCharParam[df.invCharParam$muInv == 0.001,]
+options(scipen = 999)
+df.invChar.muInv3$muBase <- recode_factor(df.invChar.muInv3$muBase, '1e-09' = '0.000002', '1e-08' = '0.00002', '1e-07' = '0.0002', '1e-06' = '0.002')
+df.invChar.muInv3$sigmaK <- factor(df.invChar.muInv3$sigmaK, c(3, 1.5, 0.75))
 
-color_scale <- inferno(4)[3:1]
+df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 0.002 & df.invChar.muInv3$alpha == 0.002 & df.invChar.muInv3$mig1 == 0.001 
+                  & df.invChar.muInv3$sigmaK == 0.75,]
+
+
+color_scale <- c(inferno(4)[3], "darkgrey", inferno(4)[1])
 df.invChar.muInv3$adaptInv <- factor(df.invChar.muInv3$adaptInv, levels = c("Adaptive", "Nonadaptive", "No selection"))
 
-plot.age.highQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & 
-                                                      df.invChar.muInv3$muBase == 1e-06 & 
-                                                      df.invChar.muInv3$alpha == 0.002,], 
+## subset to get data for only parameter sets that contain all 3 factor levels
+plot.output <- NULL
+for(i in 1:length(unique(df.invChar.muInv3$params))){
+  df <- df.invChar.muInv3[df.invChar.muInv3$params==unique(df.invChar.muInv3$params)[i],]
+  if(length(unique(df$adaptInv)) == 3){
+    plot.output <- rbind(plot.output, df)
+  }
+}
+
+plot.age.pgen <- ggplot(data = plot.output[plot.output$enVar == 0 & 
+                                                      plot.output$muBase == 0.002 & 
+                                                      plot.output$alpha == 0.002,], 
        aes(x = mig1, y= inv_age, fill = adaptInv, color = adaptInv)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21"))+
+  geom_boxplot(outlier.shape = NA) + 
+  scale_color_manual(values = c("orange", "black", "grey21"))+
   scale_fill_manual(values = color_scale) + 
   guides(fill = guide_legend(title = "Inversion Status"),
          color = guide_legend(title = "Inversion Status")) +
@@ -790,15 +768,15 @@ plot.age.highQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "High QTN Mutation Rate", y = "Average Inversion Age", x = " ")
+  labs(title = "Polygenic Architecture", y = expression("Average Age"[inv]*" (gen)"), x = " ")
 
-plot.age.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 
-                                                   & df.invChar.muInv3$muBase == 1e-07 
-                                                   & df.invChar.muInv3$alpha == 0.002,], 
+plot.age.ogen <- ggplot(data = plot.output[plot.output$enVar == 0 &
+                                                   plot.output$muBase == "0.0002" &
+                                                   plot.output$alpha == 0.2,], 
        aes(x = mig1, y= inv_age, fill = adaptInv, color = adaptInv)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21"))+
+  geom_boxplot(outlier.shape = NA) + 
+  scale_color_manual(values = c("orange", "black", "grey21"))+
   scale_fill_manual(values = color_scale) + 
   guides(fill = guide_legend(title = "Inversion Status"),
          color = guide_legend(title = "Inversion Status")) +
@@ -807,28 +785,34 @@ plot.age.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "Low QTN Mutation Rate", y = " ", x = " ")
+  labs(title = "Oligogenic Architecture", y = " ", x = " ") +
+  scale_x_discrete(" ", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
-plot.length.highQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 1e-06 & df.invChar.muInv3$alpha == 0.002,], 
+
+plot.length.pgen <- ggplot(data = plot.output[plot.output$enVar == 0 & 
+                                                         plot.output$muBase == 0.002 & 
+                                                         plot.output$alpha == 0.002,], 
        aes(x = mig1, y= inv_length, fill = adaptInv, color = adaptInv)) +
   facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape = NA) + 
   scale_fill_manual(values = color_scale) + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21"))+
+  scale_color_manual(values = c("orange", "black", "grey21"))+
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   guides(fill = guide_legend(title = "Inversion Status"),
          color = guide_legend(title = "Inversion Status")) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Average Inversion Length", x = " ")
+  labs(title = " ", y = expression("Average Length"[inv]*" (bp)"), x = " ")
 
-plot.length.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 1e-07 & df.invChar.muInv3$alpha == 0.002,], 
+plot.length.ogen <- ggplot(data = plot.output[plot.output$enVar == 0 & 
+                                                      plot.output$muBase == "0.0002" & 
+                                                      plot.output$alpha == 0.2,], 
        aes(x = mig1, y= inv_length, fill = adaptInv, color = adaptInv)) +
   facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape = NA) + 
   scale_fill_manual(values = color_scale) + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21"))+
+  scale_color_manual(values = c("orange", "black", "grey21"))+
   theme_classic() +
   theme(legend.position = "none") +
   guides(fill = guide_legend(title = "Inversion Status"),
@@ -836,14 +820,18 @@ plot.length.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar ==
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = " ")
+  labs(title = " ", y = " ", x = " ") +
+  scale_x_discrete("", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
-plot.numQTN.highQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 1e-06 & df.invChar.muInv3$alpha == 0.002,], 
+
+plot.numQTN.pgen <- ggplot(data = plot.output[plot.output$enVar == 0 & 
+                                                         plot.output$muBase == 0.002 & 
+                                                         plot.output$alpha == 0.002,], 
        aes(x = mig1, y= num_qtns_Lscaled, fill = adaptInv, color = adaptInv)) +
   facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape = NA) + 
   scale_fill_manual(values = color_scale) + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21")) +
+  scale_color_manual(values = c("orange", "black", "grey21")) +
   theme_classic() +
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(angle = 90)) +
@@ -851,15 +839,18 @@ plot.numQTN.highQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar =
          color = guide_legend(title = "Inversion Status")) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Average Number of QTNs \nscaled Inversion Length", x = "Migration Rate") + 
-  ylim(c(0,0.015))
+  labs(title = " ", y = expression(bar(N)[QTNs] / "(Length"[inv]*")"), x = "Migration Rate") + 
+  ylim(c(0,0.012))
 
-plot.numQTN.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 1e-07 & df.invChar.muInv3$alpha == 0.002,], 
+
+plot.numQTN.ogen <- ggplot(data = plot.output[plot.output$enVar == 0  &
+                                                      plot.output$muBase == "0.0002" &
+                                                      plot.output$alpha == 0.2,], 
                               aes(x = mig1, y= num_qtns_Lscaled, fill = adaptInv, color = adaptInv)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape = NA) + 
   scale_fill_manual(values = color_scale) + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21")) +
+  scale_color_manual(values = c("orange", "black", "grey21")) +
   theme_classic() +
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(angle = 90)) +
@@ -867,252 +858,187 @@ plot.numQTN.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar ==
          color = guide_legend(title = "Inversion Status")) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = "Migration Rate") + 
-  ylim(c(0,0.015))
+  labs(title = " ", y = " ") + 
+  ylim(c(0,0.012)) +
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
+
 
 ## blank graph
-invChar.legend <- g_legend(plot.length.highQTN)
-plot.length.highQTN.noLeg <- plot.length.highQTN + theme(legend.position = "none")
+invChar.legend <- g_legend(plot.length.pgen)
+plot.length.pgen.noLeg <- plot.length.pgen + theme(legend.position = "none")
 blank <- ggplot() + theme_void()
-ggarrange(plot.age.highQTN, plot.age.lowQTN, blank, plot.length.highQTN.noLeg, plot.length.lowQTN, 
-          invChar.legend, plot.numQTN.highQTN, plot.numQTN.lowQTN, blank, ncol = 3, nrow = 3,
-          widths = c(2.3, 2.3, 0.8, 2.3, 2.3, 0.8, 2.3, 2.3, 0.8))
+ggarrange(plot.age.pgen, plot.age.ogen, blank, plot.length.pgen.noLeg, plot.length.ogen, 
+          invChar.legend, plot.numQTN.pgen, plot.numQTN.ogen, blank, ncol = 3, nrow = 3,
+          widths = c(2.3, 2.3, 0.8, 2.3, 2.3, 0.8, 2.3, 2.3, 0.8), 
+          labels = c("A", "B", "", "C", "D", "", "E", "F"))
+# pdf 15 wide by 12 high 
 
-## LARGE ALPHA ##
-plot.age.highQTN_largeAlpha <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 
-                                                               & df.invChar.muInv3$muBase == 1e-09 
-                                                               & df.invChar.muInv3$alpha == 0.2,], 
-                           aes(x = mig1, y= inv_age, fill = adaptInv, color = adaptInv)) +
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21"))+
-  scale_fill_manual(values = color_scale) + 
-  guides(fill = guide_legend(title = "Inversion Status"),
-         color = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "High QTN Mutation Rate", y = "Average Inversion Age", x = " ")
-
-plot.age.lowQTN_largeAlpha <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & 
-                                                                df.invChar.muInv3$muBase == 1e-07 & 
-                                                                df.invChar.muInv3$alpha == 0.2,], 
-                          aes(x = mig1, y= inv_age, fill = adaptInv, color = adaptInv)) +
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21"))+
-  scale_fill_manual(values = color_scale) + 
-  guides(fill = guide_legend(title = "Inversion Status"),
-         color = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "Low QTN Mutation Rate", y = " ", x = " ")
-
-plot.length.highQTN_largeAlpha <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 
-                                                                  & df.invChar.muInv3$muBase == 1e-06 
-                                                                  & df.invChar.muInv3$alpha == 0.2,], 
-                              aes(x = mig1, y= inv_length, fill = adaptInv, color = adaptInv)) +
-  facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
-  scale_fill_manual(values = color_scale) + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21"))+
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  guides(fill = guide_legend(title = "Inversion Status"),
-         color = guide_legend(title = "Inversion Status")) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Average Inversion Length", x = " ")
-
-plot.length.lowQTN_largeAlpha <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 
-                                                                 & df.invChar.muInv3$muBase == 1e-08 
-                                                                 & df.invChar.muInv3$alpha == 0.2,], 
-                             aes(x = mig1, y= inv_length, fill = adaptInv, color = adaptInv)) +
-  facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
-  scale_fill_manual(values = color_scale) + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21"))+
-  theme_classic() +
-  theme(legend.position = "none") +
-  guides(fill = guide_legend(title = "Inversion Status"),
-         color = guide_legend(title = "Inversion Status")) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = " ")
-
-plot.numQTN.highQTN_largeAlpha <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 1e-06 & df.invChar.muInv3$alpha == 0.2,], 
-                              aes(x = mig1, y= num_qtns_Lscaled, fill = adaptInv, color = adaptInv)) +
-  facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
-  scale_fill_manual(values = color_scale) + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21")) +
-  theme_classic() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  guides(fill = guide_legend(title = "Inversion Status"),
-         color = guide_legend(title = "Inversion Status")) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Average Number of QTNs \nscaled Inversion Length", x = "Migration Rate") + 
-  ylim(c(0,0.015))
-
-plot.numQTN.lowQTN_largeAlpha <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 1e-07 & df.invChar.muInv3$alpha == 0.2,], 
-                             aes(x = mig1, y= num_qtns_Lscaled, fill = adaptInv, color = adaptInv)) +
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_boxplot() + 
-  scale_fill_manual(values = color_scale) + 
-  scale_color_manual(values = c("orange", "darkgrey", "grey21")) +
-  theme_classic() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  guides(fill = guide_legend(title = "Inversion Status"),
-         color = guide_legend(title = "Inversion Status")) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = "Migration Rate") + 
-  ylim(c(0,0.015))
-
-## blank graph
-invChar_largeAlpha.legend <- g_legend(plot.length.highQTN_largeAlpha)
-plot.length.highQTN_largeAlpha.noLeg <- plot.length.highQTN_largeAlpha + theme(legend.position = "none")
-
-ggarrange(plot.age.highQTN_largeAlpha, plot.age.lowQTN_largeAlpha, blank, plot.length.highQTN_largeAlpha.noLeg, plot.length.lowQTN_largeAlpha, 
-          invChar_largeAlpha.legend, plot.numQTN.highQTN_largeAlpha, plot.numQTN.lowQTN_largeAlpha, blank, ncol = 3, nrow = 3,
-          widths = c(2.3, 2.3, 0.8, 2.3, 2.3, 0.8, 2.3, 2.3, 0.8))
-#### end Q4 plotting
+### end Q4 plotting
 ######################################################################################################
 
 ######################################################################################################
-#### characteristics 
-
-head(df.invCharFinalGen)
-for(i in 2:ncol(df.simStats)){
-  df.simStats[,i] <- as.factor(as.character(df.simStats[,i]))
-}
-df.invCharParam <- left_join(df.invCharFinalGen, df.simStats, by = "seed")
-df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 1e-06 & df.invChar.muInv3$alpha == 0.002 & df.invChar.muInv3$mig1 == 0.001 
-                  & df.invChar.muInv3$sigmaK == 0.75,]
-df.invChar.muInv3 <- df.invCharParam[df.invCharParam$muInv == 0.001,]
+#### characteristics a different way
 
 color_scale <- inferno(4)[3:1]
 df.invChar.muInv3$adaptInv <- factor(df.invChar.muInv3$adaptInv, levels = c("Adaptive", "Nonadaptive", "No selection"))
-nonadapt.pol <- df.invChar.muInv3[df.invChar.muInv3$adaptInv == "Nonadaptive" & df.invChar.muInv3$alpha == 0.002 &  df.invChar.muInv3$muBase == 1e-06,]
-noselec.pol <- df.invChar.muInv3[df.invChar.muInv3$adaptInv == "No selection" & df.invChar.muInv3$alpha == 0.002 &  df.invChar.muInv3$muBase == 1e-06,]
-nonadapt.olig <- df.invChar.muInv3[df.invChar.muInv3$adaptInv == "Nonadaptive" & df.invChar.muInv3$alpha == 0.2 &  df.invChar.muInv3$muBase == 1e-07,]
-noselec.olig <- df.invChar.muInv3[df.invChar.muInv3$adaptInv == "No selection" & df.invChar.muInv3$alpha == 0.2 &  df.invChar.muInv3$muBase == 1e-07,]
 
-plot.age.highQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & 
-                                                      df.invChar.muInv3$muBase == 1e-06 & 
-                                                      df.invChar.muInv3$alpha == 0.002 &
-                                                      df.invChar.muInv3$adaptInv == "Adaptive",], 
-                           aes(x = mig1, y= inv_age)) +
+## Get averages and SD for all characteristics across all replicates: mean(c(rep1, rep2, .. rep5))
+df.invChar.muInv3.av <- aggregate(cbind(inv_age, inv_length, num_qtns_Lscaled)~adaptInv + muBase + muInv + sigmaK + alpha + enVar + mig1 + mig2, data = df.invChar.muInv3, FUN = mean)
+colnames(df.invChar.muInv3.av)[9:11] <- c("inv_age_av", "inv_length_av", "num_qtns_Lscaled_av")
+df.invChar.muInv3.sd <- aggregate(cbind(inv_age, inv_length, num_qtns_Lscaled)~adaptInv + muBase + muInv + sigmaK + alpha + enVar + mig1 + mig2, data = df.invChar.muInv3, FUN = sd)
+colnames(df.invChar.muInv3.sd)[9:11] <- c("inv_age_sd", "inv_length_sd", "num_qtns_Lscaled_sd")
+df.invChar.av.sd <- cbind(df.invChar.muInv3.av, df.invChar.muInv3.sd[9:11])
+head(df.invChar.av.sd)
+
+## Convert the adaptInv column for all the averages and SD to wide format for plotting
+df.nonadapt <- df.invChar.av.sd[df.invChar.av.sd$adaptInv == "Nonadaptive",]
+df.noselect <- df.invChar.av.sd[df.invChar.av.sd$adaptInv == "No selection",]
+df.adaptive <- df.invChar.av.sd[df.invChar.av.sd$adaptInv == "Adaptive",]
+colnames(df.adaptive)[9:14] <- c("inv_age_av_A", "inv_length_av_A", "num_qtns_Lscaled_av_A", "inv_age_sd_A", "inv_length_sd_A", "num_qtns_Lscaled_sd_A")
+colnames(df.nonadapt)[9:14] <- c("inv_age_av_NA", "inv_length_av_NA", "num_qtns_Lscaled_av_NA", "inv_age_sd_NA", "inv_length_sd_NA", "num_qtns_Lscaled_sd_NA")
+colnames(df.noselect)[9:14] <- c("inv_age_av_NS", "inv_length_av_NS", "num_qtns_Lscaled_av_NS", "inv_age_sd_NS", "inv_length_sd_NS", "num_qtns_Lscaled_sd_NS")
+
+df.invChar.plot.temp <- left_join(df.adaptive, df.nonadapt, by = c("muBase", "muInv", "sigmaK", "alpha", "enVar", "mig1", "mig2"))
+df.invChar.plot <- left_join(df.invChar.plot.temp, df.noselect, by = c("muBase", "muInv", "sigmaK", "alpha", "enVar", "mig1", "mig2"))
+
+## START PLOTS
+plot.age.adapt.pgen <- ggplot(data = df.invChar.plot[df.invChar.plot$enVar == 0 & 
+                                                        df.invChar.plot$muBase == 0.002 & 
+                                                        df.invChar.plot$alpha == 0.002,], 
+                           aes(x = mig1, y= inv_age_av_A, group = sigmaK)) +
+  geom_errorbar(aes(ymin=inv_age_av_A - inv_age_sd_A, 
+                    ymax=inv_age_av_A + inv_age_sd_A), size = 0.4, width=0.5) +
+  geom_ribbon(aes(ymin = inv_age_av_NA - inv_age_sd_NA, 
+                  ymax = inv_age_av_NA + inv_age_sd_NA), fill = inferno(4)[2],  alpha = 0.5) + 
+  geom_line(aes(y = inv_age_av_NA, x = mig1), linetype = "solid", color = inferno(4)[2]) + 
+  geom_ribbon(aes(ymin = inv_age_av_NS - inv_age_sd_NS, 
+                  ymax = inv_age_av_NS + inv_age_sd_NS), fill = inferno(4)[1],  alpha = 0.4) + 
+  geom_line(aes(y = inv_age_av_NS, x = mig1), linetype = "dashed", color = inferno(4)[1]) + 
+  geom_point(color = inferno(4)[3], size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_ribbon(aes(ymin =  )) + 
-  geom_ribbon(aes(ymin= meanPhenoP2 - sdPhenoP2, ymax= meanPhenoP2 + sdPhenoP2), fill = "navy", alpha=0.2) +
-  
-  geom_hline(yintercept = mean(noselec.pol$inv_age), linetype = "dashed", color = inferno(4)[1]) +
-  geom_hline(yintercept = mean(nonadapt.pol$inv_age), linetype = "dashed", color = inferno(4)[2]) +
-  geom_boxplot(fill = inferno(4)[3], color = "darkorange") + 
   theme_classic() +
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "Polygenic Architecture", y = "Average Inversion Age", x = " ")
+  labs(title = "Polygenic Architecture", y = expression("Average Age"[inv]*" (Gen)"), x = " ") +
+  ylim(-10000, 50000)
 
-plot.age.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 &
-                                                   df.invChar.muInv3$muBase == 1e-07 &
-                                                   df.invChar.muInv3$alpha == 0.2 &
-                                                   df.invChar.muInv3$adaptInv == "Adaptive",], 
-                          aes(x = mig1, y= inv_age)) +
+plot.age.adapt.ogen <- ggplot(data = df.invChar.plot[df.invChar.plot$enVar == 0 & 
+                                                       df.invChar.plot$muBase == "0.0002" & 
+                                                       df.invChar.plot$alpha == 0.2,], 
+                              aes(x = mig1, y= inv_age_av_A, group = sigmaK)) +
+  geom_errorbar(aes(ymin=inv_age_av_A - inv_age_sd_A, 
+                    ymax=inv_age_av_A + inv_age_sd_A), size = 0.4, width=0.5) +
+  geom_ribbon(aes(ymin = inv_age_av_NA - inv_age_sd_NA, 
+                  ymax = inv_age_av_NA + inv_age_sd_NA), fill = inferno(4)[2],  alpha = 0.5) + 
+  geom_line(aes(y = inv_age_av_NA, x = mig1), linetype = "solid", color = inferno(4)[2]) + 
+  geom_ribbon(aes(ymin = inv_age_av_NS - inv_age_sd_NS, 
+                  ymax = inv_age_av_NS + inv_age_sd_NS), fill = inferno(4)[1],  alpha = 0.4) + 
+  geom_line(aes(y = inv_age_av_NS, x = mig1), linetype = "dashed", color = inferno(4)[1]) + 
+  geom_point(color = inferno(4)[3], size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_hline(yintercept = mean(noselec.olig$inv_age), linetype = "dashed", color = inferno(4)[1]) +
-  geom_hline(yintercept = mean(nonadapt.olig$inv_age), linetype = "dashed", color = inferno(4)[2]) +
-  geom_boxplot(fill = inferno(4)[3], color = "darkorange") + 
   theme_classic() +
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "Oligogenic Architecture", y = " ", x = " ")
+  labs(title = "Oligogenic Architecture", y = " ", x = " ") +
+  ylim(-10000, 50000)
 
-plot.length.highQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & 
-                                                       df.invChar.muInv3$muBase == 1e-06 & 
-                                                       df.invChar.muInv3$alpha == 0.002 &
-                                                       df.invChar.muInv3$adaptInv == "Adaptive",], 
-                              aes(x = mig1, y= inv_length)) +
-  facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_hline(yintercept = mean(noselec.pol$inv_length), linetype = "dashed", color = inferno(4)[1]) +
-  geom_hline(yintercept = mean(nonadapt.pol$inv_length), linetype = "dashed", color = inferno(4)[2]) +
-  geom_boxplot(fill = inferno(4)[3], color = "darkorange") + 
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  guides(fill = guide_legend(title = "Inversion Status"),
-         color = guide_legend(title = "Inversion Status")) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Average Inversion Length", x = " ")
-
-plot.length.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & 
-                                                      df.invChar.muInv3$muBase == 1e-07 & 
-                                                      df.invChar.muInv3$alpha == 0.2 &
-                                                      df.invChar.muInv3$adaptInv == "Adaptive",], 
-                             aes(x = mig1, y= inv_length)) +
-  facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_hline(yintercept = mean(noselec.olig$inv_length), linetype = "dashed", color = inferno(4)[1]) +
-  geom_hline(yintercept = mean(nonadapt.olig$inv_length), linetype = "dashed", color = inferno(4)[2]) +
-  geom_boxplot(fill = inferno(4)[3], color = "darkorange") + 
-  theme_classic() +
-  theme(legend.position = "none") +
-  guides(fill = guide_legend(title = "Inversion Status"),
-         color = guide_legend(title = "Inversion Status")) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = " ")
-
-plot.numQTN.highQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & 
-                                                       df.invChar.muInv3$muBase == 1e-06 & 
-                                                       df.invChar.muInv3$alpha == 0.002 &
-                                                       df.invChar.muInv3$adaptInv == "Adaptive",], 
-                              aes(x = mig1, y= num_qtns_Lscaled)) +
-  facet_wrap(~sigmaK,  labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_hline(yintercept = mean(noselec.pol$num_qtns_Lscaled), linetype = "dashed", color = inferno(4)[1]) +
-  geom_hline(yintercept = mean(nonadapt.pol$num_qtns_Lscaled), linetype = "dashed", color = inferno(4)[2]) +
-  geom_boxplot(fill = inferno(4)[3], color = "darkorange") + 
-  theme_classic() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Average Number of QTNs \nscaled Inversion Length", x = "Migration Rate") + 
-  ylim(c(0,0.015))
-
-plot.numQTN.lowQTN <- ggplot(data = df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & 
-                                                      df.invChar.muInv3$muBase == 1e-07 & 
-                                                      df.invChar.muInv3$alpha == 0.002,], 
-                             aes(x = mig1, y= num_qtns_Lscaled)) +
+plot.length.adapt.pgen <- ggplot(data = df.invChar.plot[df.invChar.plot$enVar == 0 & 
+                                                       df.invChar.plot$muBase == 0.002 & 
+                                                       df.invChar.plot$alpha == 0.002,], 
+                              aes(x = mig1, y= inv_length_av_A, group = sigmaK)) +
+  geom_ribbon(aes(ymin = inv_length_av_NA - inv_length_sd_NA, 
+                  ymax = inv_length_av_NA + inv_length_sd_NA), fill = inferno(4)[2],  alpha = 0.5) + 
+  geom_line(aes(y = inv_length_av_NA, x = mig1), linetype = "solid", color = inferno(4)[2]) + 
+  geom_ribbon(aes(ymin = inv_length_av_NS - inv_length_sd_NS, 
+                  ymax = inv_length_av_NS + inv_length_sd_NS), fill = inferno(4)[1],  alpha = 0.4) + 
+  geom_line(aes(y = inv_length_av_NS, x = mig1), linetype = "dashed", color = inferno(4)[1]) + 
+  geom_errorbar(aes(ymin=inv_length_av_A - inv_length_sd_A, 
+                    ymax=inv_length_av_A + inv_length_sd_A), size = 0.4, width=0.5) +
+  geom_point(color = inferno(4)[3], size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
-  geom_hline(yintercept = mean(noselec.olig$num_qtns_Lscaled), linetype = "dashed", color = inferno(4)[1]) +
-  geom_hline(yintercept = mean(nonadapt.olig$num_qtns_Lscaled), linetype = "dashed", color = inferno(4)[2]) +
-  geom_boxplot(fill = inferno(4)[3], color = "darkorange") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  labs(title = " ", y = expression("Average Length"[inv]*" (bp)"), x = " ") +
+  ylim(-5000, 60000)
+
+plot.length.adapt.ogen <- ggplot(data = df.invChar.plot[df.invChar.plot$enVar == 0 & 
+                                                       df.invChar.plot$muBase == "0.0002" & 
+                                                       df.invChar.plot$alpha == 0.2,], 
+                              aes(x = mig1, y= inv_length_av_A, group = sigmaK)) +
+  geom_ribbon(aes(ymin = inv_length_av_NA - inv_length_sd_NA, 
+                  ymax = inv_length_av_NA + inv_length_sd_NA), fill = inferno(4)[2],  alpha = 0.5) + 
+  geom_line(aes(y = inv_length_av_NA, x = mig1), linetype = "solid", color = inferno(4)[2]) + 
+  geom_ribbon(aes(ymin = inv_length_av_NS - inv_length_sd_NS, 
+                  ymax = inv_length_av_NS + inv_length_sd_NS), fill = inferno(4)[1],  alpha = 0.4) + 
+  geom_line(aes(y = inv_length_av_NS, x = mig1), linetype = "dashed", color = inferno(4)[1]) + 
+  geom_errorbar(aes(ymin=inv_length_av_A - inv_length_sd_A, 
+                    ymax=inv_length_av_A + inv_length_sd_A), size = 0.4, width=0.5) +
+  geom_point(color = inferno(4)[3], size = 3) + 
+  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
   theme_classic() +
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = "Migration Rate") + 
-  ylim(c(0,0.015))
+  labs(title = " ", y = " ", x = " ") +
+  ylim(-10000, 60000)
 
-ggarrange(plot.age.highQTN, plot.age.lowQTN, plot.length.highQTN.noLeg, plot.length.lowQTN, 
-          plot.numQTN.highQTN, plot.numQTN.lowQTN, ncol = 2, nrow = 3,
-          widths = c(2.3, 2.3, 2.3, 2.3, 2.3, 2.3))
+plot.QTN.adapt.pgen <- ggplot(data = df.invChar.plot[df.invChar.plot$enVar == 0 & 
+                                                          df.invChar.plot$muBase == 0.002 & 
+                                                          df.invChar.plot$alpha == 0.002,], 
+                                 aes(x = mig1, y= num_qtns_Lscaled_av_A, group = sigmaK)) +
+  geom_ribbon(aes(ymin = num_qtns_Lscaled_av_NA - num_qtns_Lscaled_sd_NA, 
+                  ymax = num_qtns_Lscaled_av_NA + num_qtns_Lscaled_sd_NA), fill = inferno(4)[2],  alpha = 0.5) + 
+  geom_line(aes(y = num_qtns_Lscaled_av_NA, x = mig1), linetype = "solid", color = inferno(4)[2]) + 
+  geom_ribbon(aes(ymin = num_qtns_Lscaled_av_NS - num_qtns_Lscaled_sd_NS, 
+                  ymax = num_qtns_Lscaled_av_NS + num_qtns_Lscaled_sd_NS), fill = inferno(4)[1],  alpha = 0.4) + 
+  geom_line(aes(y = num_qtns_Lscaled_av_NS, x = mig1), linetype = "dashed", color = inferno(4)[1]) + 
+  geom_errorbar(aes(ymin=num_qtns_Lscaled_av_A - num_qtns_Lscaled_sd_A, 
+                    ymax=num_qtns_Lscaled_av_A + num_qtns_Lscaled_sd_A), size = 0.4, width=0.5) +
+  geom_point(color = inferno(4)[3], size = 3) + 
+  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  labs(title = " ", y = expression(bar(N)[QTNs] / "(Length"[inv]*" (bp))"), x = "Migration Rate") +
+  ylim(min(df.invChar.plot$num_qtns_Lscaled_av_A - df.invChar.plot$num_qtns_Lscaled_sd_A), 
+       max(df.invChar.plot$num_qtns_Lscaled_av_A - df.invChar.plot$num_qtns_Lscaled_sd_A))
+
+plot.QTN.adapt.ogen <- ggplot(data = df.invChar.plot[df.invChar.plot$enVar == 0 & 
+                                                          df.invChar.plot$muBase == "0.0002" & 
+                                                          df.invChar.plot$alpha == 0.2,], 
+                                 aes(x = mig1, y= num_qtns_Lscaled_av_A, group = sigmaK)) +
+  geom_ribbon(aes(ymin = num_qtns_Lscaled_av_NA - num_qtns_Lscaled_sd_NA, 
+                  ymax = num_qtns_Lscaled_av_NA + num_qtns_Lscaled_sd_NA), fill = inferno(4)[2],  alpha = 0.5) + 
+  geom_line(aes(y = num_qtns_Lscaled_av_NA, x = mig1), linetype = "solid", color = inferno(4)[2]) + 
+  geom_ribbon(aes(ymin = num_qtns_Lscaled_av_NS - num_qtns_Lscaled_sd_NS, 
+                  ymax = num_qtns_Lscaled_av_NS + num_qtns_Lscaled_sd_NS), fill = inferno(4)[1],  alpha = 0.4) + 
+  geom_line(aes(y = num_qtns_Lscaled_av_NS, x = mig1), linetype = "dashed", color = inferno(4)[1]) + 
+  geom_errorbar(aes(ymin=num_qtns_Lscaled_av_A - num_qtns_Lscaled_sd_A, 
+                    ymax=num_qtns_Lscaled_av_A + num_qtns_Lscaled_sd_A), size = 0.4, width=0.5) +
+  geom_point(color = inferno(4)[3], size = 3) + 
+  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  labs(title = " ", y = " ", x = "Migration Rate") +
+  ylim(min(df.invChar.plot$num_qtns_Lscaled_av_A - df.invChar.plot$num_qtns_Lscaled_sd_A), 
+       max(df.invChar.plot$num_qtns_Lscaled_av_A + df.invChar.plot$num_qtns_Lscaled_sd_A))
+
+ggarrange(plot.age.adapt.pgen, plot.age.adapt.ogen, plot.length.adapt.pgen, plot.length.adapt.ogen, 
+          plot.QTN.adapt.pgen, plot.QTN.adapt.ogen, ncol = 2, nrow = 3,
+          widths = c(2.3, 2.3, 2.3, 2.3, 2.3, 2.3), labels = c("A", "B", "C", "D", "E", "F"))
+
 
 #### characteristics 
 ######################################################################################################
@@ -1121,16 +1047,21 @@ ggarrange(plot.age.highQTN, plot.age.lowQTN, plot.length.highQTN.noLeg, plot.len
 ######################################################################################################
 #### Q5: Plot Genome scan results
 
+df.outliers <- read.table("results/Inversion/20210525_fulldata/outputSumData.txt", header = FALSE,
+                                 stringsAsFactors = FALSE)
 head(df.muInv3)
+colnames(df.outliers) <- colnames(df.summary)
+df.outlierSumData <- left_join(df.outliers, df.simStats[,1:(ncol(df.simStats)-1)], by = "seed")
+df.muInv3_outliers <- df.outlierSumData[df.outlierSumData$muInv == 1e-03,]
 
 df.pcadapt.av <- aggregate(cbind(true_pos_pcadapt, false_neg_pcadapt, 
                                  true_neg_pcadapt, false_pos_pcadapt,
                                  true_neg_pcadapt_NS, false_pos_pcadapt_NS)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
-                           FUN=mean, data = df.muInv3)
+                           FUN=mean, data = df.muInv3_outliers)
 df.outflank.av <- aggregate(cbind(true_pos_outflank, false_neg_outflank, 
                                  true_neg_outflank, false_pos_outflank,
                                  true_neg_outflank_NS, false_pos_outflank_NS)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
-                           FUN=mean, data = df.muInv3)
+                           FUN=mean, data = df.muInv3_outliers)
 
 df.pcadapt.long <- as.data.frame(pivot_longer(df.pcadapt.av, cols = c(true_pos_pcadapt, false_neg_pcadapt, 
                                                                       true_neg_pcadapt, false_pos_pcadapt),
@@ -1138,40 +1069,46 @@ df.pcadapt.long <- as.data.frame(pivot_longer(df.pcadapt.av, cols = c(true_pos_p
 for(i in 1:6 ){
   df.pcadapt.long[,i] <- as.factor(df.pcadapt.long[,i])
 }
+
 df.pcadapt.long$outcome <- as.factor(df.pcadapt.long$outcome)
-df.pcadapt.long$outcome <- recode_factor(df.pcadapt.long$outcome, 'true_pos_pcadapt' = 'True Positive', 'true_neg_pcadapt' = 'True Negative', 
-                                         'false_pos_pcadapt' = 'False Positive', 'false_neg_pcadapt' = 'False Negative')
+df.pcadapt.sub$outcome <- recode_factor(df.pcadapt.sub$outcome, 'true_pos_pcadapt' = 'Adaptive Outlier', 'true_neg_pcadapt' = 'Nonadaptive Nonoutlier', 
+                                         'false_pos_pcadapt' = 'Nonadaptive Outlier', 'false_neg_pcadapt' = 'Adaptive Nonoutlier')
+
+df.pcadapt.sub$outcome <- recode_factor(df.pcadapt.sub$outcome, 'True Positive' = 'Adaptive Outlier', 'True Negative' = 'Nonadaptive Nonoutlier', 
+                                        'False Positive' = 'Nonadaptive Outlier', 'False Negative' = 'Adaptive Nonoutlier')
 #df.pcadapt.long$outcome <- factor(df.pcadapt.long$outcome, levels = c('True Positive', 'True Negative', 'False Positive', 'False Negative'))
-df.pcadapt.subhigh <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == 0.002 & df.pcadapt.long$muBase == 1e-06,]
- 
-plot.pcadapt_highQTN <- ggplot(df.pcadapt.sub[order(df.pcadapt.subhigh$outcome),], 
+df.pcadapt.subhigh <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == "0.002" & df.pcadapt.long$muBase == "1e-06",]
+ write.table(df.pcadapt.sub, "outlierHigh.txt")
+plot.pcadapt.pgen <- ggplot(df.pcadapt.sub[order(df.pcadapt.sub$outcome),], 
                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
   geom_bar(position = "stack", stat="identity", size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
+  scale_fill_manual(values = viridis(4)[4:1]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "PCAdapt", y = "High QTN Mutation Rate\ncount", x = " ") + 
+  labs(title = "PCAdapt", y = "Polygenic Architecture\ncount", x = " ") + 
   ylim(c(0, 40))
 
 
-df.pcadapt.sublow <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == 0.002 & df.pcadapt.long$muBase == 1e-07,]
+df.pcadapt.sublow <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == "0.2" & df.pcadapt.long$muBase == "1e-07",]
 plot.pcadapt_lowQTN <- ggplot(df.pcadapt.sublow[order(df.pcadapt.sublow$outcome),], 
                                aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
   geom_bar(position = "stack", stat="identity", size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
+  scale_fill_manual(values = viridis(4)[4:1]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.position = "none") +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Low QTN Mutation Rate\ncount", x = "Migration Rate") + 
-  ylim(c(0, 40))
+  labs(title = " ", y = "Oligogenic Architecture\ncount", x = "Migration Rate") + 
+  ylim(c(0, 40)) +
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
+
 
 
 df.outflank.long <- as.data.frame(pivot_longer(df.outflank.av, cols = c(true_pos_outflank, false_neg_outflank, 
@@ -1189,7 +1126,7 @@ plot.outflank_highQTN <- ggplot(df.outflank.subhigh[order(df.outflank.subhigh$ou
                                aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
   geom_bar(position = "stack", stat="identity", size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
+  scale_fill_manual(values = viridis(4)[4:1]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(legend.position = "none") +
@@ -1199,12 +1136,12 @@ plot.outflank_highQTN <- ggplot(df.outflank.subhigh[order(df.outflank.subhigh$ou
   labs(title = "OutFLANK", y = " ", x = " ") + 
   ylim(c(0, 40))
 
-df.outflank.sublow <- df.outflank.long[df.outflank.long$enVar == 0 & df.outflank.long$alpha == 0.002 & df.outflank.long$muBase == 1e-07,]
+df.outflank.sublow <- df.outflank.long[df.outflank.long$enVar == 0 & df.outflank.long$alpha == 0.2 & df.outflank.long$muBase == 1e-07,]
 plot.outflank_lowQTN <- ggplot(df.outflank.sublow[order(df.outflank.sublow$outcome),], 
                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
   geom_bar(position = "stack", stat="identity", size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
+  scale_fill_manual(values = viridis(4)[4:1]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(legend.position = "none") +
@@ -1212,13 +1149,19 @@ plot.outflank_lowQTN <- ggplot(df.outflank.sublow[order(df.outflank.sublow$outco
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = " ", y = " ", x = "Migration Rate") + 
-  ylim(c(0, 40))
+  ylim(c(0, 40)) +
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
-eval.legend <- g_legend(plot.pcadapt_highQTN)
-plot.pcadapt_highQTN.noLeg <- plot.pcadapt_highQTN + theme(legend.position = "none")
 
-ggarrange(plot.pcadapt_highQTN.noLeg, plot.outflank_highQTN, blank, plot.pcadapt_lowQTN, plot.outflank_lowQTN, 
-          eval.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8))
+eval.legend <- g_legend(plot.pcadapt.pgen)
+plot.pcadapt_highQTN.noLeg <- plot.pcadapt.pgen + theme(legend.position = "none")
+
+ggarrange(plot.pcadapt_highQTN.noLeg, plot.outflank_highQTN, blank, 
+          plot.pcadapt_lowQTN, plot.outflank_lowQTN, 
+          eval.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8),
+          labels = c("A", "B", "", "C", "D"))
+
+## width 15 height 12
 
 ## Large Alpha ##
 df.pcadapt.subhigh_largeAlpha <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == 0.2 & df.pcadapt.long$muBase == 1e-06,]
@@ -1284,8 +1227,10 @@ plot.outflank_lowQTN_largeAlpha <- ggplot(df.outflank.sublow_largeAlpha[order(df
 eval.legend <- g_legend(plot.outflank_lowQTN_largeAlpha)
 plot.outflank_lowQTN_largeAlpha.noLeg <- plot.outflank_lowQTN_largeAlpha + theme(legend.position = "none")
 
-ggarrange(plot.pcadapt_highQTN_largeAlpha, plot.outflank_highQTN_largeAlpha, blank, plot.pcadapt_lowQTN_largeAlpha, plot.outflank_lowQTN_largeAlpha.noLeg, 
-          eval.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8))
+ggarrange(plot.pcadapt_highQTN_largeAlpha, plot.outflank_highQTN_largeAlpha, blank, 
+          plot.pcadapt_lowQTN_largeAlpha, plot.outflank_lowQTN_largeAlpha.noLeg, 
+          eval.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8), 
+          labels = c("A", "B", "","C", "D"))
 
 
 ## No Selection Sims
@@ -1296,35 +1241,36 @@ for(i in 1:6 ){
   df.pcadapt.NS.long[,i] <- as.factor(df.pcadapt.NS.long[,i])
 }
 
-df.pcadapt.NS.long$outcome <- recode_factor(df.pcadapt.NS.long$outcome, 'true_neg_pcadapt_NS' = 'True Negative', 
-                                         'false_pos_pcadapt_NS' = 'False Positive')
-df.pcadapt.long$outcome <- factor(df.pcadapt.long$outcome, levels = c('True Negative', 'False Positive'))
+df.pcadapt.NS.long$outcome <- recode_factor(df.pcadapt.NS.long$outcome, 'True Negative' = 'Nonadaptive Nonoutlier', 
+                                         'False Positive' = 'Nonadaptive Outlier')
+df.pcadapt.long$outcome <- factor(df.pcadapt.long$outcome, levels = c('Nonadaptive Nonoutlier', 'Nonadaptive Outlier'))
 df.pcadapt.NS.subhigh <- df.pcadapt.NS.long[df.pcadapt.NS.long$enVar == 0 & df.pcadapt.NS.long$alpha == 0.002 & df.pcadapt.NS.long$muBase == 1e-06,]
 plot.pcadapt_NS_highQTN <- ggplot(df.pcadapt.NS.subhigh[order(df.pcadapt.NS.subhigh$outcome),], 
                                aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
   geom_bar(position = "stack", stat="identity", size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[c(3,2)]) + 
+  scale_fill_manual(values = viridis(4)[c(3,2)]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "PCAdapt", y = "High QTN Mutation Rate\ncount", x = " ")
+  labs(title = "PCAdapt", y = "Polygenic Architecture\ncount", x = " ")
 
-df.pcadapt.NS.sublow <- df.pcadapt.NS.long[df.pcadapt.NS.long$enVar == 0 & df.pcadapt.NS.long$alpha == 0.002 & df.pcadapt.NS.long$muBase == 1e-07,]
+df.pcadapt.NS.sublow <- df.pcadapt.NS.long[df.pcadapt.NS.long$enVar == 0 & df.pcadapt.NS.long$alpha == 0.2 & df.pcadapt.NS.long$muBase == 1e-07,]
 plot.pcadapt_NS_lowQTN <- ggplot(df.pcadapt.NS.sublow[order(df.pcadapt.NS.sublow$outcome),], 
                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
   geom_bar(position = "stack", stat="identity", size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[c(3,2)]) + 
+  scale_fill_manual(values = viridis(4)[c(3,2)]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.position = "none") +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Low QTN Mutation Rate\ncount", x = "Migration Rate")
+  labs(title = " ", y = "Oligogenic Architecture\ncount", x = "Migration Rate") +
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 df.outflank.NS.long <- as.data.frame(pivot_longer(df.outflank.av, cols = c(true_neg_outflank_NS, false_pos_outflank_NS),
                                                  names_to = "outcome", values_to = "count"))
@@ -1332,16 +1278,16 @@ for(i in 1:6){
   df.outflank.NS.long[,i] <- as.factor(df.outflank.NS.long[,i])
 }
 
-df.outflank.NS.long$outcome <- recode_factor(df.outflank.NS.long$outcome, 'true_neg_outflank_NS' = 'True Negative', 
-                                            'false_pos_outflank_NS' = 'False Positive')
-df.outflank.NS.long$outcome <- factor(df.outflank.NS.long$outcome, levels = c('True Negative', 'False Positive'))
+df.outflank.NS.long$outcome <- recode_factor(df.outflank.NS.long$outcome, 'True Negative' = 'Nonadaptive Nonoutlier', 
+                                            'False Positive' = 'Nonadaptive Outlier')
+df.outflank.NS.long$outcome <- factor(df.outflank.NS.long$outcome, levels = c('Nonadaptive Nonoutlier', 'Nonadaptive Outlier'))
 
 df.outflank.NS.subhigh <- df.outflank.NS.long[df.outflank.NS.long$enVar == 0 & df.outflank.NS.long$alpha == 0.002 & df.outflank.NS.long$muBase == 1e-06,]
 plot.outflank_NS_highQTN <- ggplot(df.outflank.NS.subhigh[order(df.outflank.NS.subhigh$outcome),], 
                                 aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
   geom_bar(position = "stack", stat="identity", size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[c(3,2)]) + 
+  scale_fill_manual(values = viridis(4)[c(3,2)]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
@@ -1350,25 +1296,27 @@ plot.outflank_NS_highQTN <- ggplot(df.outflank.NS.subhigh[order(df.outflank.NS.s
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = "OutFLANK", y = " ", x = " ")
 
-df.outflank.NS.sublow <- df.outflank.NS.long[df.outflank.NS.long$enVar == 0 & df.outflank.NS.long$alpha == 0.002 & df.outflank.NS.long$muBase == 1e-07,]
+df.outflank.NS.sublow <- df.outflank.NS.long[df.outflank.NS.long$enVar == 0 & df.outflank.NS.long$alpha == 0.2 & df.outflank.NS.long$muBase == 1e-07,]
 plot.outflank_NS_lowQTN <- ggplot(df.outflank.NS.sublow[order(df.outflank.NS.sublow$outcome),], 
                                aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
   geom_bar(position = "stack", stat="identity", size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[c(3,2)]) + 
+  scale_fill_manual(values = viridis(4)[c(3,2)]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = "Migration Rate")
+  labs(title = " ", y = " ", x = "Migration Rate") +
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 genomeScans.legend <- g_legend(plot.pcadapt_NS_highQTN)
 plot.pcadapt_NS_highQTN.noLeg <- plot.pcadapt_NS_highQTN + theme(legend.position = "none")
 
 ggarrange(plot.pcadapt_NS_highQTN.noLeg, plot.outflank_NS_highQTN, blank, plot.pcadapt_NS_lowQTN, plot.outflank_NS_lowQTN, 
-          genomeScans.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8))
+          genomeScans.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8), 
+          labels = c("A", "B", "", "C", "D"))
 
 ## Large Alpha ##
 df.pcadapt.NS.subhigh_largeAlpha <- df.pcadapt.NS.long[df.pcadapt.NS.long$enVar == 0 & df.pcadapt.NS.long$alpha == 0.2 & df.pcadapt.NS.long$muBase == 1e-06,]
@@ -1559,6 +1507,76 @@ ggarrange(plot.pcadapt_NS_highQTN_largeAlpha.noLeg, plot.outflank_NS_highQTN_lar
 # df.muInv6_0_av$LA_diff_upSD <- df.muInv6_0_av$LA_diff + df.muInv6_0_av$LA_diff_sd
 # df.muInv6_0_av$LA_diff_lowSD <- df.muInv6_0_av$LA_diff - df.muInv6_0_av$LA_diff_sd
 
+#### Amount of inverted regions Plots ####
+# df.invGenome <- read.table(paste0(folderIn, "outputInvGenome_allData.txt"))
+# head(df.invGenome)
+# colnames(df.invGenome) <- c("seed", "uniqueBases", "numOverlap", "percGenome")
+# df.invGenomeParam <- full_join(df.invGenome, df.simStats, by = "seed")
+# df.invGenome_av <- aggregate(percGenome~muBase + sigmaK + muInv + alpha + enVar + mig1 + mig2, 
+#                             FUN=mean, data = df.invGenomeParam)
+# df.invGenome_sd <- aggregate(percGenome~muBase + sigmaK + muInv + alpha + enVar + mig1 + mig2, 
+#                              FUN=sd, data = df.invGenomeParam)
+# df.invGenome_av$percGenome_sd <- df.invGenome_sd$percGenome
+# df.invGenome_av$percGenome_lowSD <- df.invGenome_av$percGenome - df.invGenome_av$percGenome_sd
+# df.invGenome_av$percGenome_upSD <- df.invGenome_av$percGenome + df.invGenome_av$percGenome_sd
+# 
+# for(i in 1:6 ){
+#   df.invGenome_av[,i] <- as.factor(df.invGenome_av[,i])
+# }
+# df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, "0.000000001" = '0.000002', "0.00000001" = '0.00002', '0.0000001' = '0.0002', '0.000001' = '0.002')
+# plot.percInvGenome <- ggplot(df.invGenome_av[df.invGenome_av$enVar == 0 & df.invGenome_av$alpha == 0.002 & df.invGenome_av$muInv == 0.001,], 
+#                                  aes(x = mig1, y = percGenome, group = interaction(muBase, sigmaK))) + 
+#   geom_errorbar(aes(ymin=percGenome_lowSD, ymax=percGenome_upSD), width=.2) +
+#   geom_point(aes(color = muBase, shape = muBase), size = 3) + 
+#   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
+#   labs(title = "Percent of Inverted Genome",
+#        y = "Percent of Inverted Genome",
+#        x = "Migration Rate") +
+#   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
+#          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
+#   theme_classic() +
+#   theme(legend.position = "none") +
+#   theme(axis.text.x = element_text(angle = 90))  +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_color_manual(values=viridis(4)[c(2,4)]) + 
+#   ylim(c(0, 
+#          max(df.muInv3_0_av$VA_perc_In_3[!is.na(df.muInv3_0_av$VA_perc_upSD)]) + 10))
+# 
+# plot.percInvGenome_largeAlpha <- ggplot(df.invGenome_av[df.invGenome_av$enVar == 0 & df.invGenome_av$alpha == 0.2 & df.invGenome_av$muInv == 0.001,], 
+#                                         aes(x = mig1, y = percGenome, group = interaction(muBase, sigmaK))) + 
+#   geom_errorbar(aes(ymin=percGenome_lowSD, ymax=percGenome_upSD), width=.2) +
+#   geom_point(aes(color = muBase, shape = muBase), size = 3) + 
+#   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
+#   labs(title = "Percent of Inverted Genome",
+#        y = "Percent of Inverted Genome",
+#        x = "Migration Rate") +
+#   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
+#          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
+#   theme_classic() +
+#   theme(legend.position = "none") +
+#   theme(axis.text.x = element_text(angle = 90))  +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   scale_color_manual(values=viridis(4)[c(2,4)]) + 
+#   ylim(c(0, 
+#          max(df.muInv3_0_av$VA_perc_In_3[!is.na(df.muInv3_0_av$VA_perc_upSD)]) + 10))
+# 
+# plot.numInv.leg <- g_legend(plot.numInv)
+# plot.numInv.noLeg <- plot.numInv + theme(legend.position = "none")
+# 
+# plot.numInv_largeAlpha.noLeg <- plot.numInv_largeAlpha + theme(legend.position = "none")
+# plot.numInv_largeAlpha.leg <- g_legend(plot.numInv_largeAlpha)
+# 
+# ggarrange(plot.LA_diff_inv3_av, plot.VA_in_inv3, plot.percInvGenome, plot.numInv.noLeg, plot.numInv.leg, 
+#           nrow = 1, ncol = 5, widths = c(2.3,2.3,2.3,2.3,0.8))
+# ggarrange(plot.LA_diff_inv3_largeAlpha_av, plot.VA_in_inv3_largeAlpha, plot.percInvGenome_largeAlpha, plot.numInv_largeAlpha.noLeg, 
+#           plot.numInv_largeAlpha.leg, 
+#           nrow = 1, ncol = 5, widths = c(2.3,2.3,2.3,2.3,0.8))
+# 
+# ggarrange(plot.LA_diff_inv3_pgen, plot.VA_in_inv3, blank, plot.LA_diff_inv3_mgen, 
+#           plot.VA_in_inv3_largeAlpha, plot.numInv.leg, widths = c(2.3,2.3,0.8,2.3,2.3,0.8), ncol = 3, nrow = 2)
+# 
 
 ######################################################################################################    
 ## COPY AND PASTE WHERE NEEDED

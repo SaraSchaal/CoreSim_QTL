@@ -97,32 +97,51 @@ df.params.rerun3 <- df.params[df.params$seed %in% rerun3, ]
 
 write.table(df.params.rerun3, "src/rerun3_invSimParams.txt", row.names = FALSE)
 
-df.params[df.params$mig1 == 0.1 & df.params$muBase ==  0.000001 
-            & df.params$sigmaK == .75 & df.params$alpha == 0.002 
-            & df.params$enVar == 0 & df.params$muInv == 0, ]
+df.params[df.params$mig1 == 0.001 & df.params$muBase ==  0.000001 
+            & df.params$sigmaK == 0.75 & df.params$alpha == 0.002 
+            & df.params$enVar == 0 & df.params$muInv == 0.001, ]
 
-#3384602 poly low low mig weak select - no island
-#3384603 poly low mig weak select - no island
-#3384604 poly mod mig weak select - no island
-#3384605 poly high mig weak select - no island
-#3384606 poly high high mig weak select - no island
+#3384602 poly low low mig weak select - no island 3384962
+#3384603 poly low mig weak select - no island 3384963
+#3384604 poly mod mig weak select - no island 3384964
+#3384605 poly high mig weak select - no island 3384965 
+#3384606 poly high high mig weak select - no island 3384966
 
-#3384482 poly low low mig mod select - no island
-#3384483 poly low mig mod select - island
-#3384484 poly mod mig mod select - no island
-#3384485 poly high mig mod select - no island
-#3384486 poly high high mig mod select - no island
+#3384482 poly low low mig mod select - no island 3384842
+#3384483 poly low mig mod select - island 3384843
+#3384484 poly mod mig mod select - no island 3384844
+#3384485 poly high mig mod select - no island 3384845
+#3384486 poly high high mig mod select - no island 3384846
 
-#3384362 poly low low mig strong select - no islands just high fst across all
-#3384363 poly low mig strong select - no islands just high fsts
-#3384364 poly mod mig strong select - islands
-#3384365 poly high mig strong select - no islands
-#3384366 poly high high mig strong select - no islands
+#3384362 poly low low mig strong select - no islands just high fst across all 3384722
+#3384363 poly low mig strong select - no islands just high fsts 3384723
+#3384364 poly mod mig strong select - islands 3384724
+#3384365 poly high mig strong select - no islands 3384725
+#3384366 poly high high mig strong select - no islands 3384726
+
+
+#3383522 oligo low low mig weak select - inv 3383942
+#3383523 oligo low mig weak select - inv 3383943
+#3383524 oligo mod mig weak select - inv 3383944
+#3383525 oligo high mig weak select - inv 3383945
+#3383526 oligo high high mig weak select - inv 3383946
+3384962
+#3383402 oligo low low mig mod select - inv 3383822
+#3383403 oligo low mig mod select - inv 3383823
+#3383404 oligo mod mig mod select - inv 3383824
+#3383405 oligo high mig mod select - inv 3383825
+#3383406 oligo high high mig mod select - inv 3383826
+
+#3383282 oligo low low mig strong select - inv 3383702
+#3383283 oligo low mig strong select - inv 3383703
+#3383284 oligo mod mig strong select - inv 3383704
+#3383285 oligo high mig strong select - inv 3383705
+#3383286 oligo high high mig strong select - inv 33836706
 
 
 df.params.2[df.params.2$mig1 == 0.25 & df.params.2$muBase ==  0.00000001 
             & df.params.2$sigmaK == 0.75 & df.params.2$alpha == 0.2 
-            & df.params.2$enVar == 0 & df.params.2$muInv == 0.001, ]
+            & df.params.2$enVar == 0.001 & df.params.2$muInv == 0.001, ]
 
 # semi oligo 0.5 mig 3385447 (3385537) 
 # semi oligo 0.25 mig 3385445 (3385535)

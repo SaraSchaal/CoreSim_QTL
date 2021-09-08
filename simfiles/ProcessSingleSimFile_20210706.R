@@ -27,9 +27,9 @@
   
   ### Download Data
   args = commandArgs(trailingOnly=TRUE)
-  folderIn <-  "results/Inversion/20210701_additionalParams/"#args[1] #
+  folderIn <-  "results/Inversion/20210719_fullSummaryData/"#args[1] #
   folderOut <- "figures/20210621_additionalParams/" #args[2] #
-  seed <- "3383756"  #   args[3] #
+  seed <- "3383862"  #   args[3] #
   
   df.invTime <- read.table(paste0(folderIn, seed, "_outputInvTime.txt", sep = ""), header = TRUE)
   df.invData <- read.table(paste0(folderIn, seed, "_outputInvSumInfo.txt", sep = ""), header = TRUE)
@@ -229,9 +229,11 @@ if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0){
  # mtext(expression(bold("Frequency")), side = 2, outer = TRUE)
   
   # create null distributions for outlier criteria
-  null <- df.muts.NS.MAF$FST[!is.nan(df.muts.NS.MAF$FST) & df.muts.NS.MAF$type == "m2"] # criteria 1: compare to a null distribution of all QTNs in no-selec sim
+  null <- df.muts.NS.MAF$FST[!is.nan(df.muts.NS.MAF$FST) & df.muts.NS.MAF$type == "m2"] 
+  ## criteria 1: compare to a null distribution of all QTNs in no-selec sim
   #null <- df.muts.NS.MAF$FST[df.muts.NS.MAF$inOut == "in"]
-  null_neut <- df.muts.MAF$FST[df.muts.MAF$type == "m1"] # criteria 2: compare to a null distribution of neutral QTNs in selec sim
+  null_neut <- df.muts.MAF$FST[df.muts.MAF$type == "m1"]   
+  ## criteria 2: compare to a null distribution of neutral QTNs in selec sim
   
   # subset for just qtns
   df.qtnMuts.MAF <- df.muts.MAF[df.muts.MAF$type == "m2" | df.muts.MAF$type == "m1",]
@@ -811,7 +813,7 @@ if(df.params$muInv != 0){
 ######################################################################################################  
 #### Add chromosome number ####
   
-  options(scipen = 999)
+  options(scipen = 999) 
   chrom_num <- 21
   chrom_len <-  100000
   
@@ -1850,8 +1852,8 @@ if(length(adapt.inv) != 0){
           strip.background = element_rect(colour = "white", fill = "grey92"),
           text = element_text(size = 11)) +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST)))*1.1) 
-  
+    #scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST)))*1.1) 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
 
   manh.plot.NA <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, 
                                           group = interaction(inOut, chrom))) 
@@ -1872,8 +1874,8 @@ if(length(adapt.inv) != 0){
           strip.background = element_rect(colour = "white", fill = "grey92"),
           text = element_text(size = 11)) +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1))
-  
+    #scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1))
+    scale_y_continuouts(expand = c(0, 0), limits = c(0, 1))
   # NO SELECTION #
    manh.plot.NS <- ggplot(df.neutQTNmuts.NS, aes(x = position, y = FST, 
                                                 group = interaction(inOut, chrom)))
@@ -1893,8 +1895,9 @@ if(length(adapt.inv) != 0){
           strip.background = element_rect(colour = "white", fill = "grey92"),
           text = element_text(size = 11)) +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1))
-  
+   # scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1))
+    scale_y_continuouts(expand = c(0, 0), limits = c(0, 1))
+                        
   ## No legend
   manh.plot.NS.noleg <- manh.plot.NS + theme(legend.position = "none")
   manh.plot.noleg <-  manh.plot+ theme(legend.position = "none")

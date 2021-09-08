@@ -29,7 +29,7 @@
   args = commandArgs(trailingOnly=TRUE)
   folderIn <- "results/Inversion/20210719_fullSummaryData/noInvControls/"#args[1] # 
   folderOut <- "figures/20210719_fullSummaryData/noInvControls/" #args[2] #
-  seed <-"3385445"  #   args[3] # 
+  seed <-"3384365"  #   args[3] # 
   
   df.invTime <- read.table(paste0(folderIn, seed, "_outputInvTime.txt", sep = ""), header = TRUE)
   df.invData <- read.table(paste0(folderIn, seed, "_outputInvSumInfo.txt", sep = ""), header = TRUE)
@@ -115,9 +115,9 @@ manh.plot <- ggplot(df.muts.MAF, aes(x = position, y = FST,
         text = element_text(size = 11)) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
-png(paste0(folderOut, seed, "_manh.png"), width = 7, height = 4, units = 'in', res = 300)
+png(paste0(folderOut, seed, "_manh.png"), type = "cairo", width = 7, height = 4, units = 'in', res = 300)
 #ggarrange(manh.plot, manh.plot,  manh.plot, ncol = 1, nrow =3)
-manh.plot
+  manh.plot
 dev.off()
 # If there are no inversions in the simulation we do not want to evaluate the majority of the following
 # code. The only part we need is the amount of local adaptation that the simulation reached. 
