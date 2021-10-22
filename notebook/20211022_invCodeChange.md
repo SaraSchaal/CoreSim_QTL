@@ -72,8 +72,8 @@ Here by adding those new breakpoints at X and Y + 1, we successfully get AY and 
 
 Now I checked the code that was proposed by Vince, Peter and Andrew and did simple checks in Eidos to see that it did this properly and I do not believe it does. In the pictured example, I have a breakpoints vector with one breakpoint that falls inside the inverted region and therefore sum(inInv) will be odd. There are no breakpoints at the ends of the inversion (that needs to be checked next). What happens in their currect code is that they check the breakpoint vector for any that are either at the start or the end + 1 (where we need to add breakpoints) and stores a logical vector that is the length of break points and stores them in the left or right variable. This will only have a T if one of those proposed breakpoints is either at the start (T at the position in the left variable) or end + 1 (T at the position in the right variable). In my example they are all F because there are no breakpoints at the ends and what SHOULD happen is that they are then added to the vector. BUT this doesn't happen because they add the start and end+1 locations in this way ```c(inv_start, inv_end+1)[c(sum(left)> 0, sum(right)>0)]``` and they will only be added then if there is a T in those logical vectors. I THINK it should be that only if they are all F they should be added.
 
-
+<img src="../src/Inv_Issue/Current_Inv_Code.jpeg" width = "500">
 
 In my proposed change that last segment of code changes to ```c(inv_start, inv_end+1)[c(sum(left)==0, sum(right)==0)]``` which adds the breakpoints at the start and end + 1 of the inversion if they aren't already present. 
 
-
+<img src="../src/Inv_Issue/Proposed_Inv_Correction.jpeg" width = "500">
