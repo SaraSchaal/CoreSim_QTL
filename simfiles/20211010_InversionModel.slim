@@ -209,40 +209,48 @@ recombination() {
 		return F;
 	}
 	
+	for (inv in 1:size(c(unshared_invs, shared_invs))){
+		
+	
+	
+	}	
+	
 	if(size(shared_invs)){
-	 
+	
+	 	start = invS.position;
+	 	end = start + invS.tag;
+		inInv = (breakpoints > start) & (breakpoints <= end);
+		
 		for (invS in shared_invs) {
-			start = invS.position;
-			end = start + invS.tag;
-			inInv = (breakpoints > start) & (breakpoints <= end);
+			
+			if(sum(inInv) % 2 == 0){
+			
 			// homozygote inverted
-      	left = (inInv == start);
-      	right = (inInv == end + 1);
+      	left = (inInv == start); // vector of T or F
+      	right = (inInv == end + 1); // vector of T or F lenght of inside inversion breakpoints
       	breakpoints = sort(c(inInv[!(left | right)],
          	c(start, end + 1, breakpoints[!inInv])));
 		}
 	}
 	
-//	if(size(unshared_invs)){
-//	
-//		for (inv in unshared_invs){
-//			// define the start and end position of the inversion
-//			start = inv.position;
-//			end = start + inv.tag;
-//		
-//			// the positions of proposed breakpoints are supplied to the callback by SLiM in the "breakpoints" variable
-//			// This variable is generated when recombination occurs and can be overwritten as we do below
-//			inInv = (breakpoints > start) & (breakpoints <= end);
-//			if(sum(inInv) % 2 == 0){
-//				return F;
-//			} else {
-//		   	// heterozygote inverted: resample to get an even # of breakpoints
-//         	// this is *recursive*: it calls this recombination callback again!
-//         	breakpoints = sim.chromosome.drawBreakpoints(individual);
-//      	}
-//			
-//		}
-//	}
+	
+	if(size(unshared_invs)){
+		for (invU in unshared_invs){
+		
+			// define the start and end position of the inversion
+			start = inv.position;
+			end = start + inv.tag;
+		
+			// the positions of proposed breakpoints are supplied to the callback by SLiM in the "breakpoints" variable
+			// This variable is generated when recombination occurs and can be overwritten as we do below
+			inInv = (breakpoints > start) & (breakpoints <= end);
+			if (any(inInv)){
+			
+				// *****finds any breakpoints that were made during the recombination step that fall within
+				// the inversion and removes them*********
+				breakpoints = breakpoints[!inInv];
+			}
+		}
 	return T;
 }
 

@@ -46,7 +46,7 @@ Example of what SLiM ACTUALLY does with this proposed recombination break regard
 	AX--C----YD
 
 ```
-So we manually have to make a recombination rate with the standard orientation that results in the same inheritance as what we showed in the "what we want slim to do" example.
+So we manually have to make a recombination event with the standard orientation that results in the same inheritance as what we showed in the "what we want slim to do" example.
 
 
 Example of how to make the recombination for an individual homozygous for the inversion to match the first example by adding breakpoints at X and Y + 1 and again * represent proposed breakpoints. We want AY to be inherited together and X and D to be inherited together:
