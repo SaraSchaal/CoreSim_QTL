@@ -74,6 +74,13 @@ Now I checked the code that was proposed by Vince, Peter and Andrew and did simp
 
 <img src="../src/Inv_Issue/Current_Inv_Code.png" width = "1000">
 
-In my proposed change that last segment of code changes to ```c(inv_start, inv_end+1)[c(sum(left)==0, sum(right)==0)]``` which adds the breakpoints at the start and end + 1 of the inversion if they aren't already present. 
+I've added a proposed change that I think works to first deal with whether there are no proposed breakpoints at the start or end + 1. This correctly adds those breakpoints in if they aren't in the proposed breakpoints vector. Then if there are is a breakpoint at either the start or end + 1, we need to remove it and add one at the opposite end. In my example, there is one present at the start so we remove it and add one to the end + 1 with this bit of code ```breakpoints = sort(c(breakpoints[!(left | right)],c(inv_start, inv_end + 1)[c(sum(right)>0,sum(left)>0)]))```that is similar to what they had except they had ```c(inv_start, inv_end + 1)[c(sum(left)>0, sum(right)>0)]``` which doesn't add the opposite end, it just reads the one that was present already. Finally, if there are proposed breakpoints both at the start and at end+1 then we remove them. Here are three Eidos examples that address all three examples:
 
-<img src="../src/Inv_Issue/Proposed_Inv_Correction.png" width = "1000">
+No breakpoints at ends but one inside:
+<img src="../src/Inv_Issue/Proposed_Inv_Correction_ExampleNoEnds.png" width = "1000">
+
+One breakpoint at the start of the inversion:
+<img src="../src/Inv_Issue/Proposed_Inv_Correction_ExampleOneEnd.png" width = "1000">
+
+Breakpoints proposed at both ends:
+<img src="../src/Inv_Issue/Proposed_Inv_Correction_ExampleBothEnds.png" width = "1000">
