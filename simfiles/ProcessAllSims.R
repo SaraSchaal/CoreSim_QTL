@@ -26,116 +26,116 @@ g_legend<-function(myggplot){
 }
 ######################################################################################################  
 #### Run the following code chunk once to get full data files to do further analyses on ####
-df <- read.table("figures/20210514_noAdaptInv/outputAdaptInvCrit.txt")
-## Inversion Through Time
-df.invTime <- NULL
-count <- 0
-for(i in 1:nrow(df.params)){
-  seed <- df.params$seed[i]
-  invTimeNewFile <- read.table(paste(folder, seed, "_outputInvTime.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
-  if(nrow(invTimeNewFile) > 0){
-    invTimeNewFile$seed <- seed
-    df.invTime <-  rbind(df.invTime, invTimeNewFile)
-  }
-  count <- count + 1
-  print(count)
-}
-write.table(df.invTime, "FullSet_invTime.txt", row.names = FALSE)
-
-## Inversion Summary Data
-df.invData <- NULL
-count <- 0
-for(i in 1:nrow(df.params)){
-  seed <- df.params$seed[i]
-  invData <- read.table(paste(folder, seed, "_outputInvSumInfo.txt", sep=""), header = TRUE,
-                        stringsAsFactors = FALSE)
-  if(nrow(invData) > 0){
-    invData$seed <- seed
-    df.invData <- rbind(df.invData, invData)
-  }
-  count <- count + 1
-  print(count)
-}
-write.table(df.invData, "FullSet_invData.txt", row.names = FALSE)
-
-## QTN Inversion Through Time
-df.invQTNTime <- NULL
-count <- 0
-for(i in 1:nrow(df.params)){
-  seed <- df.params$seed[i]
-  invQTNTimeNewFile <- read.table(paste(folder, seed, "_outputInvQtn.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
-  if(nrow(invQTNTimeNewFile) > 0){
-    invQTNTimeNewFile$seed <- seed
-    df.invQTNTime <-  rbind(df.invQTNTime, invQTNTimeNewFile)
-  }
-  count <- count + 1
-  print(count)
-}
-write.table(df.invQTNTime, "FullSet_invQTNTime.txt", row.names = FALSE)
-
-## QTN Inversion Summary Data
-df.invQTNData <- NULL
-count <- 0
-for(i in 1:nrow(df.params)){
-  seed <- df.params$seed[i]
-  invQTNDataNewFile <- read.table(paste(folder, seed, "_outputInvQtnSumInfo.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
-  if(nrow(invQTNDataNewFile) > 0){
-    invQTNDataNewFile$seed <- seed
-    df.invQTNData <-  rbind(df.invQTNData, invQTNDataNewFile)
-  }
-  count <- count + 1
-  print(count)
-}
-write.table(df.invQTNData, "FullSet_invQTNSumInfo.txt", row.names = FALSE)
-
-## Pop Dynamics
-df.popDyn <- NULL
-count <- 0
-for(i in 1:nrow(df.params)){
-  seed <- df.params$seed[i]
-  popDynNewFile <- read.table(paste(folder, seed, "_outputPopDynam.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
-  if(nrow(popDynNewFile) > 0){
-    popDynNewFile$seed <- seed
-    df.popDyn <-  rbind(df.popDyn, popDynNewFile)
-  }
-  count <- count + 1
-  print(count)
-}
-write.table(df.popDyn, "FullSet_popDyn.txt", row.names = FALSE)
-
-## SimStats
-df.simStats <- NULL
-count <- 0
-for(i in 1:nrow(df.params)){
-  seed <- df.params$seed[i]
-  simStatsNewFile <- read.table(paste(folder, seed, "_outputSimStats.txt", sep=""), stringsAsFactors = FALSE)
-  simStatsNewFile$seed <- seed
-  df.simStats <-  rbind(df.simStats, simStatsNewFile)
-  count <- count + 1
-  print(count)
-}
-df.simStats <- df.simStats[,2:ncol(df.simStats)]
-colnames(df.simStats) <- c("mig1", "mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar", "Seed")
-write.table(df.simStats, "FullSet_simStats.txt", row.names = FALSE)
-
-## Mutations File
-df.finalMuts <- NULL
-count <- 0
-no.Data <- NULL
-for(i in 1:nrow(df.params)){
-  seed <- df.params$seed[i]
-  if(file.exists(paste(folder, seed, "_outputMutations.txt", sep=""))){
-    finalMutsNewFile <- read.table(paste(folder, seed, "_outputMutations.txt", sep=""), stringsAsFactors = FALSE, header = TRUE)
-    finalMutsNewFile$seed <- seed
-    df.finalMuts <-  rbind(df.finalMuts, finalMutsNewFile)
-  } else {
-    no.Data <- c(no.Data, seed)
-  }
-  count <- count + 1
-  print(count)
-}
-colnames(df.finalMuts)[2] <- "mut_id" 
-write.table(df.finalMuts, "FullSet_finalMuts.txt", row.names = FALSE)
+# df <- read.table("figures/20210514_noAdaptInv/outputAdaptInvCrit.txt")
+# ## Inversion Through Time
+# df.invTime <- NULL
+# count <- 0
+# for(i in 1:nrow(df.params)){
+#   seed <- df.params$seed[i]
+#   invTimeNewFile <- read.table(paste(folder, seed, "_outputInvTime.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+#   if(nrow(invTimeNewFile) > 0){
+#     invTimeNewFile$seed <- seed
+#     df.invTime <-  rbind(df.invTime, invTimeNewFile)
+#   }
+#   count <- count + 1
+#   print(count)
+# }
+# write.table(df.invTime, "FullSet_invTime.txt", row.names = FALSE)
+# 
+# ## Inversion Summary Data
+# df.invData <- NULL
+# count <- 0
+# for(i in 1:nrow(df.params)){
+#   seed <- df.params$seed[i]
+#   invData <- read.table(paste(folder, seed, "_outputInvSumInfo.txt", sep=""), header = TRUE,
+#                         stringsAsFactors = FALSE)
+#   if(nrow(invData) > 0){
+#     invData$seed <- seed
+#     df.invData <- rbind(df.invData, invData)
+#   }
+#   count <- count + 1
+#   print(count)
+# }
+# write.table(df.invData, "FullSet_invData.txt", row.names = FALSE)
+# 
+# ## QTN Inversion Through Time
+# df.invQTNTime <- NULL
+# count <- 0
+# for(i in 1:nrow(df.params)){
+#   seed <- df.params$seed[i]
+#   invQTNTimeNewFile <- read.table(paste(folder, seed, "_outputInvQtn.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+#   if(nrow(invQTNTimeNewFile) > 0){
+#     invQTNTimeNewFile$seed <- seed
+#     df.invQTNTime <-  rbind(df.invQTNTime, invQTNTimeNewFile)
+#   }
+#   count <- count + 1
+#   print(count)
+# }
+# write.table(df.invQTNTime, "FullSet_invQTNTime.txt", row.names = FALSE)
+# 
+# ## QTN Inversion Summary Data
+# df.invQTNData <- NULL
+# count <- 0
+# for(i in 1:nrow(df.params)){
+#   seed <- df.params$seed[i]
+#   invQTNDataNewFile <- read.table(paste(folder, seed, "_outputInvQtnSumInfo.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+#   if(nrow(invQTNDataNewFile) > 0){
+#     invQTNDataNewFile$seed <- seed
+#     df.invQTNData <-  rbind(df.invQTNData, invQTNDataNewFile)
+#   }
+#   count <- count + 1
+#   print(count)
+# }
+# write.table(df.invQTNData, "FullSet_invQTNSumInfo.txt", row.names = FALSE)
+# 
+# ## Pop Dynamics
+# df.popDyn <- NULL
+# count <- 0
+# for(i in 1:nrow(df.params)){
+#   seed <- df.params$seed[i]
+#   popDynNewFile <- read.table(paste(folder, seed, "_outputPopDynam.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+#   if(nrow(popDynNewFile) > 0){
+#     popDynNewFile$seed <- seed
+#     df.popDyn <-  rbind(df.popDyn, popDynNewFile)
+#   }
+#   count <- count + 1
+#   print(count)
+# }
+# write.table(df.popDyn, "FullSet_popDyn.txt", row.names = FALSE)
+# 
+# ## SimStats
+# df.simStats <- NULL
+# count <- 0
+# for(i in 1:nrow(df.params)){
+#   seed <- df.params$seed[i]
+#   simStatsNewFile <- read.table(paste(folder, seed, "_outputSimStats.txt", sep=""), stringsAsFactors = FALSE)
+#   simStatsNewFile$seed <- seed
+#   df.simStats <-  rbind(df.simStats, simStatsNewFile)
+#   count <- count + 1
+#   print(count)
+# }
+# df.simStats <- df.simStats[,2:ncol(df.simStats)]
+# colnames(df.simStats) <- c("mig1", "mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar", "Seed")
+# write.table(df.simStats, "FullSet_simStats.txt", row.names = FALSE)
+# 
+# ## Mutations File
+# df.finalMuts <- NULL
+# count <- 0
+# no.Data <- NULL
+# for(i in 1:nrow(df.params)){
+#   seed <- df.params$seed[i]
+#   if(file.exists(paste(folder, seed, "_outputMutations.txt", sep=""))){
+#     finalMutsNewFile <- read.table(paste(folder, seed, "_outputMutations.txt", sep=""), stringsAsFactors = FALSE, header = TRUE)
+#     finalMutsNewFile$seed <- seed
+#     df.finalMuts <-  rbind(df.finalMuts, finalMutsNewFile)
+#   } else {
+#     no.Data <- c(no.Data, seed)
+#   }
+#   count <- count + 1
+#   print(count)
+# }
+# colnames(df.finalMuts)[2] <- "mut_id" 
+# write.table(df.finalMuts, "FullSet_finalMuts.txt", row.names = FALSE)
 
 folderIn <- "./results/Inversion/20210719_fullSummaryData/"
 df.summary <- read.table(paste0(folderIn, "outputSumData.txt"))
@@ -386,11 +386,12 @@ df.muInv3_0_av$sigmaK <- factor(df.muInv3_0_av$sigmaK, c(3, 1.5, 0.75))
 plot.LA_diff_inv3_pgen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 & 
                                               df.muInv3_0_av$alpha == 0.002 &
                                               df.muInv3_0_av$muBase == 0.002,], 
-                            aes(x = mig1, y = LA_diff, group = sigmaK)) + 
+                            aes(x = mig1, y = LA_diff, group = sigmaK)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
   geom_errorbar(aes(ymin=LA_diff_lowSD, ymax=LA_diff_upSD), size =  0.2, width=.5) +
-  geom_point(aes(color = viridis(4)[3]), shape = 19, size = 3) + 
+  geom_point(fill = viridis(4)[2], color = "navy", shape = 21, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  labs(y = expression("LA"[Inv]*" - LA"[noInv]),
+  labs(y = " ",
        x = " ") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
@@ -401,7 +402,6 @@ plot.LA_diff_inv3_pgen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
         axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  scale_color_manual(values=viridis(4)[2]) +
   ylim(-0.04, 0.6)
 
 # oligogenic architecture
@@ -409,12 +409,14 @@ plot.LA_diff_inv3_ogen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
                                                 df.muInv3_0_av$alpha == 0.2 &
                                                 df.muInv3_0_av$muBase == "0.0002",], 
                                aes(x = mig1, y = LA_diff, group = sigmaK)) + 
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
   geom_errorbar(aes(ymin=LA_diff_lowSD, ymax=LA_diff_upSD), size =  0.2, width=.5) +
-  geom_point(aes(color = viridis(4)[4]), shape = 17, size = 3) + 
+  geom_point(fill = viridis(4)[4], color = "grey13", shape = 24, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
-  labs(x = " ", y = " ") + 
+  labs(x = " ", 
+       y = expression("LA"[Inv]*" - LA"[noInv])) + 
   theme_classic() +
   theme(legend.position = "none") + 
   theme(axis.text.x = element_text(angle = 90),
@@ -422,7 +424,6 @@ plot.LA_diff_inv3_ogen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
         axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  scale_color_manual(values=viridis(4)[4]) +
   ylim(-0.04, 0.6)
 
 
@@ -445,8 +446,8 @@ for(i in 1:7 ){
   df.invGenome_av[,i] <- as.factor(df.invGenome_av[,i])
 }
 
-#df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
-df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '1e-07' = '0.0002', '1e-06' = '0.002')
+df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
+#df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '1e-07' = '0.0002', '1e-06' = '0.002')
 
 df.invGenome_av$sigmaK <- factor(df.invGenome_av$sigmaK, c(3, 1.5, 0.75))
 df.VA <- left_join(df.muInv3_0_av, df.invGenome_av[df.invGenome_av$muInv == 0.001,], by = c("muBase", "sigmaK", "alpha", 
@@ -460,9 +461,9 @@ plot.VA_in_inv3_pgen <- ggplot(df.VA[df.VA$enVar == 0 &
                           aes(x = mig1, y = VA_perc_In_3, group = sigmaK)) + 
   geom_errorbar(aes(ymin=VA_perc_lowSD, ymax=VA_perc_upSD), size =  0.2, width=.5) +
   geom_ribbon(aes(ymin= percGenome_lowSD, ymax= percGenome_upSD), fill = "navy", alpha=0.2) +
-  geom_point(aes(color = muBase), shape = 19, size = 3) + 
+  geom_point(fill = viridis(4)[2], color = "navy", shape = 21, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
-  labs(y = expression("%VA"[inv]),
+  labs(y = " ",
        x = " ") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
@@ -483,9 +484,9 @@ plot.VA_in_inv3_ogen <- ggplot(df.VA[df.VA$enVar == 0 &
                           aes(x = mig1, y = VA_perc_In_3, group = sigmaK)) + 
   geom_errorbar(aes(ymin=VA_perc_lowSD, ymax=VA_perc_upSD), size = 0.2, width=.5) +
   geom_ribbon(aes(ymin= percGenome_lowSD, ymax= percGenome_upSD), fill = "goldenrod", alpha=0.2) +
-  geom_point(aes(color = muBase, shape = muBase), size = 3) + 
+  geom_point(fill = viridis(4)[4], color = "grey13", shape = 24, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
-  labs(y = " ",
+  labs(y = expression("%VA"[inv]),
        x = " ") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
@@ -508,33 +509,9 @@ plot.totalLA_pgen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
                             aes(x = mig1, y = LA_final_3, group = sigmaK)) + 
   geom_errorbar(aes(ymin=LA_final_3_lowSD, ymax=LA_final_3_upSD), size = 0.2, width=.5) +
   geom_ribbon(aes(ymin= LA_final_0_lowSD, ymax= LA_final_0_upSD), fill = "navy", alpha=0.2) +
-  geom_point(aes(color = muBase, shape = muBase), size = 3) + 
+  geom_point(fill = viridis(4)[2], color = "navy", shape = 21, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
   labs(title = "Polygenic Architecture",
-       y = expression("LA"[inv]),
-       x = " ") +
-  guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
-         shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
-  theme_classic() +
-  theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90),
-        axis.text=element_text(size=12),
-        axis.title=element_text(size=18,face="bold")) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  scale_color_manual(values=viridis(4)[2]) + 
-  ylim(c(-0.01,1))
-
-
-plot.totalLA_ogen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 & 
-                                           df.muInv3_0_av$alpha == 0.2 &
-                                           df.muInv3_0_av$muBase == "0.0002",], 
-                            aes(x = mig1, y = LA_final_3, group = sigmaK)) + 
-  geom_errorbar(aes(ymin=LA_final_3_lowSD, ymax=LA_final_3_upSD), size = 0.2, width=.5) +
-  geom_ribbon(aes(ymin= LA_final_0_lowSD, ymax= LA_final_0_upSD), fill = "goldenrod", alpha=0.2) +
-  geom_point(aes(color = muBase, shape = muBase), size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
-  labs(title = "Oligogenic Architecture",
        y = " ",
        x = " ") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
@@ -544,10 +521,33 @@ plot.totalLA_ogen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
   theme(axis.text.x = element_text(angle = 90),
         axis.text=element_text(size=12),
         axis.title=element_text(size=18,face="bold"),
-        plot.title = element_text(size=18,)) +
+        title = element_text(size=18)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  scale_color_manual(values=viridis(4)[4]) + 
+  ylim(c(-0.01,1))
+
+
+plot.totalLA_ogen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 & 
+                                           df.muInv3_0_av$alpha == 0.2 &
+                                           df.muInv3_0_av$muBase == "0.0002",], 
+                            aes(x = mig1, y = LA_final_3, group = sigmaK)) + 
+  geom_errorbar(aes(ymin=LA_final_3_lowSD, ymax=LA_final_3_upSD), size = 0.2, width=.5) +
+  geom_ribbon(aes(ymin= LA_final_0_lowSD, ymax= LA_final_0_upSD), fill = "goldenrod", alpha=0.2) +
+  geom_point(fill = viridis(4)[4], color = "grey13", shape = 24, size = 3) + 
+  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
+  labs(title = "Oligogenic Architecture",
+       y = expression("LA"[inv]),
+       x = " ") +
+  guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
+         shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
+  theme_classic() +
+  theme(legend.position = "none") + 
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=18,face="bold"),
+        title = element_text(size=18)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
   ylim(c(-0.01,1))
 
 #### Number of Inversions Plots ####
@@ -567,18 +567,24 @@ numInv_av$numInv_upSD <- numInv_av$num_inv + numInv_av$numInv_sd
 for(i in 1:6 ){
   numInv_av[,i] <- as.factor(numInv_av[,i])
 }
+for(i in (ncol(df.muInv3)-15):ncol(df.muInv3)){
+  df.muInv3[,i] <- as.factor(df.muInv3[,i])
+}
 
-#numInv_av$muBase <- recode_factor(numInv_av$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
-numInv_av$muBase <- recode_factor(numInv_av$muBase,  '1e-07' = '0.0002', '1e-06' = '0.002')
+numInv_av$muBase <- recode_factor(numInv_av$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
+#numInv_av$muBase <- recode_factor(numInv_av$muBase,  '1e-07' = '0.0002', '1e-06' = '0.002')
+df.muInv3$muBase <- recode_factor(df.muInv3$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
 
 numInv_av$sigmaK <- factor(numInv_av$sigmaK, c(3, 1.5, 0.75))
+df.muInv3$sigmaK <- factor(df.muInv3$sigmaK, c(3, 1.5, 0.75))
+
 plot.numInv.pgen <- ggplot(numInv_av[numInv_av$enVar == 0 & numInv_av$alpha == 0.002 & 
                                   numInv_av$muBase == 0.002 & numInv_av$num_inv != 0,], 
                       aes(x = mig1, y = num_inv, group = sigmaK)) + 
-  geom_errorbar(aes(ymin=numInv_lowSD, ymax=numInv_upSD), width=.5) +
-  geom_point(color = viridis(4)[2], size = 3) + 
+  geom_errorbar(aes(ymin=numInv_lowSD, ymax=numInv_upSD), size =  0.2, width=.5) +
+  geom_point(fill = viridis(4)[2], color = "navy", shape = 21, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) )+ 
-  labs(y = expression(bar(N)[inv]),
+  labs(y = " ",
        x = "Migration Rate") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
@@ -594,11 +600,10 @@ plot.numInv.pgen <- ggplot(numInv_av[numInv_av$enVar == 0 & numInv_av$alpha == 0
 plot.numInv.ogen <- ggplot(numInv_av[numInv_av$enVar == 0 & numInv_av$alpha == 0.2
                                            & numInv_av$muBase == "0.0002" & numInv_av$num_inv != 0,], 
                                  aes(x = mig1, y = num_inv, group = sigmaK)) + 
-  geom_errorbar(aes(ymin=numInv_lowSD, ymax=numInv_upSD), width=.5) +
-  geom_point(color = viridis(4)[4], shape = 17, size = 3) + 
+  geom_errorbar(aes(ymin=numInv_lowSD, ymax=numInv_upSD), size =  0.2, width=.5) +
+  geom_point(fill = viridis(4)[4], color = "grey13", shape = 24, size = 3) + 
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels) ) + 
-  labs(y = " ",
-       x = "Migration Rate") +
+  labs(y = expression(bar(N)[inv]),  x = "Migration Rate") +
   guides(color = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)"),
          shape = guide_legend(title = "QTN Mutation Rate\n(Ne*mu)")) +
   theme_classic() +
@@ -607,13 +612,14 @@ plot.numInv.ogen <- ggplot(numInv_av[numInv_av$enVar == 0 & numInv_av$alpha == 0
         axis.title=element_text(size=18,face="bold"))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  scale_color_manual(values=viridis(4)[4]) + ylim(-0.5, 15)
+  ylim(-0.5, 15) +
+  scale_x_discrete(breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 
 folderOutFig <- "./figures/ManuscriptFigs/"
 pdf(file = paste0(folderOutFig, "fig1_LAplots.pdf"), width = 15, height = 15)
-ggarrange(plot.totalLA_pgen, plot.totalLA_ogen, plot.LA_diff_inv3_pgen, plot.LA_diff_inv3_ogen, 
-          plot.VA_in_inv3_pgen, plot.VA_in_inv3_ogen, plot.numInv.pgen, plot.numInv.ogen,
+ggarrange(plot.totalLA_ogen, plot.totalLA_pgen, plot.LA_diff_inv3_ogen, plot.LA_diff_inv3_pgen,
+          plot.VA_in_inv3_ogen, plot.VA_in_inv3_pgen, plot.numInv.ogen, plot.numInv.pgen, 
             nrow = 4, ncol = 2, labels = c("A", "B", "C", "D", "E", "F", "G", "H"))
 dev.off()
 
@@ -647,79 +653,72 @@ df.muInv3$neutral_gain_count <- df.muInv3$num_inv*df.muInv3$neutral_gain_p
 df.muInv3$neutral_no_gain_count <- df.muInv3$num_inv*df.muInv3$neutral_no_gain_p
 
 df.ev.hist.av <- aggregate(cbind(capture_gain_count, capture_no_gain_count, 
-                neutral_gain_count, neutral_no_gain_count)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
+                neutral_gain_count)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
           FUN=mean, data = df.muInv3)
+df.ev.hist.sd <- aggregate(cbind(capture_gain_count, capture_no_gain_count, 
+                                 neutral_gain_count)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
+                           FUN=sd, data = df.muInv3)
 df.ev.hist.long <- as.data.frame(pivot_longer(df.ev.hist.av, cols = c(capture_gain_count, capture_no_gain_count, 
-                                     neutral_gain_count, neutral_no_gain_count),
+                                     neutral_gain_count),
              names_to = "evHist", values_to = "count"))
+df.ev.hist.sd.long <- as.data.frame(pivot_longer(df.ev.hist.sd, cols = c(capture_gain_count, capture_no_gain_count, 
+                                                                      neutral_gain_count),
+                                              names_to = "evHist", values_to = "sd"))
+
 for(i in 1:7){
   df.ev.hist.long[,i] <- as.factor(df.ev.hist.long[,i])
+  df.ev.hist.sd.long[,i] <- as.factor(df.ev.hist.sd.long[,i])
 }
 
-df.ev.hist.long$evHist <- recode_factor(df.ev.hist.long$evHist, 'capture_gain_p' = 'Capture & Gain', 
-                                        'capture_no_gain_p' = 'Capture & No Gain', 
-                                        'neutral_gain_p' = 'Neutral & Gain', 
-                                        'neutral_no_gain_p'  = 'Neutral & No Gain')
-plot.evHist_highQTN <- ggplot(df.ev.hist.long[df.ev.hist.long$enVar == 0 & df.ev.hist.long$alpha == 0.002 & df.ev.hist.long$muBase == 1e-06,], 
-                      aes(x = mig1, y = prop, fill = evHist, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+df.ev.hist.long <- full_join(df.ev.hist.long, df.ev.hist.sd.long, by = c("muBase", "sigmaK", "alpha", "enVar",  "mig1",  "mig2", "evHist"))
+df.ev.hist.long$upSD <- df.ev.hist.long$count + df.ev.hist.long$sd
+df.ev.hist.long$lowSD <-  df.ev.hist.long$count - df.ev.hist.long$sd
+df.ev.hist.long$lowSD[df.ev.hist.long$lowSD<0] <- 0
+df.ev.hist.long$evHist <- recode_factor(df.ev.hist.long$evHist, 'capture_gain_count' = 'Capture & Gain', 
+                                        'capture_no_gain_count' = 'Capture & No Gain', 
+                                        'neutral_gain_count' = 'Neutral & Gain')
+df.ev.hist.long$muBase <- recode_factor(df.ev.hist.long$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
+df.ev.hist.long$sigmaK <- factor(df.ev.hist.long$sigmaK, c(3, 1.5, 0.75))
+plot.evHist_pgen <- ggplot(df.ev.hist.long[df.ev.hist.long$enVar == 0 & df.ev.hist.long$alpha == 0.002 & df.ev.hist.long$muBase == 0.002,], 
+                      aes(x = mig1, y = count, fill = evHist)) + 
+  geom_bar(position= position_dodge(preserve = "single"), stat = "identity", size = 5) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
+  scale_fill_manual(values = viridis(5)[c(4,2,1)]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.title=element_text(size=16))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "High QTN Mutation Rate", y = "Proportion", x = "Migration Rate")
+  labs(title = "Polygenic Architecture", y = "", x = "Migration Rate")+
+  ylim(0,14)
 
-plot.evoHist_lowQTN <- ggplot(df.ev.hist.long[df.ev.hist.long$enVar == 0 & df.ev.hist.long$alpha == 0.002 & df.ev.hist.long$muBase == 1e-07,], 
-                      aes(x = mig1, y = prop, fill = evHist, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+plot.evoHist_ogen <- ggplot(df.ev.hist.long[df.ev.hist.long$enVar == 0 & df.ev.hist.long$alpha == 0.2 & df.ev.hist.long$muBase == 0.0002,], 
+                      aes(x = mig1, y = count, fill = evHist)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
+  scale_fill_manual(values = viridis(5)[c(4,2,1)]) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 90))  +
+  theme(axis.title=element_text(size=16),
+        axis.text.x = element_text(angle = 90))  +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "Low QTN Mutation Rate", y = " ", x = "Migration Rate")
+  labs(title = "Oligogenic Architecture", y = "Average Count", x = "Migration Rate") +
+  ylim(0,12)+
+  scale_x_discrete(breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
-plot.evHist_highQTN_largeAlpha <- ggplot(df.ev.hist.long[df.ev.hist.long$enVar == 0 & df.ev.hist.long$alpha == 0.2 & df.ev.hist.long$muBase == 1e-06,], 
-                              aes(x = mig1, y = prop, fill = evHist, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(legend.position = "none") + 
-  theme(axis.text.x = element_text(angle = 90))  +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "High QTN Mutation Rate", y = "Proportion", x = "Migration Rate")
+evohist.leg <- g_legend(plot.evoHist_ogen)
+plot.evoHist_ogen.noLeg <- plot.evoHist_ogen + theme(legend.position = "none")
 
-plot.evoHist_lowQTN_largeAlpha <- ggplot(df.ev.hist.long[df.ev.hist.long$enVar == 0 & df.ev.hist.long$alpha == 0.2 & df.ev.hist.long$muBase == 1e-07,], 
-                              aes(x = mig1, y = prop, fill = evHist, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90))  +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "Low QTN Mutation Rate", y = " ", x = "Migration Rate")
+pdf(file = paste0(folderOut, "fig3_evoHist.pdf"), width = 15, height = 7)
+ggarrange(plot.evoHist_ogen.noLeg, plot.evHist_pgen, evohist.leg, nrow = 1, ncol = 3,
+          widths = c(2.3,2.3,0.8), labels = c("A", "B"))
+dev.off()
 
-
-evohist.leg <- g_legend(plot.evoHist_lowQTN)
-plot.evoHist_lowQTN.noLeg <- plot.evoHist_lowQTN + theme(legend.position = "none")
-ggarrange(plot.evHist_highQTN, plot.evoHist_lowQTN.noLeg, evohist.leg, nrow = 1, ncol = 3,
-          widths = c(2.3,2.3,0.8))
-
-evohist_largeAlpha.leg <- g_legend(plot.evoHist_lowQTN_largeAlpha)
-plot.evoHist_lowQTN_largeAlpha.noLeg <- plot.evoHist_lowQTN_largeAlpha + theme(legend.position = "none")
-ggarrange(plot.evHist_highQTN_largeAlpha, plot.evoHist_lowQTN_largeAlpha.noLeg, evohist_largeAlpha.leg, nrow = 1, ncol = 3,
-          widths = c(2.3,2.3,0.8))
 
 #### end Q3 plotting
 ######################################################################################################
@@ -728,13 +727,15 @@ ggarrange(plot.evHist_highQTN_largeAlpha, plot.evoHist_lowQTN_largeAlpha.noLeg, 
 #### Q4: Plot Characteristics
 
 head(df.invCharFinalGen)
+tail(df.invCharFinalGen)
 for(i in 2:ncol(df.simStats)){
   df.simStats[,i] <- as.factor(as.character(df.simStats[,i]))
 }
 df.invCharParam <- left_join(df.invCharFinalGen, df.simStats, by = "seed")
 df.invChar.muInv3 <- df.invCharParam[df.invCharParam$muInv == 0.001,]
 options(scipen = 999)
-df.invChar.muInv3$muBase <- recode_factor(df.invChar.muInv3$muBase, '1e-09' = '0.000002', '1e-08' = '0.00002', '1e-07' = '0.0002', '1e-06' = '0.002')
+df.invChar.muInv3$muBase <- recode_factor(df.invChar.muInv3$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
+#df.invChar.muInv3$muBase <- recode_factor(df.invChar.muInv3$muBase, '1e-07' = '0.0002', '1e-06' = '0.002')
 df.invChar.muInv3$sigmaK <- factor(df.invChar.muInv3$sigmaK, c(3, 1.5, 0.75))
 
 df.invChar.muInv3[df.invChar.muInv3$enVar == 0 & df.invChar.muInv3$muBase == 0.002 & df.invChar.muInv3$alpha == 0.002 & df.invChar.muInv3$mig1 == 0.001 
@@ -754,12 +755,12 @@ for(i in 1:length(unique(df.invChar.muInv3$params))){
 }
 
 plot.age.pgen <- ggplot(data = plot.output[plot.output$enVar == 0 & 
-                                                      plot.output$muBase == 0.002 & 
+                                                      plot.output$muBase == "0.002" & 
                                                       plot.output$alpha == 0.002,], 
-       aes(x = mig1, y= inv_age, fill = adaptInv, color = adaptInv)) +
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
+  aes(x = mig1, y= inv_age, fill = adaptInv, color = adaptInv)) +
   geom_boxplot(outlier.shape = NA) + 
-  scale_color_manual(values = c("orange", "black", "grey21"))+
+  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels)) + 
+  scale_color_manual(values = c("orange", "black", "grey21")) +
   scale_fill_manual(values = color_scale) + 
   guides(fill = guide_legend(title = "Inversion Status"),
          color = guide_legend(title = "Inversion Status")) +
@@ -1058,75 +1059,106 @@ df.pcadapt.av <- aggregate(cbind(true_pos_pcadapt, false_neg_pcadapt,
                                  true_neg_pcadapt, false_pos_pcadapt,
                                  true_neg_pcadapt_NS, false_pos_pcadapt_NS)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
                            FUN=mean, data = df.muInv3_outliers)
+df.pcadapt.sd <- aggregate(cbind(true_pos_pcadapt, false_neg_pcadapt, 
+                                 true_neg_pcadapt, false_pos_pcadapt,
+                                 true_neg_pcadapt_NS, false_pos_pcadapt_NS)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
+                           FUN=sd, data = df.muInv3_outliers)
 df.outflank.av <- aggregate(cbind(true_pos_outflank, false_neg_outflank, 
                                  true_neg_outflank, false_pos_outflank,
                                  true_neg_outflank_NS, false_pos_outflank_NS)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
                            FUN=mean, data = df.muInv3_outliers)
+df.outflank.sd <- aggregate(cbind(true_pos_outflank, false_neg_outflank, 
+                                  true_neg_outflank, false_pos_outflank,
+                                  true_neg_outflank_NS, false_pos_outflank_NS)~muBase + sigmaK + alpha + enVar + mig1 + mig2, 
+                            FUN=sd, data = df.muInv3_outliers)
 
 df.pcadapt.long <- as.data.frame(pivot_longer(df.pcadapt.av, cols = c(true_pos_pcadapt, false_neg_pcadapt, 
-                                                                      true_neg_pcadapt, false_pos_pcadapt),
+                                                                      true_neg_pcadapt, false_pos_pcadapt, true_neg_pcadapt_NS, false_pos_pcadapt_NS),
                                               names_to = "outcome", values_to = "count"))
+df.pcadapt.sd.long <- as.data.frame(pivot_longer(df.pcadapt.sd, cols =  c(true_pos_pcadapt, false_neg_pcadapt, 
+                                                                          true_neg_pcadapt, false_pos_pcadapt, true_neg_pcadapt_NS, false_pos_pcadapt_NS),
+                                                 names_to = "outcome", values_to = "sd"))
+df.outflank.long <- as.data.frame(pivot_longer(df.outflank.av, cols = c(true_pos_outflank, false_neg_outflank, 
+                                                                        true_neg_outflank, false_pos_outflank, true_neg_outflank_NS, false_pos_outflank_NS),
+                                              names_to = "outcome", values_to = "count"))
+df.outflank.sd.long <- as.data.frame(pivot_longer(df.outflank.sd, cols =  c(true_pos_outflank, false_neg_outflank, 
+                                                                            true_neg_outflank, false_pos_outflank, true_neg_outflank_NS, false_pos_outflank_NS),
+                                                 names_to = "outcome", values_to = "sd"))
+
 for(i in 1:6 ){
   df.pcadapt.long[,i] <- as.factor(df.pcadapt.long[,i])
+  df.pcadapt.sd.long[,i] <- as.factor(df.pcadapt.sd.long[,i])
+  df.outflank.long[,i] <- as.factor(df.outflank.long[,i])
+  df.outflank.sd.long[,i] <- as.factor(df.outflank.sd.long[,i])
 }
 
-df.pcadapt.long$outcome <- as.factor(df.pcadapt.long$outcome)
-df.pcadapt.sub$outcome <- recode_factor(df.pcadapt.sub$outcome, 'true_pos_pcadapt' = 'Adaptive Outlier', 'true_neg_pcadapt' = 'Nonadaptive Nonoutlier', 
-                                         'false_pos_pcadapt' = 'Nonadaptive Outlier', 'false_neg_pcadapt' = 'Adaptive Nonoutlier')
+df.pcadapt.long.plot <- full_join(df.pcadapt.long, df.pcadapt.sd.long, by = c("muBase", "sigmaK", "alpha", "enVar",  "mig1",  "mig2", "outcome"))
+df.pcadapt.long.plot$upSD <- df.pcadapt.long.plot$count + df.pcadapt.long.plot$sd
+df.pcadapt.long.plot$lowSD <-  df.pcadapt.long.plot$count - df.pcadapt.long.plot$sd
+df.pcadapt.long.plot$lowSD[df.pcadapt.long.plot$lowSD<0] <- 0
+df.outflank.long.plot <- full_join(df.outflank.long, df.outflank.sd.long, by = c("muBase", "sigmaK", "alpha", "enVar",  "mig1",  "mig2", "outcome"))
+df.outflank.long.plot$upSD <- df.outflank.long.plot$count + df.outflank.long.plot$sd
+df.outflank.long.plot$lowSD <-  df.outflank.long.plot$count - df.outflank.long.plot$sd
+df.outflank.long.plot$lowSD[df.outflank.long.plot$lowSD<0] <- 0
 
-df.pcadapt.sub$outcome <- recode_factor(df.pcadapt.sub$outcome, 'True Positive' = 'Adaptive Outlier', 'True Negative' = 'Nonadaptive Nonoutlier', 
-                                        'False Positive' = 'Nonadaptive Outlier', 'False Negative' = 'Adaptive Nonoutlier')
-#df.pcadapt.long$outcome <- factor(df.pcadapt.long$outcome, levels = c('True Positive', 'True Negative', 'False Positive', 'False Negative'))
-df.pcadapt.subhigh <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == "0.002" & df.pcadapt.long$muBase == "1e-06",]
- write.table(df.pcadapt.sub, "outlierHigh.txt")
-plot.pcadapt.pgen <- ggplot(df.pcadapt.sub[order(df.pcadapt.sub$outcome),], 
-                              aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+df.pcadapt.long.plot$sigmaK <- factor(df.pcadapt.long.plot$sigmaK, c(3, 1.5, 0.75))
+df.outflank.long.plot$sigmaK <- factor(df.outflank.long.plot$sigmaK, c(3, 1.5, 0.75))
+
+df.pcadapt.long.plot$outcome <- as.factor(df.pcadapt.long.plot$outcome)
+df.outflank.long.plot$outcome <- as.factor(df.outflank.long.plot$outcome)
+df.pcadapt.long.Selplot <- df.pcadapt.long.plot[df.pcadapt.long.plot$outcome == 'true_pos_pcadapt' | df.pcadapt.long.plot$outcome == 'true_neg_pcadapt' |
+                                                  df.pcadapt.long.plot$outcome == 'false_pos_pcadapt' | df.pcadapt.long.plot$outcome == 'false_neg_pcadapt',]
+df.pcadapt.long.Selplot$outcome <- recode_factor(df.pcadapt.long.Selplot$outcome, 'true_pos_pcadapt' = 'Adaptive Outlier', 'true_neg_pcadapt' = 'Nonadaptive Nonoutlier', 
+                                         'false_pos_pcadapt' = 'Nonadaptive Outlier', 'false_neg_pcadapt' = 'Adaptive Nonoutlier')
+df.outflank.long.Selplot <- df.outflank.long.plot[df.outflank.long.plot$outcome == 'true_pos_outflank' | df.outflank.long.plot$outcome == 'true_neg_outflank' |
+                                                  df.outflank.long.plot$outcome == 'false_pos_outflank' | df.outflank.long.plot$outcome == 'false_neg_outflank',]
+df.outflank.long.Selplot$outcome <- as.factor(df.outflank.long.Selplot$outcome)
+df.outflank.long.Selplot$outcome <- recode_factor(df.outflank.long.Selplot$outcome, 'true_pos_outflank' = 'Adaptive Outlier', 'true_neg_outflank' = 'Nonadaptive Nonoutlier', 
+                                         'false_pos_outflank' = 'Nonadaptive Outlier', 'false_neg_outflank' = 'Adaptive Nonoutlier')
+
+df.pcadapt.pgen <- df.pcadapt.long.Selplot[df.pcadapt.long.Selplot$enVar == 0 & df.pcadapt.long.Selplot$alpha == "0.002" & df.pcadapt.long.Selplot$muBase == "0.000001",]
+
+plot.pcadapt.pgen <- ggplot(df.pcadapt.pgen[order(df.pcadapt.pgen$outcome),], 
+                              aes(x = mig1, y = count, fill = outcome)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(4)[4:1]) + 
+  scale_fill_manual(values = c("cornflowerblue", "navy", "lightgoldenrod1", "goldenrod")) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "PCAdapt", y = "Polygenic Architecture\ncount", x = " ") + 
-  ylim(c(0, 40))
+  labs(title = "PCAdapt", y = "Polygenic Architecture\nAverage number of inversions", x = " ") + 
+  ylim(c(0, 25)) + 
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 
-df.pcadapt.sublow <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == "0.2" & df.pcadapt.long$muBase == "1e-07",]
-plot.pcadapt_lowQTN <- ggplot(df.pcadapt.sublow[order(df.pcadapt.sublow$outcome),], 
-                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+df.pcadapt.ogen <- df.pcadapt.long.Selplot[df.pcadapt.long.Selplot$enVar == 0 & df.pcadapt.long.Selplot$alpha == "0.2" & df.pcadapt.long.Selplot$muBase == "0.0000001",]
+plot.pcadapt.ogen <- ggplot(df.pcadapt.ogen[order(df.pcadapt.ogen$outcome),], 
+                               aes(x = mig1, y = count, fill = outcome)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(4)[4:1]) + 
+  scale_fill_manual(values = c("cornflowerblue", "navy", "lightgoldenrod1", "goldenrod")) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.position = "none") +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Oligogenic Architecture\ncount", x = "Migration Rate") + 
-  ylim(c(0, 40)) +
+  labs(title = " ", y = "Oligogenic Architecture\nAverage number of inversions", x = "Migration Rate") + 
+  ylim(c(0, 25)) +
   scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 
-
-df.outflank.long <- as.data.frame(pivot_longer(df.outflank.av, cols = c(true_pos_outflank, false_neg_outflank, 
-                                                                      true_neg_outflank, false_pos_outflank),
-                                              names_to = "outcome", values_to = "count"))
-for(i in 1:6 ){
-  df.outflank.long[,i] <- as.factor(df.outflank.long[,i])
-}
-
-df.outflank.long$outcome <- recode_factor(df.outflank.long$outcome, 'true_pos_outflank' = 'True Positive', 'true_neg_outflank' = 'True Negative', 
-                                         'false_pos_outflank' = 'False Positive', 'false_neg_outflank' = 'False Negative')
-df.outflank.long$outcome <- factor(df.outflank.long$outcome, levels = c('True Positive', 'True Negative', 'False Positive', 'False Negative'))
-df.outflank.subhigh <- df.outflank.long[df.outflank.long$enVar == 0 & df.outflank.long$alpha == 0.002 & df.outflank.long$muBase == 1e-06,]
-plot.outflank_highQTN <- ggplot(df.outflank.subhigh[order(df.outflank.subhigh$outcome),], 
-                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+df.outflank.pgen <- df.outflank.long.Selplot[df.outflank.long.Selplot$enVar == 0 & df.outflank.long.Selplot$alpha == "0.002" & df.outflank.long.Selplot$muBase == "0.000001",]
+plot.outflank.pgen <- ggplot(df.outflank.pgen[order(df.outflank.pgen$outcome),], 
+                               aes(x = mig1, y = count, fill = outcome)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(4)[4:1]) + 
+  scale_fill_manual(values = c("cornflowerblue", "navy", "lightgoldenrod1", "goldenrod")) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(legend.position = "none") +
@@ -1134,14 +1166,17 @@ plot.outflank_highQTN <- ggplot(df.outflank.subhigh[order(df.outflank.subhigh$ou
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = "OutFLANK", y = " ", x = " ") + 
-  ylim(c(0, 40))
+  ylim(c(0, 25)) +
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
-df.outflank.sublow <- df.outflank.long[df.outflank.long$enVar == 0 & df.outflank.long$alpha == 0.2 & df.outflank.long$muBase == 1e-07,]
-plot.outflank_lowQTN <- ggplot(df.outflank.sublow[order(df.outflank.sublow$outcome),], 
-                              aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+
+df.outflank.ogen <- df.outflank.long.Selplot[df.outflank.long.Selplot$enVar == 0 & df.outflank.long.Selplot$alpha == "0.2" & df.outflank.long.Selplot$muBase == "0.0000001",]
+plot.outflank.ogen <- ggplot(df.outflank.ogen[order(df.outflank.ogen$outcome),], 
+                              aes(x = mig1, y = count, fill = outcome)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(4)[4:1]) + 
+  scale_fill_manual(values = c("cornflowerblue", "navy", "lightgoldenrod1", "goldenrod")) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(legend.position = "none") +
@@ -1149,236 +1184,108 @@ plot.outflank_lowQTN <- ggplot(df.outflank.sublow[order(df.outflank.sublow$outco
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = " ", y = " ", x = "Migration Rate") + 
-  ylim(c(0, 40)) +
+  ylim(c(0, 25)) +
   scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 
 eval.legend <- g_legend(plot.pcadapt.pgen)
-plot.pcadapt_highQTN.noLeg <- plot.pcadapt.pgen + theme(legend.position = "none")
+plot.pcadapt.pgen.noLeg <- plot.pcadapt.pgen + theme(legend.position = "none")
 
-ggarrange(plot.pcadapt_highQTN.noLeg, plot.outflank_highQTN, blank, 
-          plot.pcadapt_lowQTN, plot.outflank_lowQTN, 
+ggarrange(plot.pcadapt.pgen.noLeg, plot.outflank.pgen, blank, 
+          plot.pcadapt.ogen, plot.outflank.ogen, 
           eval.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8),
           labels = c("A", "B", "", "C", "D"))
 
 ## width 15 height 12
 
-## Large Alpha ##
-df.pcadapt.subhigh_largeAlpha <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == 0.2 & df.pcadapt.long$muBase == 1e-06,]
-plot.pcadapt_highQTN_largeAlpha <- ggplot(df.pcadapt.subhigh_largeAlpha[order(df.pcadapt.subhigh_largeAlpha$outcome),], 
-                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(legend.position = "none") +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "PCAdapt", y = "High QTN Mutation Rate\ncount", x = " ") + 
-  ylim(c(0, 40))
-
-
-df.pcadapt.sublow_largeAlpha <- df.pcadapt.long[df.pcadapt.long$enVar == 0 & df.pcadapt.long$alpha == 0.2 & df.pcadapt.long$muBase == 1e-07,]
-plot.pcadapt_lowQTN_largeAlpha <- ggplot(df.pcadapt.sublow_largeAlpha[order(df.pcadapt.sublow_largeAlpha$outcome),], 
-                              aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(legend.position = "none") +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Low QTN Mutation Rate\ncount", x = "Migration Rate") + 
-  ylim(c(0, 40))
-
-df.outflank.subhigh_largeAlpha <- df.outflank.long[df.outflank.long$enVar == 0 & df.outflank.long$alpha == 0.2 & df.outflank.long$muBase == 1e-06,]
-plot.outflank_highQTN_largeAlpha <- ggplot(df.outflank.subhigh_largeAlpha[order(df.outflank.subhigh_largeAlpha$outcome),], 
-                                aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "OutFLANK", y = " ", x = " ") + 
-  ylim(c(0, 40))
-
-df.outflank.sublow_largeAlpha <- df.outflank.long[df.outflank.long$enVar == 0 & df.outflank.long$alpha == 0.2 & df.outflank.long$muBase == 1e-07,]
-plot.outflank_lowQTN_largeAlpha <- ggplot(df.outflank.sublow_largeAlpha[order(df.outflank.sublow_largeAlpha$outcome),], 
-                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[4:1]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = "Migration Rate") + 
-  ylim(c(0, 40))
-
-eval.legend <- g_legend(plot.outflank_lowQTN_largeAlpha)
-plot.outflank_lowQTN_largeAlpha.noLeg <- plot.outflank_lowQTN_largeAlpha + theme(legend.position = "none")
-
-ggarrange(plot.pcadapt_highQTN_largeAlpha, plot.outflank_highQTN_largeAlpha, blank, 
-          plot.pcadapt_lowQTN_largeAlpha, plot.outflank_lowQTN_largeAlpha.noLeg, 
-          eval.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8), 
-          labels = c("A", "B", "","C", "D"))
-
 
 ## No Selection Sims
 
-df.pcadapt.NS.long <- as.data.frame(pivot_longer(df.pcadapt.av, cols = c(true_neg_pcadapt_NS, false_pos_pcadapt_NS),
-                                              names_to = "outcome", values_to = "count"))
-for(i in 1:6 ){
-  df.pcadapt.NS.long[,i] <- as.factor(df.pcadapt.NS.long[,i])
-}
+df.pcadapt.long.noSelplot <- df.pcadapt.long.plot[df.pcadapt.long.plot$outcome == 'true_neg_pcadapt_NS' | df.pcadapt.long.plot$outcome == 'false_pos_pcadapt_NS',]
+df.pcadapt.long.noSelplot$outcome <- recode_factor(df.pcadapt.long.noSelplot$outcome, 'true_neg_pcadapt_NS' = 'Nonadaptive Nonoutlier', 
+                                                   'false_pos_pcadapt_NS' = 'Nonadaptive Outlier')
+df.outflank.long.noSelplot <- df.outflank.long.plot[df.outflank.long.plot$outcome == 'true_neg_outflank_NS' | df.outflank.long.plot$outcome == 'false_pos_outflank_NS',]
+df.outflank.long.noSelplot$outcome <- recode_factor(df.outflank.long.noSelplot$outcome,'true_neg_outflank_NS' = 'Nonadaptive Nonoutlier', 
+                                                    'false_pos_outflank_NS' = 'Nonadaptive Outlier')
 
-df.pcadapt.NS.long$outcome <- recode_factor(df.pcadapt.NS.long$outcome, 'True Negative' = 'Nonadaptive Nonoutlier', 
-                                         'False Positive' = 'Nonadaptive Outlier')
-df.pcadapt.long$outcome <- factor(df.pcadapt.long$outcome, levels = c('Nonadaptive Nonoutlier', 'Nonadaptive Outlier'))
-df.pcadapt.NS.subhigh <- df.pcadapt.NS.long[df.pcadapt.NS.long$enVar == 0 & df.pcadapt.NS.long$alpha == 0.002 & df.pcadapt.NS.long$muBase == 1e-06,]
-plot.pcadapt_NS_highQTN <- ggplot(df.pcadapt.NS.subhigh[order(df.pcadapt.NS.subhigh$outcome),], 
-                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+df.pcadapt.long.noSelplot$outcome <- factor(df.pcadapt.long.noSelplot$outcome, levels = c('Nonadaptive Nonoutlier', 'Nonadaptive Outlier'))
+df.pcadapt.NS.pgen <- df.pcadapt.long.noSelplot[df.pcadapt.long.noSelplot$enVar == 0 & df.pcadapt.long.noSelplot$alpha == "0.002" & df.pcadapt.long.noSelplot$muBase == "0.000001",]
+plot.pcadapt.NS.pgen <- ggplot(df.pcadapt.NS.pgen[order(df.pcadapt.NS.pgen$outcome),], 
+                               aes(x = mig1, y = count, fill = outcome)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(4)[c(3,2)]) + 
+  scale_fill_manual(values = c("navy", "lightgoldenrod1")) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "PCAdapt", y = "Polygenic Architecture\ncount", x = " ")
+  labs(title = " ", y = "Polygenic Architecture\nAverage number of inversions", x = "Migration Rate") +
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE) +
+  ylim(0,25)
 
-df.pcadapt.NS.sublow <- df.pcadapt.NS.long[df.pcadapt.NS.long$enVar == 0 & df.pcadapt.NS.long$alpha == 0.2 & df.pcadapt.NS.long$muBase == 1e-07,]
-plot.pcadapt_NS_lowQTN <- ggplot(df.pcadapt.NS.sublow[order(df.pcadapt.NS.sublow$outcome),], 
-                              aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+df.pcadapt.NS.ogen <- df.pcadapt.long.noSelplot[df.pcadapt.long.noSelplot$enVar == 0 & df.pcadapt.long.noSelplot$alpha == "0.2" & df.pcadapt.long.noSelplot$muBase == "0.0000001",]
+plot.pcadapt.NS.ogen <- ggplot(df.pcadapt.NS.ogen[order(df.pcadapt.NS.ogen$outcome),], 
+                              aes(x = mig1, y = count, fill = outcome)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(4)[c(3,2)]) + 
+  scale_fill_manual(values = c("navy", "lightgoldenrod1")) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.position = "none") +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Oligogenic Architecture\ncount", x = "Migration Rate") +
-  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
+  labs(title = "PCAdapt", y = "Oligogenic Architecture\nAverage number of inversions", x = " ") +
+  scale_x_discrete(" ", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE) +
+  ylim(0,25)
 
-df.outflank.NS.long <- as.data.frame(pivot_longer(df.outflank.av, cols = c(true_neg_outflank_NS, false_pos_outflank_NS),
-                                                 names_to = "outcome", values_to = "count"))
-for(i in 1:6){
-  df.outflank.NS.long[,i] <- as.factor(df.outflank.NS.long[,i])
-}
 
-df.outflank.NS.long$outcome <- recode_factor(df.outflank.NS.long$outcome, 'True Negative' = 'Nonadaptive Nonoutlier', 
-                                            'False Positive' = 'Nonadaptive Outlier')
-df.outflank.NS.long$outcome <- factor(df.outflank.NS.long$outcome, levels = c('Nonadaptive Nonoutlier', 'Nonadaptive Outlier'))
+df.outflank.long.noSelplot$outcome <- factor(df.outflank.long.noSelplot$outcome, levels = c('Nonadaptive Nonoutlier', 'Nonadaptive Outlier'))
 
-df.outflank.NS.subhigh <- df.outflank.NS.long[df.outflank.NS.long$enVar == 0 & df.outflank.NS.long$alpha == 0.002 & df.outflank.NS.long$muBase == 1e-06,]
-plot.outflank_NS_highQTN <- ggplot(df.outflank.NS.subhigh[order(df.outflank.NS.subhigh$outcome),], 
-                                aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
+df.outflank.NS.pgen <- df.outflank.long.noSelplot[df.outflank.long.noSelplot$enVar == 0 & df.outflank.long.noSelplot$alpha == "0.002" & df.outflank.long.noSelplot$muBase == "0.000001",]
+plot.outflank.NS.pgen <- ggplot(df.outflank.NS.pgen[order(df.outflank.NS.pgen$outcome),], 
+                                aes(x = mig1, y = count, fill = outcome)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
   facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(4)[c(3,2)]) + 
+  scale_fill_manual(values = c("navy", "lightgoldenrod1")) + 
   guides(fill = guide_legend(title = "Inversion Status")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.position = "none") +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "OutFLANK", y = " ", x = " ")
-
-df.outflank.NS.sublow <- df.outflank.NS.long[df.outflank.NS.long$enVar == 0 & df.outflank.NS.long$alpha == 0.2 & df.outflank.NS.long$muBase == 1e-07,]
-plot.outflank_NS_lowQTN <- ggplot(df.outflank.NS.sublow[order(df.outflank.NS.sublow$outcome),], 
-                               aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(4)[c(3,2)]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90)) +
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = " ", y = " ", x = "Migration Rate") +
-  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
+  scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE) +
+  ylim(0,25)
 
-genomeScans.legend <- g_legend(plot.pcadapt_NS_highQTN)
-plot.pcadapt_NS_highQTN.noLeg <- plot.pcadapt_NS_highQTN + theme(legend.position = "none")
+df.outflank.NS.ogen <- df.outflank.long.noSelplot[df.outflank.long.noSelplot$enVar == 0 & df.outflank.long.noSelplot$alpha == "0.2" & df.outflank.long.noSelplot$muBase == "0.0000001",]
+plot.outflank.NS.ogen <- ggplot(df.outflank.NS.ogen[order(df.outflank.NS.ogen$outcome),], 
+                               aes(x = mig1, y = count, fill = outcome)) + 
+  geom_bar(position = position_dodge(preserve = "single"), stat="identity", size = 3) + 
+  geom_errorbar(aes(ymin=lowSD, ymax=upSD), size =  0.2, position = position_dodge(width = 0.9)) +
+  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
+  scale_fill_manual(values = c("navy", "lightgoldenrod1")) + 
+  guides(fill = guide_legend(title = "Inversion Status")) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  labs(title = "OutFLANK", y = " ", x = " ") +
+  scale_x_discrete(" ", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE) +
+  ylim(0,25)
 
-ggarrange(plot.pcadapt_NS_highQTN.noLeg, plot.outflank_NS_highQTN, blank, plot.pcadapt_NS_lowQTN, plot.outflank_NS_lowQTN, 
+genomeScans.legend <- g_legend(plot.pcadapt.NS.pgen)
+plot.pcadapt.NS.pgen.noLeg <- plot.pcadapt.NS.pgen + theme(legend.position = "none")
+
+ggarrange(plot.pcadapt.NS.ogen, plot.outflank.NS.ogen, blank, plot.pcadapt.NS.pgen.noLeg, plot.outflank.NS.pgen, 
           genomeScans.legend, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8), 
           labels = c("A", "B", "", "C", "D"))
 
-## Large Alpha ##
-df.pcadapt.NS.subhigh_largeAlpha <- df.pcadapt.NS.long[df.pcadapt.NS.long$enVar == 0 & df.pcadapt.NS.long$alpha == 0.2 & df.pcadapt.NS.long$muBase == 1e-06,]
-plot.pcadapt_NS_highQTN_largeAlpha <- ggplot(df.pcadapt.NS.subhigh_largeAlpha[order(df.pcadapt.NS.subhigh_largeAlpha$outcome),], 
-                                  aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[c(3,2)]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "PCAdapt", y = "High QTN Mutation Rate\ncount", x = " ")
-
-df.pcadapt.NS.sublow_largeAlpha <- df.pcadapt.NS.long[df.pcadapt.NS.long$enVar == 0 & df.pcadapt.NS.long$alpha == 0.2 & df.pcadapt.NS.long$muBase == 1e-07,]
-plot.pcadapt_NS_lowQTN_largeAlpha <- ggplot(df.pcadapt.NS.sublow_largeAlpha[order(df.pcadapt.NS.sublow_largeAlpha$outcome),], 
-                                 aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[c(3,2)]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(legend.position = "none") +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = "Low QTN Mutation Rate\ncount", x = "Migration Rate")
-
-df.outflank.NS.subhigh_largeAlpha <- df.outflank.NS.long[df.outflank.NS.long$enVar == 0 & df.outflank.NS.long$alpha == 0.2 & df.outflank.NS.long$muBase == 1e-06,]
-plot.outflank_NS_highQTN_largeAlpha <- ggplot(df.outflank.NS.subhigh_largeAlpha[order(df.outflank.NS.subhigh_largeAlpha$outcome),], 
-                                   aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[c(3,2)]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(legend.position = "none") +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = "OutFLANK", y = " ", x = " ")
-
-df.outflank.NS.sublow_largeAlpha <- df.outflank.NS.long[df.outflank.NS.long$enVar == 0 & df.outflank.NS.long$alpha == 0.2 & df.outflank.NS.long$muBase == 1e-07,]
-plot.outflank_NS_lowQTN_largeAlpha <- ggplot(df.outflank.NS.sublow_largeAlpha[order(df.outflank.NS.sublow_largeAlpha$outcome),], 
-                                  aes(x = mig1, y = count, fill = outcome, group = sigmaK)) + 
-  geom_bar(position = "stack", stat="identity", size = 3) + 
-  facet_wrap(~sigmaK, labeller = labeller(sigmaK = sigmaK.labels))+ 
-  scale_fill_manual(values = viridis(5)[c(3,2)]) + 
-  guides(fill = guide_legend(title = "Inversion Status")) +
-  theme_classic() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(panel.background = element_blank(), 
-        strip.background = element_rect(colour = "white", fill = "grey92")) +
-  labs(title = " ", y = " ", x = "Migration Rate")
-
-genomeScans.legend_largeAlpha <- g_legend(plot.pcadapt_NS_highQTN_largeAlpha)
-plot.pcadapt_NS_highQTN_largeAlpha.noLeg <- plot.pcadapt_NS_highQTN_largeAlpha + theme(legend.position = "none")
-
-ggarrange(plot.pcadapt_NS_highQTN_largeAlpha.noLeg, plot.outflank_NS_highQTN_largeAlpha, blank, plot.pcadapt_NS_lowQTN_largeAlpha, plot.outflank_NS_lowQTN_largeAlpha, 
-          genomeScans.legend_largeAlpha, ncol = 3, nrow = 2, widths = c(2.3,2.3,0.8,2.3,2.3,0.8))
 
 #### end Q4 plotting
 ######################################################################################################

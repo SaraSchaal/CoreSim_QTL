@@ -26,14 +26,15 @@
   library(OutFLANK)
   
   ### Download Data
-  args = commandArgs(trailingOnly=TRUE)
- # folderIn <- "results/Inversion/20210719_fullSummaryData/noInvControls/"#args[1] # 
-#  folderOut <- "figures/20210803_noInvControls/" # args[2]#  
- # seed <-  args[3]#"3384602"  #
+ 
+  folderIn <- "results/Inversion/20211010_invFix/"
+  folderOut <- "figures/20211010_invFix/" 
+  seed <-  "3384723"
   
-  folderIn <- args[1] # "results/Inversion/20210719_fullSummaryData/noInvControls/"#
-  folderOut <- args[2]#  "figures/20210803_noInvControls/" # 
-  seed <-  args[3]#"3384602"  #
+  #args = commandArgs(trailingOnly=TRUE)
+  #folderIn <- args[1] # 
+  #folderOut <- args[2]#  
+  #seed <-  args[3]
   
   
   df.invTime <- read.table(paste0(folderIn, seed, "_outputInvTime.txt", sep = ""), header = TRUE)
@@ -67,19 +68,7 @@
 ######################################################################################################
 #### Output manhattan plot for no-inversion controls 
 if(df.params$muInv == 0){
-  # no.inv.qtns <- df.muts[df.muts$type =="m2" & df.muts$FST != "NAN",]  
-  # head(no.inv.qtns[order(-as.numeric(as.character(no.inv.qtns$FST))),], n=10)
-  # 
-  # no.inv.manh.plot <- ggplot(no.inv.qtns, aes(x = position, y = as.numeric(as.character(FST)))) +
-  #   geom_point() +
-  #   theme_classic() +
-  #   labs(y = "FST") +
-  #   theme(panel.background = element_blank(), 
-  #         strip.background = element_rect(colour = "white", fill = "grey92"),
-  #         text = element_text(size = 11)) +
-  #   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-  #   scale_y_continuous(expand = c(0, 0), limits = c(0, 0.7))
-  # 
+ 
   print("went into if statement")
   df.muts$FST <- as.numeric(as.character(df.muts$FST))
   freq <- df.muts$freq
@@ -224,7 +213,7 @@ if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0){
 
 ######################################################################################################  
 #### Identify which QTNs fall within inversion windows ####
-if(nrow(invWindBases.MAF) > 0){
+  if(nrow(invWindBases.MAF) > 0){
   ## filter for MAF 
   # SELECTION
   str(df.muts)
@@ -282,7 +271,6 @@ if(nrow(invWindBases.MAF) > 0){
     }
   }
   df.muts.NS.MAF$inOut <- as.factor(df.muts.NS.MAF$inOut)
-
 
 ### end identifying inversion window QTNs
 ######################################################################################################  
@@ -463,7 +451,7 @@ if(nrow(invWindBases.MAF) > 0){
     final.bases.NS <- c(final.bases.NS,focalWindow$invWindBasesMAF[wind.length])
     center.bases.NS <-  c(center.bases.NS, (focalWindow$invWindBasesMAF[1] + focalWindow$invWindBasesMAF[wind.length])/2)
   }
- df.inv.NS <- data.frame(invWindID = inv.IDs.NS, first_base = first.bases.NS, final_base = final.bases.NS,
+  df.inv.NS <- data.frame(invWindID = inv.IDs.NS, first_base = first.bases.NS, final_base = final.bases.NS,
                             center_base = center.bases.NS)
 
 ### end identifying inversion window QTNs
@@ -564,8 +552,8 @@ if(nrow(invWindBases.MAF) > 0){
   df.adaptSplitboxNS <- rbind(df.adaptSplitbox, df.invAllData.NS)
   df.adaptSplitboxNS$adaptInv <- as.factor(df.adaptSplitboxNS$adaptInv)
   
-} ## CLOSE IF STATEMENT FOR IF THERE ARE NO INVERSIONS AFTER MAF FILTER
-} ## CLOSE IF STATEMENT FOR IF THERE ARE NO INVERSIONS IN THE FINAL GENERATION
+  } ## CLOSE IF STATEMENT FOR IF THERE ARE NO INVERSIONS AFTER MAF FILTER
+}## CLOSE IF STATEMENT FOR IF THERE ARE NO INVERSIONS IN THE FINAL GENERATION
 ## end subset inversions
 ######################################################################################################
 } ## CLOSE IF STATEMENT FOR IF THIS IS A NO INVERSION SIM
@@ -705,7 +693,7 @@ if(nrow(invWindBases.MAF) > 0){
 
 ## IF NO INVERSION SIM DO NOT EVALUATE THE REST OF THE CODE OTHER THAN OUTPUTS
 if(df.params$muInv != 0){
-  if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0 & nrow(invWindBases.MAF) > 0 ){
+  if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0 & exists("invWindBases.MAF") ){
       
 ## Average Inversion Age ##
 
@@ -1562,22 +1550,22 @@ if(df.params$muInv != 0){
   
   #hist(G_pop1*a2)
 
-  png(paste0(folderOut, seed, "_heatmapPop1alphaFST.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
-    heatmap(t(G1_alpha[, pop1_order]),   
-            main="Pop1 G*a+-*FST",cexCol = 0.3,
-            Colv = NA, useRaster=TRUE,
-            scale="none",
-            col=two.colors(100, start = "blue", end="red", middle="white"))
-  dev.off()
-  
-  png(paste0(folderOut, seed, "_heatmapPop2alphaFST.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
-    heatmap(t(G2_alpha[, pop2_order]),   
-            main="Pop2 G*a+-*FST",cexCol = 0.3,
-            Colv = NA, useRaster=TRUE,
-            scale="none",
-            col=two.colors(100, start = "blue", end="red", middle="white") )
-  dev.off()
-  
+  # png(paste0(folderOut, seed, "_heatmapPop1alphaFST.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  #   heatmap(t(G1_alpha[, pop1_order]),   
+  #           main="Pop1 G*a+-*FST",cexCol = 0.3,
+  #           Colv = NA, useRaster=TRUE,
+  #           scale="none",
+  #           col=two.colors(100, start = "blue", end="red", middle="white"))
+  # dev.off()
+  # 
+  # png(paste0(folderOut, seed, "_heatmapPop2alphaFST.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  #   heatmap(t(G2_alpha[, pop2_order]),   
+  #           main="Pop2 G*a+-*FST",cexCol = 0.3,
+  #           Colv = NA, useRaster=TRUE,
+  #           scale="none",
+  #           col=two.colors(100, start = "blue", end="red", middle="white") )
+  # dev.off()
+  # 
   G_ref1 <- G_pop1
   G_ref2 <- G_pop2
   
@@ -1618,11 +1606,16 @@ if(df.params$muInv != 0){
 #### end plot heatmanps
 ######################################################################################################    
 
+  
+
 ######################################################################################################
 #### BigSnpr ####
 ## This chunk of code finds a quasi-independent set of SNPs
   ## the g matrix needs to be order by position in the genome can not reorder by any other value
-
+  
+  
+if(length(adapt.inv) != 0){ # don't need to run if there are no adaptive inversions
+  
 # list the G matrix with the position of each mutation and the chromosome 
 # it is on. 
   training <- list(G = G, 
@@ -1793,13 +1786,15 @@ if(df.params$muInv != 0){
     df.mutsMAFord.NS$qvalue <- qvalue(df.mutsMAFord.NS$pcadapt_4.3.3_PRUNED_pvalue)$qvalues
     df.mutsMAFord.NS$pcadapt_outlier <- ifelse(df.mutsMAFord.NS$qvalue > 0.01, FALSE, TRUE)
     df.mutsMAFord.NS$pcadapt_outlier <- as.factor(df.mutsMAFord.NS$pcadapt_outlier)
+    pcadapt_worked <- 1
+    # plot(newpc$u[,1], newpc$u[,2], col = c(rep("red", 1000), rep("blue", 1000)))
+    # plot(newpc.NS$u[,1], newpc.NS$u[,2], col = c(rep("red", 1000), rep("blue", 1000)))
   }
-  
-  plot(newpc$u[,1], newpc$u[,2], col = c(rep("red", 1000), rep("blue", 1000)))
-  plot(newpc.NS$u[,1], newpc.NS$u[,2], col = c(rep("red", 1000), rep("blue", 1000)))
   
   dim(df.mutsMAFord)
   dim(df.mutsMAFord.NS)
+  
+}
   #### end PCADAPT
 ######################################################################################################
 
@@ -1814,12 +1809,11 @@ if(length(adapt.inv) != 0){
                                     c(rep("Pop1", 1000), rep("Pop2", 1000)))
   colnames(FstDataFrame)[3] <- "FST_outflank"
   
-  
   # ask about qthreshold and trim fraction
   out_pruned <- OutFLANK(FstDataFrame[training$which_pruned,], NumberOfSamples=2, 
                          LeftTrimFraction=0.05, RightTrimFraction=0.05,
                           Hmin=0.1, qthreshold=0.01)     
-  if(out_pruned != 0){
+  if(is.list(out_pruned)){
     str(out_pruned)
     head(df.mutsMAFord)
     colnames(df.mutsMAFord)[10] <- "FST_slim"
@@ -1840,8 +1834,7 @@ if(length(adapt.inv) != 0){
   } else {
     df.out <- 0
   }
-  
-}
+
   
   FstDataFrame.NS <- MakeDiploidFSTMat(t(training.NS$G),rownames(training.NS$G),
                                        c(rep("Pop1", 1000), rep("Pop2", 1000)))
@@ -1849,23 +1842,31 @@ if(length(adapt.inv) != 0){
   
   out_pruned.NS <- OutFLANK(FstDataFrame.NS[training.NS$which_pruned,], NumberOfSamples=2, 
                             LeftTrimFraction=0.05, RightTrimFraction=0.05,
-                            Hmin=0.1, qthreshold=0.01)     
-  str(out_pruned.NS)
-  head(df.mutsMAFord.NS)
-  colnames(df.mutsMAFord.NS)[10] <- "FST_slim"
-  df.FST.temp.NS <- merge(df.mutsMAFord.NS, FstDataFrame.NS, by = "LocusName")
-  df.FST.NS <- df.FST.temp.NS[order(df.FST.temp.NS$position_vcf),]
-  dim(df.FST.NS)
-  df.out.NS <- pOutlierFinderChiSqNoCorr(df.FST.NS, 
-                                         Fstbar = out_pruned.NS$FSTNoCorrbar, 
-                                         dfInferred = out_pruned.NS$dfInferred, Hmin=0.1)
-  df.out.NS$OutFLANK_0.2_PRUNED_log10p <- -log10(df.out.NS$pvaluesRightTail)
-  df.out.NS$OutFLANK_0.2_PRUNED_log10p_add <- -log10(df.out.NS$pvaluesRightTail + 1/10000000000000000000)
-  
-  
-  pdf(paste0(folderOut, seed, "noSel_outflankFstHist.pdf"), width =5, height = 5)
-    OutFLANKResultsPlotter(out_pruned.NS, Zoom = T)
-  dev.off()
+                            Hmin=0.1, qthreshold=0.01)
+  if(is.list(out_pruned.NS)){
+    str(out_pruned.NS)
+    head(df.mutsMAFord.NS)
+    colnames(df.mutsMAFord.NS)[10] <- "FST_slim"
+    df.FST.temp.NS <- merge(df.mutsMAFord.NS, FstDataFrame.NS, by = "LocusName")
+    df.FST.NS <- df.FST.temp.NS[order(df.FST.temp.NS$position_vcf),]
+    dim(df.FST.NS)
+    df.out.NS <- pOutlierFinderChiSqNoCorr(df.FST.NS, 
+                                           Fstbar = out_pruned.NS$FSTNoCorrbar, 
+                                           dfInferred = out_pruned.NS$dfInferred, Hmin=0.1)
+    df.out.NS$OutFLANK_0.2_PRUNED_log10p <- -log10(df.out.NS$pvaluesRightTail)
+    df.out.NS$OutFLANK_0.2_PRUNED_log10p_add <- -log10(df.out.NS$pvaluesRightTail + 1/10000000000000000000)
+    
+    
+    pdf(paste0(folderOut, seed, "noSel_outflankFstHist.pdf"), width =5, height = 5)
+      OutFLANKResultsPlotter(out_pruned.NS, Zoom = T)
+    dev.off()
+  } else {
+    df.out.NS <- 0
+  }
+} else {
+  df.out <- 0
+  df.out.NS <- 0
+}
   
 #### end OutFLANK
 ######################################################################################################
@@ -2164,32 +2165,24 @@ if(length(adapt.inv) != 0){
   
   colnames(df.qtnMuts.MAF)[2] <- "LocusName"
   df.outlierComp <- try(left_join(df.qtnMuts.MAF[c(2,12:ncol(df.qtnMuts.MAF))], df.out, by = "LocusName"))
-  
-  
-  } 
-  
+
   colnames(df.qtnMuts.NS.MAF)[2] <- "LocusName"
   df.outlierComp.NS <- left_join(df.qtnMuts.NS.MAF[c(2,12:ncol(df.qtnMuts.NS.MAF))], df.out.NS, by = "LocusName")
   dim(df.outlierComp.NS)
+}
 
-if(length(adapt.inv) == 0 | "try-error" %in% class(df.outlierComp)){
-  
-  false_neg_pcadapt <- NA
-  true_pos_pcadapt <- NA
-  true_pos_outflank <- NA
-  false_neg_outflank <- NA
-  
-} else {
+
+if(length(adapt.inv) != 0 & exists("df.outlierComp")){
   
   false_neg_pcadapt <- 0
   true_pos_pcadapt <- 0
   true_pos_outflank <- 0
   false_neg_outflank <- 0
   for(i in 1:nrow(df.adaptInv)){
-  
+    
     # subset dataframe for the qtns in the focal inversion
     focal.inv <- df.outlierComp[df.outlierComp$position >= df.adaptInv$first_bases[i] & 
-                     df.outlierComp$position <= df.adaptInv$final_bases[i], ]
+                                  df.outlierComp$position <= df.adaptInv$final_bases[i], ]
     # count number of qtns
     var <- nrow(focal.inv)
     
@@ -2204,6 +2197,13 @@ if(length(adapt.inv) == 0 | "try-error" %in% class(df.outlierComp)){
     ifelse(pcadapt.T == nrow(pcadapt.top), true_pos_pcadapt <- true_pos_pcadapt + 1, false_neg_pcadapt <- false_neg_pcadapt + 1)
     
   }
+  
+} else {
+  
+  false_neg_pcadapt <- NA
+  true_pos_pcadapt <- NA
+  true_pos_outflank <- NA
+  false_neg_outflank <- NA
 
 }
 
@@ -2219,6 +2219,7 @@ if(length(nonadapt.inv) != 0 & exists("df.outlierComp")){
     false_pos_pcadapt <- 0
     true_neg_outflank <- 0
     false_pos_outflank <- 0
+    
     for(i in 1:nrow(df.nonadaptInv)){
       focal.inv <- df.outlierComp[df.outlierComp$position >= df.nonadaptInv$first_bases[i] & 
                                   df.outlierComp$position <= df.nonadaptInv$final_bases[i], ]
@@ -2245,7 +2246,7 @@ if(length(nonadapt.inv) != 0 & exists("df.outlierComp")){
   false_pos_outflank <- NA
 }
 
-if(nrow(df.inv.NS) != 0){
+if(nrow(df.inv.NS) != 0 & exists("df.outlierComp.NS")){
 
   true_neg_outflank_NS <- 0
   true_neg_pcadapt_NS <- 0
@@ -2276,18 +2277,20 @@ if(nrow(df.inv.NS) != 0){
   false_pos_pcadapt_NS <- NA
 }
 
-if("try-error" %in% class(test)){
-  false_neg_pcadapt <- NA
-  true_pos_pcadapt <- NA
-  true_neg_pcadapt <- NA
-  false_pos_pcadapt <- NA
-} 
-
-if("try-error" %in% class(test.NS)){
-  true_neg_pcadapt_NS <- NA
-  false_pos_pcadapt_NS <- NA
-} 
-
+if(length(adapt.inv) > 0){
+  if("try-error" %in% class(test)){
+    false_neg_pcadapt <- NA
+    true_pos_pcadapt <- NA
+    true_neg_pcadapt <- NA
+    false_pos_pcadapt <- NA
+  } 
+}
+if(length(adapt.inv)>0){
+  if("try-error" %in% class(test.NS)){
+    true_neg_pcadapt_NS <- NA
+    false_pos_pcadapt_NS <- NA
+  } 
+}
 
 #### end Outlier identification
 ######################################################################################################
@@ -2318,9 +2321,9 @@ if("try-error" %in% class(test.NS)){
 
 
 
-  #write.table(cbind(seed, df.invChar), paste0(folderOut, "outputInvChar_finalGen.txt"), col.names = F, row.names = F, append = T)
-  #write.table(cbind(seed, df.AdaptSplit), paste0(folderOut, "outputInvChar_allData.txt"), col.names = F, row.names = F, append = T)
-  #write.table(cbind(seed, df.crit.output), paste0(folderOut, "outputAdaptInvCrit.txt"), col.names = F, row.names = F, append = TRUE)
+  write.table(cbind(seed, df.invChar), paste0(folderOut, "outputInvChar_finalGen.txt"), col.names = F, row.names = F, append = T)
+  write.table(cbind(seed, df.AdaptSplit), paste0(folderOut, "outputInvChar_allData.txt"), col.names = F, row.names = F, append = T)
+  write.table(cbind(seed, df.crit.output), paste0(folderOut, "outputAdaptInvCrit.txt"), col.names = F, row.names = F, append = TRUE)
 
 #### end Data output
 ######################################################################################################
@@ -2331,6 +2334,6 @@ if("try-error" %in% class(test.NS)){
 } else {
   output.data <- as.data.frame(c(seed, NA, LA_final, rep(NA, 45)))
 }
- # write.table(t(output.data),  paste0(folderOut, "outputSumData.txt"), col.names = F, row.names = F, append = T)
+ write.table(t(output.data),  paste0(folderOut, "outputSumData.txt"), col.names = F, row.names = F, append = T)
   
   

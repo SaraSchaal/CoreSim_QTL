@@ -72,9 +72,9 @@ rownames(df.params) <- NULL
 head(df.params)
 tail(df.params)
 dim(df.params)
-write.table(df.params, "src/invSimParams.txt", row.names = FALSE)
-test.data #<- df.params[c(1,2155, sample(1:2000, 2)),]
-write.table(test.data, "src/test_invSimParams.txt", row.names = FALSE)
+#write.table(df.params, "src/invSimParams.txt", row.names = FALSE)
+#test.data #<- df.params[c(1,2155, sample(1:2000, 2)),]
+#write.table(test.data, "src/test_invSimParams.txt", row.names = FALSE)
 df.params <- as.data.frame(df.params)
 
 df.params.rerun <- rbind(df.params[df.params$seed %in% seq(from = 3384362, to = 3384781, by = 2),], 
@@ -82,24 +82,16 @@ df.params.rerun <- rbind(df.params[df.params$seed %in% seq(from = 3384362, to = 
 
 df.params.rerun2 <- rbind(df.params[df.params$seed <= 3385439 & df.params$seed >= 3385143,])
 
-write.table(df.params.rerun2, "src/rerun2_invSimParams.txt", row.names = FALSE)
 
-rerun3 <- c("3385076", "3385052", "3385061", "3385037", "3385079", "3385070", "3385073", "3385058", "3385064", "3385043",
-            "3385055", "3385022", "3385046", "3385031", "3385049", "3385016", "3385067", "3385019", "3385028", "3385034",
-            "3385040", "3385010", "3385007", "3385013", "3385004", "3384998", "3384989", "3384986", "3385001", "3384995",
-            "3384992", "3384977", "3384968", "3384959", "3384956", "3384953", "3384950", "3384947", "3384935", "3384920",
-            "3384896", "3384902", "3384890", "3384899", "3384926", "3384929", "3384923", "3384884", "3384911", "3384893",
-            "3384908", "3384887", "3384881", "3384836", "3384839", "3384824", "3384833", "3384842", "3384830", "3384815",
-            "3384827", "3384812", "3384818", "3384821", "3384800", "3384803", "3384791", "3384797", "3384794", "3384806",
-            "3384809")
-
-df.params.rerun3 <- df.params[df.params$seed %in% rerun3, ]
-
-write.table(df.params.rerun3, "src/rerun3_invSimParams.txt", row.names = FALSE)
-
-df.params[df.params$mig1 == 0.001 & df.params$muBase ==  0.000001 
+df.params[df.params$mig1 == 0.01 & df.params$muBase ==  0.000001 
             & df.params$sigmaK == 0.75 & df.params$alpha == 0.002 
-            & df.params$enVar == 0 & df.params$muInv == 0.001, ]
+            & df.params$enVar == 0 & df.params$muInv == 0, ] 
+df.params[df.params$seed == 3384843,]
+
+# 20210930
+#3384723 poly low mig (0.01) strong selec 
+
+
 
 #3384602 poly low low mig weak select - no island 3384962
 #3384603 poly low mig weak select - no island 3384963
@@ -125,18 +117,18 @@ df.params[df.params$mig1 == 0.001 & df.params$muBase ==  0.000001
 #3383524 oligo mod mig weak select - inv 3383944
 #3383525 oligo high mig weak select - inv 3383945
 #3383526 oligo high high mig weak select - inv 3383946
-3384962
-#3383402 oligo low low mig mod select - inv 3383822
-#3383403 oligo low mig mod select - inv 3383823
-#3383404 oligo mod mig mod select - inv 3383824
-#3383405 oligo high mig mod select - inv 3383825
-#3383406 oligo high high mig mod select - inv 3383826
+
+#3383462 oligo low low mig mod select - inv 3383822
+#3383463 oligo low mig mod select - inv 3383823
+#3383464 oligo mod mig mod select - inv 3383824
+#3383465 oligo high mig mod select - inv 3383825
+#3383466 oligo high high mig mod select - inv 3383826
 
 #3383282 oligo low low mig strong select - inv 3383702
 #3383283 oligo low mig strong select - inv 3383703
 #3383284 oligo mod mig strong select - inv 3383704
-#3383285 oligo high mig strong select - inv 3383705
-#3383286 oligo high high mig strong select - inv 33836706
+#3383345 oligo high mig strong select - inv 3383705
+#3383346 oligo high high mig strong select - inv 33836706
 
 
 df.params.2[df.params.2$mig1 == 0.25 & df.params.2$muBase ==  0.00000001 

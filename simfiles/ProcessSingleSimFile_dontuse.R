@@ -32,8 +32,8 @@
  # seed <-  args[3]#"3384602"  #
   
   folderIn <- "results/Inversion/20210803_noInvControls/"#args[1] # 
-  folderOut <-   "figures/20210803_noInvControls/" #  args[2]# 
-  seed <-  "3384724"  #args[3]#
+  folderOut <-   "figures/20210803_noInvControls/conceptFig/" #  args[2]# 
+  seed <-  "3383871" #"3384725"  #args[3]#
   
   
   df.invTime <- read.table(paste0(folderIn, seed, "_outputInvTime.txt", sep = ""), header = TRUE)
@@ -126,7 +126,7 @@ if(df.params$muInv == 0){
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
     scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
   
-  png(paste0(folderOut, seed, "_manh.png"), type = "cairo", width = 25, height = 4, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_manh.png"), width = 25, height = 4, units = 'in', res = 300)
    print(no.inv.manh.plot)
   dev.off()
   
@@ -704,100 +704,6 @@ if(nrow(invWindBases.MAF) > 0){
   dev.off()
 
   
-  df.adaptInv <- as.data.frame(cbind(ID = adapt.inv, center_bases = center.bases, first_bases = first.bases, 
-                                     final_bases = final.bases))
-  df.nonadaptInv <- as.data.frame(cbind(ID = nonadapt.inv, center_bases = center.bases.NA, first_bases = first.bases.NA, 
-                                        final_bases = final.bases.NA))
-  # SELECTION #
-  df.neutQTNmuts <- df.muts.MAF[df.muts.MAF$inOut != "inv",]
-  df.neutQTNmuts$inOut <- factor(df.neutQTNmuts$inOut)
-  df.neutQTNmuts$chrom <- factor(df.neutQTNmuts$chrom)
-  
-  df.neutQTNmuts.NS <- df.muts.NS.MAF[df.muts.NS.MAF$inOut != "inv",]
-  df.neutQTNmuts.NS$inOut <- factor(df.neutQTNmuts.NS$inOut)
-  df.neutQTNmuts.NS$chrom <- factor(df.neutQTNmuts.NS$chrom)
-  
-  manh.plot <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, 
-                                          group = interaction(inOut, chrom))) 
-  if(length(adapt.inv) != 0){
-    manh.plot <- manh.plot + geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
-                                                                     ymax=max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1), 
-                                       fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE) 
-  }
-  manh.plot <- manh.plot +
-    geom_point(data = df.neutQTNmuts, aes(color = chrom, shape = inOut)) + 
-    scale_shape_manual(name = "QTN location", 
-                       labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
-                       values=c(19, 15, 1)) +
-    scale_color_manual(name = "Chromosome", values = c(rep(c("navy", "lightblue"), 10), "darkgrey")) + 
-    labs(title = expression(bold("Selection - Adaptive Inversions"))) + 
-    theme(legend.position = "none") +
-    theme_classic() +
-    theme(panel.background = element_blank(), 
-          strip.background = element_rect(colour = "white", fill = "grey92"),
-          text = element_text(size = 11)) +
-    scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST)))*1.1) 
-  
-  
-  manh.plot.NA <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, 
-                                             group = interaction(inOut, chrom))) 
-  if(length(nonadapt.inv) != 0){
-    manh.plot.NA <- manh.plot.NA + geom_rect(data=df.nonadaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
-                                                                              ymax=max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1), 
-                                             fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE)
-  }
-  manh.plot.NA <- manh.plot.NA + geom_point(data = df.neutQTNmuts, aes(color = chrom, shape = inOut)) + 
-    scale_shape_manual(name = "QTN location", 
-                       labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
-                       values=c(19, 15, 1)) +
-    scale_color_manual(name = "Chromosome", values = c(rep(c("navy", "lightblue"), 10), "darkgrey")) + 
-    labs(title = expression(bold("Selection - Nonadaptive Inversions"))) + 
-    theme(legend.position = "none") +
-    theme_classic() +
-    theme(panel.background = element_blank(), 
-          strip.background = element_rect(colour = "white", fill = "grey92"),
-          text = element_text(size = 11)) +
-    scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1))
-  
-  # NO SELECTION #
-  manh.plot.NS <- ggplot(df.neutQTNmuts.NS, aes(x = position, y = FST, 
-                                                group = interaction(inOut, chrom)))
-  if(nrow(df.inv.NS) != 0){
-    manh.plot.NS <- manh.plot.NS + geom_rect(data=df.inv.NS, mapping=aes(xmin=first_base, xmax=final_base, ymin=0,
-                                                                         ymax=max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1), 
-                                             fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE)
-  }
-  manh.plot.NS <- manh.plot.NS + geom_point(aes(color = chrom, shape = inOut)) + 
-    scale_color_manual(name = "Chromosome",
-                       values = c(rep(c("navy", "lightblue"), 10), "darkgrey")) +
-    scale_shape_manual(name = "QTN location", labels = c("Inside Inversion", "Neutral", "Outside Inversion"), 
-                       values=c(19, 15, 1)) +
-    labs(title = expression(bold("No Selection"))) + 
-    theme_classic() +
-    theme(panel.background = element_blank(), 
-          strip.background = element_rect(colour = "white", fill = "grey92"),
-          text = element_text(size = 11)) +
-    scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1))
-  
-  ## No legend
-  manh.plot.NS.noleg <- manh.plot.NS + theme(legend.position = "none")
-  manh.plot.noleg <-  manh.plot+ theme(legend.position = "none")
-  manh.plot.NA.noleg <- manh.plot.NA  + theme(legend.position = "none")
-  legManh <- g_legend(manh.plot)
-  
-  ## Print plot
-  png(paste0(folderOut, seed, "_manh.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
-  print(ggarrange(manh.plot.noleg, blank, manh.plot.NA.noleg, legManh, manh.plot.NS.noleg, blank, nrow = 3, ncol = 2, widths = c(2.3,0.8,2.3,0.8,2.3,0.8)))
-  dev.off()
-  
-  png(paste0(folderOut, seed, "_manhFST.png"), type = "cairo", width = 25, height = 4, units = 'in', res = 300)
-  print(manh.plot)
-  dev.off()
-  
-  
 ## IF NO INVERSION SIM DO NOT EVALUATE THE REST OF THE CODE OTHER THAN OUTPUTS
 if(df.params$muInv != 0){
   if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0 & nrow(invWindBases.MAF) > 0 ){
@@ -1043,7 +949,7 @@ if(df.params$muInv != 0){
                                           group = interaction(inOut, chrom))) 
   if(length(adapt.inv) != 0){
     manh.plot <- manh.plot + geom_rect(data=df.adaptInv, mapping=aes(xmin=first_bases, xmax=final_bases, ymin=0,
-                                                                     ymax=max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1), 
+                                                                     ymax=max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1), 
                                        fill = "tan1", color="black", alpha=0.5, inherit.aes = FALSE) 
   }
   manh.plot <- manh.plot +
@@ -1059,7 +965,7 @@ if(df.params$muInv != 0){
           strip.background = element_rect(colour = "white", fill = "grey92"),
           text = element_text(size = 11)) +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST)))*1.1) 
+    scale_y_continuous(expand = c(0, 0), limits = c(0,0.25))
   
   
   manh.plot.NA <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, 
@@ -1111,14 +1017,13 @@ if(df.params$muInv != 0){
   legManh <- g_legend(manh.plot)
   
   ## Print plot
-  png(paste0(folderOut, seed, "_manh.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_manh.png"), width = 7, height = 7, units = 'in', res = 300)
   print(ggarrange(manh.plot.noleg, blank, manh.plot.NA.noleg, legManh, manh.plot.NS.noleg, blank, nrow = 3, ncol = 2, widths = c(2.3,0.8,2.3,0.8,2.3,0.8)))
   dev.off()
   
-  png(paste0(folderOut, seed, "_manhFST.png"), type = "cairo", width = 25, height = 4, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_manhFST.png"),  width = 25, height = 4, units = 'in', res = 300)
   print(manh.plot)
   dev.off()
-  
   
   
 ######################################################################################################   
@@ -1755,7 +1660,7 @@ if(df.params$muInv != 0){
             main="Pop1 G*a+-*FST",cexCol = 0.3,
             Colv = NA, useRaster=TRUE,
             scale="none",
-            col=two.colors(100, start = "blue", end="red", middle="white"))
+            col=two.colors(3, start = "blue", end="red", middle="white"))
   dev.off()
   
   png(paste0(folderOut, seed, "_heatmapPop2alphaFST.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
