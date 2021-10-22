@@ -16,14 +16,14 @@ Example of what we want slim to do when we have an inversion at [X,Y]. In this e
 
 
    After recombination:
-
-       	      .  ..
+```
+      	      .  ..
 	AY----C--XD
 
 	..    
 	AY----C--XD
 
-
+```
 
 
 Example of what SLiM ACTUALLY does with this proposed recombination break regardless of whether an individual is homozygous inverted or not beceause SLiM only recognizes the standard orientation in the genetic map:
