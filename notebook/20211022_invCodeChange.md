@@ -11,13 +11,13 @@ Example of what we want slim to do when we have an inversion at [X,Y]. In this e
 	   *  
 	AY----C--XD - chrom1
 
-	..	  .  ..
+	..    .  ..
 	AY----C--XD - chrom2
 
 
    After recombination:
 
-       	  .  ..
+       	      .  ..
 	AY----C--XD
 
 	..    
@@ -33,13 +33,13 @@ Example of what SLiM ACTUALLY does with this proposed recombination break regard
 	   *  
 	AX--C----XD - chrom1
 
-	..	.    ..
+	..  .    ..
 	AX--C----YD - chrom2
 
 
    After recombination:
    
-       	.    ..
+       	    .    ..
 	AX--C----YD
 
 	..    
@@ -54,7 +54,7 @@ Example of how to make the recombination for an individual homozygous for the in
 	 * *      *
 	AX--C----YD - chrom1
 
-	..	.    ..
+	..  .    ..
 	AX--C----YD - chrom2
 
 
@@ -63,7 +63,7 @@ Example of how to make the recombination for an individual homozygous for the in
 	 .        .
 	AX--C----YD
 
-    .   .    .
+        .   .    .
 	AX--C----YD
 
 																	   
