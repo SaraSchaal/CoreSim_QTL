@@ -1,5 +1,5 @@
 
-##Example of what we want slim to do when we have an inversion at [X,Y]   
+## Example of what we want slim to do when we have an inversion at [X,Y]   
 In this example, D is at Y + 1 and A is at X - 1 in the standard orientation and C is some locus in the middle of the inversion just as an example locus to follow: 
 ```	
 	AX--C----YD standard
@@ -27,7 +27,7 @@ In this example, D is at Y + 1 and A is at X - 1 in the standard orientation and
 ```
 
 
-##Example of what SLiM ACTUALLY does with this proposed recombination break regardless of whether an individual is homozygous inverted or not  
+## Example of what SLiM ACTUALLY does with this proposed recombination break regardless of whether an individual is homozygous inverted or not  
 SLiM only recognizes the standard orientation in the genetic map:
 
    Homozygote whether inverted or not (* is proposed breakpoint):
@@ -51,7 +51,7 @@ SLiM only recognizes the standard orientation in the genetic map:
 So we manually have to make a recombination event with the standard orientation that results in the same inheritance as what we showed in the "what we want slim to do" example.
 
 
-##Example of how to make the recombination for an individual homozygous for the inversion to match the first example by adding breakpoints at X and Y + 1 and again * represent proposed breakpoints. We want AY to be inherited together and X and D to be inherited together:  
+## Example of how to make the recombination for an individual homozygous for the inversion to match the first example by adding breakpoints at X and Y + 1 and again * represent proposed breakpoints. We want AY to be inherited together and X and D to be inherited together:  
 ```
 	 * *      *
 	AX--C----YD - chrom1
@@ -92,4 +92,3 @@ Breakpoints proposed at both ends:
 <img src="../src/Inv_Issue/Proposed_Inv_Correction_ExampleBothEnds.png" width = "1000">
   
 
-    
