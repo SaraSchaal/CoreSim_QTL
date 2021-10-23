@@ -7,7 +7,7 @@ In this example, D is at Y + 1 and A is at X - 1 in the standard orientation and
 	AY----C--XD inverted
 ```
 
-   Homozygote Inverted (* is proposed breakpoint):
+Homozygote Inverted (* is proposed breakpoint):
 ```
 	   *  
 	AY----C--XD - chrom1
@@ -16,7 +16,7 @@ In this example, D is at Y + 1 and A is at X - 1 in the standard orientation and
 	AY----C--XD - chrom2
 ```
 
-   After recombination:
+After recombination:
 ```
       	      .  ..
 	AY----C--XD
@@ -28,9 +28,9 @@ In this example, D is at Y + 1 and A is at X - 1 in the standard orientation and
 
 
 ## Example of what SLiM ACTUALLY does with this proposed recombination break regardless of whether an individual is homozygous inverted or not  
-SLiM only recognizes the standard orientation in the genetic map:
+SLiM only recognizes the standard orientation in the genetic map. Below is an example of how SLiM handles recombination. 
 
-   Homozygote whether inverted or not (* is proposed breakpoint):
+Homozygote whether inverted or not (* is proposed breakpoint):
 ```
 	   *  
 	AX--C----XD - chrom1
@@ -39,7 +39,7 @@ SLiM only recognizes the standard orientation in the genetic map:
 	AX--C----YD - chrom2
 
 ```
-   After recombination:
+After recombination:
 ```   
        	    .    ..
 	AX--C----YD
@@ -61,7 +61,7 @@ We do this by adding breakpoints at X and Y + 1 and again * represent proposed b
 	AX--C----YD - chrom2
 ```
 
-	After recombination:
+After recombination:
 ```
 	 .        .
 	AX--C----YD
@@ -74,7 +74,7 @@ Here by adding those new breakpoints at X and Y + 1, we successfully get AY and 
 
   
 ## Checking the new code to make sure this happens properly
-Now I checked the code that was proposed by Vince, Peter and Andrew and did simple checks in Eidos to see that it did this properly and I do not believe it does. In the pictured example, I have a breakpoints vector with one breakpoint that falls inside the inverted region and therefore sum(inInv) will be odd. There are no breakpoints at the ends of the inversion (that needs to be checked next). What happens in their currect code is that they check the breakpoint vector for any that are either at the start or the end + 1 (where we need to add breakpoints) and stores a logical vector that is the length of break points and stores them in the left or right variable. This will only have a T if one of those proposed breakpoints is either at the start (T at the position in the left variable) or end + 1 (T at the position in the right variable). In my example they are all F because there are no breakpoints at the ends and what SHOULD happen is that they are then added to the vector. BUT this doesn't happen because they add the start and end+1 locations in this way ```c(inv_start, inv_end+1)[c(sum(left)> 0, sum(right)>0)]``` and they will only be added then if there is a T in those logical vectors. I THINK it should be that only if they are all F they should be added.
+Now I checked the code that was proposed by Vince Buffalo, Peter Ralph and Andrew Kern and did simple checks in Eidos to see that it did this properly and I do not believe it does. In the pictured example, I have a breakpoints vector with one breakpoint that falls inside the inverted region and, therefore, sum(inInv) will be odd. There are no breakpoints at the ends of the inversion (that needs to be checked next). What happens in their currect code is that they check the breakpoint vector for any that are either at the start or the end + 1 (where we need to add breakpoints) and creates a logical vector that is the length of break points and stores them in the variables left or right. This will only have a T if one of those proposed breakpoints is either at the start (T at the position in the left variable) or end + 1 (T at the position in the right variable). In my example, they are all F because there are no breakpoints at the ends and what SHOULD happen is that they are then added to the vector. BUT this doesn't happen because they add the start and end+1 locations in this way ```c(inv_start, inv_end+1)[c(sum(left)> 0, sum(right)>0)]``` and they will only be added then if there is a T in those logical vectors. I THINK it should be that only if they are all F they should be added.
 
 <img src="../src/Inv_Issue/Current_Inv_Code.png" width = "1000">
 
