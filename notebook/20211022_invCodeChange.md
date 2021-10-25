@@ -380,3 +380,13 @@ After recombination:
 ```
 
 Now A and B then C and D are each inherited together which is how we want it to work.
+
+
+## Meeting with Katie 20211025
+For my simulations:
+- what are we going to let happen in inversion heterozygotes? we are not going to allow any crossovers (not single not double). 
+- we ignore double crossovers because in our simulations their probability will be rare and it would be too difficult to accurately simulation given we have overlapping inversion windows evolving in the simulations. 
+- However, an individual chromosomes can not carry overlapping inversions in the simulation. Therefore, by suppressing crossovers in heterozygotes if two inversion windows overlapped and were found within the same genome, each one on a different chromosome, this individual would be a heterozygote and recombination would be suppressed.
+
+- what to do with inversion homozygotes? If a breakpoint arises exactly at the start move it over two bases to the left. 
+
