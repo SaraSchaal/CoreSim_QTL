@@ -1,76 +1,102 @@
-
 ## Example of what we want slim to do when we have an inversion at [X,Y]   
-In this example, D is at Y + 1 and A is at X - 1 in the standard orientation and C is some locus in the middle of the inversion just as an example locus to follow: 
+In this example, A is at X - 1, B is at X + 1, C is at Y - 1 and D is at Y + 1 in the standard orientation and W is some locus in the middle of the inversion just as an example locus to follow: 
 ```	
-	AX--C----YD standard
 
-	AY----C--XD inverted
+# standard (uninverted):
+   X  			   Y
+---+-------+---------------+-----
+  A B      W              C D
+
+# inverted:
+
+   X  			   Y
+---+-------+---------------+-----
+  A C      W              B D
+
 ```
 
 Homozygote Inverted (* is proposed breakpoint):
 ```
 	   *  
-	AY----C--XD - chrom1
+   X  			   		   Y
+---+-------+---------------+-----
+  A C      W              B D       - chrom1
 
-	..    .  ..
-	AY----C--XD - chrom2
+   X  			   		   Y
+---+-------+---------------+-----
+  a c      w              b     	- chrom2
+	
 ```
 
 After recombination:
 ```
-      	      .  ..
-	AY----C--XD
 
-	..    
-	AY----C--XD
+   X  			   		   Y
+---+-------+---------------+-----
+  A C      w              b d       
+
+   X  			   		   Y
+---+-------+---------------+-----
+  a c      W              B D    	
 
 ```
-
 
 ## Example of what SLiM ACTUALLY does with this proposed recombination break regardless of whether an individual is homozygous inverted or not  
 SLiM only recognizes the standard orientation in the genetic map. Below is an example of how SLiM handles recombination. 
 
 Homozygote whether inverted or not (* is proposed breakpoint):
 ```
-	   *  
-	AX--C----XD - chrom1
+   		*
+   X  			  		   Y
+---+-------+---------------+-----
+  A B      W              C D
 
-	..  .    ..
-	AX--C----YD - chrom2
+   X  			  		   Y
+---+-------+---------------+-----
+  a b      w              c d
 
 ```
 After recombination:
 ```   
-       	    .    ..
-	AX--C----YD
+    X  			  		   Y
+---+-------+---------------+-----
+  A B      w              c d
 
-	..    
-	AX--C----YD
+   X  			  		   Y
+---+-------+---------------+-----
+  a b      W              C D
 
 ```
-So we manually have to make a recombination event with the standard orientation that results in the same inheritance as what we showed in the "what we want slim to do" example.
-
+Now A and B are inherited together and C and D are inherited together which is not what we want. So we manually have to make a recombination event with the standard orientation that results in the same inheritance as what we showed in the "what we want slim to do" example.
 
 ## Example of how to make the recombination for an individual homozygous for the inversion to match the first example  
 We do this by adding breakpoints at X and Y + 1 and again * represent proposed breakpoints. We want AY to be inherited together and X and D to be inherited together:  
 ```
-	 * *      *
-	AX--C----YD - chrom1
+   *	*				    *
+   X  			  		   Y
+---+-------+---------------+-----
+  A B      W              C D
 
-	..  .    ..
-	AX--C----YD - chrom2
+   X  			  		   Y
+---+-------+---------------+-----
+  a b      w              c d
+
 ```
 
 After recombination:
 ```
-	 .        .
-	AX--C----YD
+   		
+   X  			  		   Y
+---+-------+---------------+-----
+  A b      W              C d
 
-        .   .    .
-	AX--C----YD
+   X  			  		   Y
+---+-------+---------------+-----
+  a B      w              c D
+
 ```
 																	   
-Here by adding those new breakpoints at X and Y + 1, we successfully get AY and the dotted AY to be inherited together and the dotted XD and XD to be inherited together. What doesn't match is the haplotypes inside the inversion. You can see that C is now inherited with dotted XD and not XD. Is this a problem? It could change the number of segregating haplotypes. (UNRESOVELED QUSTION)
+Here by adding those new breakpoints at X and Y + 1, we successfully get A and C to be inherited together then B and D to be inherited together. What doesn't match is the haplotypes inside the inversion. You can see that C is now inherited with dotted XD and not XD. Is this a problem? It could change the number of segregating haplotypes. (UNRESOVELED QUSTION)
 
   
 ## Checking the new code to make sure this happens properly
@@ -101,19 +127,16 @@ Example (proposed breakpoint at the position 4 which is C):
 
 ```
 	   *	
-	X--C--T-Y
+	A--C--B-D
 
-	.  .  . .
-	X--C--T-Y
+	a--c--b-d
 ```	
 After recombination:
 
 ```
-	   .  . .
-	X--C--T-Y
+	A--c--b-d
 
-	.
-	X--C--T-Y
+	a--C--B-D
 ```
 
 #### If we are going to ignore double crossovers, shouldn’t we ignore triple crossovers? 
