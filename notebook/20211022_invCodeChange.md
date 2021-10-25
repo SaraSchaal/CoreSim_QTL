@@ -18,24 +18,24 @@ In this example, A is at X - 1, B is at X + 1, C is at Y - 1 and D is at Y + 1 i
 Homozygote Inverted (* is proposed breakpoint):
 ```
 	   *  
-   X  			   		   Y
+   X  			   Y
 ---+-------+---------------+-----
   A C      W              B D       - chrom1
 
-   X  			   		   Y
+   X  			   Y
 ---+-------+---------------+-----
-  a c      w              b     	- chrom2
+  a c      w              b d       - chrom2
 	
 ```
 
 After recombination:
 ```
 
-   X  			   		   Y
+   X  			   Y
 ---+-------+---------------+-----
   A C      w              b d       
 
-   X  			   		   Y
+   X  			   Y
 ---+-------+---------------+-----
   a c      W              B D    	
 
@@ -46,23 +46,23 @@ SLiM only recognizes the standard orientation in the genetic map. Below is an ex
 
 Homozygote whether inverted or not (* is proposed breakpoint):
 ```
-   		*
-   X  			  		   Y
+   	*
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              C D
 
-   X  			  		   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      w              c d
 
 ```
 After recombination:
 ```   
-    X  			  		   Y
+    X  			   Y
 ---+-------+---------------+-----
   A B      w              c d
 
-   X  			  		   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      W              C D
 
@@ -72,12 +72,12 @@ Now A and B are inherited together and C and D are inherited together which is n
 ## Example of how to make the recombination for an individual homozygous for the inversion to match the first example  
 We do this by adding breakpoints at X and Y + 1 and again * represent proposed breakpoints. We want AY to be inherited together and X and D to be inherited together:  
 ```
-   *	*				    *
-   X  			  		   Y
+   *	*		    *
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              C D
 
-   X  			  		   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      w              c d
 
@@ -86,11 +86,11 @@ We do this by adding breakpoints at X and Y + 1 and again * represent proposed b
 After recombination:
 ```
    		
-   X  			  		   Y
+   X  			   Y
 ---+-------+---------------+-----
   A b      W              C d
 
-   X  			  		   Y
+   X  			   Y
 ---+-------+---------------+-----
   a B      w              c D
 
