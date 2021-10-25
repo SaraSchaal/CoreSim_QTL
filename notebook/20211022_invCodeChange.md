@@ -17,7 +17,7 @@ In this example, A is at X - 1, B is at X + 1, C is at Y - 1 and D is at Y + 1 i
 
 Homozygote Inverted (* is proposed breakpoint):
 ```
-	   *  
+	 *  
    X  			   Y
 ---+-------+---------------+-----
   A C      W              B D       - chrom1
