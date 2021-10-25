@@ -136,13 +136,13 @@ In this example, inside the inversion is between positions [X,Y] and A is just t
 ```
 
 # standard (uninverted):
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              C D
 
 # inverted:
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A C      W              B D
 
@@ -152,22 +152,22 @@ two break points inside the inversion **how SLiM does it**:
   
 ```
 
-   X  	*			*	   Y
+   X  	*	*	   Y
 ---+-------+---------------+-----
   A B      W              C D
 
 
-   X  					   Y
+   X  		 	   Y
 ---+-------+---------------+-----
   a b      w              c d
 
 After recombination:
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A B      w              C D
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      W              c d
 ```
@@ -176,22 +176,22 @@ After recombination:
   
 ```
 
-   X  	*			*	   Y
+   X  	*	*	   Y
 ---+-------+---------------+-----
   A C      W              B D
 
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a c      w              b d
 
 After recombination:
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A C      w              B D
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a c      W              b d
 ```
@@ -208,22 +208,22 @@ For this example, we have a breakpoint at the location where X falls in the stan
 
 ```
    *              *
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              C D
 
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      w              c d
 
 After recombination:
 
-   X  					   Y
+   X  			  Y
 ---+-------+---------------+-----
   A b      w              C D
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a B      W              c d
 ```
@@ -232,22 +232,22 @@ After recombination:
 
 ```
    *              *
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A C      W              B D
 
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a c      w              b d
 
 After recombination:
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A c      w              B D
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a C      W              b d
 ```
@@ -257,22 +257,22 @@ Here A is inherited with B and D, but not C which is what we want for an odd num
 
 ```
                   *         *
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              C D
 
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      w              c d
 
 After recombination:
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              c D
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      w              C d
 
@@ -286,23 +286,23 @@ Now as you can see the A, B, and D are inherited together and C isn't which is w
 **how SLiM does it**
 
 ```
-   *			*		    *
-   X  					   Y
+   *		*	    *
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              C D
 
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      w              c d
 
 After recombination:
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A b      w              C d
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a B      W              c D
 ```
@@ -310,23 +310,23 @@ After recombination:
 **how we want SLiM to do it**
 
 ```
-   *			*		    *
-   X  					   Y
+   *		*	    *
+   X  			   Y
 ---+-------+---------------+-----
   A C      W              B D
 
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a c      w              b d
 
 After recombination:
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A c      w              B d
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a C      W              b D
 ```
@@ -335,23 +335,23 @@ Here A and B and C and D are inherited together. Now lets force SLiM to do this 
 **remove breakpoints from the two ends** 
 
 ```
-   		    	*		    
-   X  					   Y
+   		*		    
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              C D
 
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      w              c d
 
 After recombination:
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   A B      W              c d
 
-   X  					   Y
+   X  			   Y
 ---+-------+---------------+-----
   a b      w              C D
 ```
