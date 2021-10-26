@@ -242,7 +242,7 @@ For this example, we have a breakpoint at the location where X falls in the stan
 
 After recombination:
 
-   X  			  Y
+   X  			   Y
 ---+-------+---------------+-----
   A b      w              C D
 
