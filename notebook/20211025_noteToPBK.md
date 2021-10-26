@@ -2,7 +2,7 @@ Hi Vince, Andrew, & Peter,
 
 I was trying to make sure your code was implemented in the way that I expect it to based on the logic you show here: https://github.com/MesserLab/SLiM/issues/203#issuecomment-884635953. That logic makes sense to me. I've written out all the different scenarios on paper and they all check out. When I tested the code, however, I was not getting breakpoint additions how I expected for an inversion homozygote. Keep in mind I may be overlooking something so please correct me if I am way off base! 
 
-The way the logic works is that if there is a single breakpoint inside the inversion, we want to add breakpoints on both the inv_start and the inv_end + 1. To handle this scenario, the current code is written like this: ```breakpoints = sort(c(breakpoints[!(left | right)], c(inv_start, inv_end + 1)[c(sum(left) = 0, sum(right) = 0)]));```. 
+The way the logic works is that if there is a single breakpoint inside the inversion, we want to add breakpoints on both the inv_start and the inv_end + 1. To handle this scenario, the current code is written like this: ```breakpoints = sort(c(breakpoints[!(left | right)], c(inv_start, inv_end + 1)[c(sum(left) > 0, sum(right) > 0)]));```. 
 
 Take the example here where we have a breakpoints vector that includes one breakpoint inside the inversion, but no breakpoints on either the start or end + 1:
 
