@@ -32,7 +32,7 @@ if(sum(c(left,right)) == 0){
 	# SLiM call breakpoints at both inversion ends, we remove them
 	breakpoints = sort(c(breakpoints[!(left | right)]));
 } else if (sum(left) > 0 | sum(right) > 0){
-	# SLiM calls a breakpoint at one inversion end, we remove the one that SLiM calls and add the one that slim doesn't call
+	# SLiM calls a breakpoint at one inversion end, we remove the one that SLiM calls and add the one that SLiM doesn't call
 	breakpoints = sort(c(breakpoints[!(left | right)],c(inv_start, inv_end + 1)[c(sum(right)>0,sum(left)>0)]));
 }
 breakpoints # 6 7 10 12 22 23 49 51
@@ -54,7 +54,7 @@ if(sum(c(left,right)) == 0){
 	# SLiM call breakpoints at both inversion ends, we remove them
 	breakpoints = sort(c(breakpoints[!(left | right)]));
 } else if (sum(left) > 0 | sum(right) > 0){ 
-	# SLiM calls a breakpoint at one inversion end, we remove the one that SLiM calls and add the one that slim doesn't call
+	# SLiM calls a breakpoint at one inversion end, we remove the one that SLiM calls and add the one that SLiM doesn't call
 	breakpoints = sort(c(breakpoints[!(left | right)],c(inv_start, inv_end + 1)[c(sum(right)>0,sum(left)>0)]));
 }
 breakpoints # 6 12 22 23 49 51
@@ -76,7 +76,7 @@ if(sum(c(left,right)) == 0){
 	# SLiM call breakpoints at both inversion ends, we remove them
 	breakpoints = sort(c(breakpoints[!(left | right)]));
 } else if (sum(left) > 0 | sum(right) > 0){
-	# SLiM calls a breakpoint at one inversion end, we remove the one that SLiM calls and add the one that slim doesn't call
+	# SLiM calls a breakpoint at one inversion end, we remove the one that SLiM calls and add the one that SLiM doesn't call
 	breakpoints = sort(c(breakpoints[!(left | right)],c(inv_start, inv_end + 1)[c(sum(right)>0,sum(left)>0)]));
 }
 breakpoints # 6 7 10 12 49 51
@@ -99,7 +99,7 @@ if(sum(c(left,right)) == 0){
 	# SLiM call breakpoints at both inversion ends, we remove them
 	breakpoints = sort(c(breakpoints[!(left | right)]));
 } else if (sum(left) > 0 | sum(right) > 0){
-	# SLiM calls a breakpoint at one inversion end, we remove the one that SLiM calls and add the one that slim doesn't call
+	# SLiM calls a breakpoint at one inversion end, we remove the one that SLiM calls and add the one that SLiM doesn't call
 	breakpoints = sort(c(breakpoints[!(left | right)],c(inv_start, inv_end + 1)[c(sum(right)>0,sum(left)>0)]));
 }
 breakpoints # 6 12 49 51
