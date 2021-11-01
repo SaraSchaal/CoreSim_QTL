@@ -27,14 +27,14 @@
   
   ### Download Data
  
-  folderIn <- "results/Inversion/20211010_invFix/"
-  folderOut <- "figures/20211010_invFix/" 
-  seed <-  "3384723"
+  #folderIn <- "results/Inversion/20210930_fixOrigin/"
+  #folderOut <- "figures/20210930_fixOrigin/" 
+  #seed <-  "3384155"
   
-  #args = commandArgs(trailingOnly=TRUE)
-  #folderIn <- args[1] # 
-  #folderOut <- args[2]#  
-  #seed <-  args[3]
+  args = commandArgs(trailingOnly=TRUE)
+  folderIn <- args[1] # 
+  folderOut <- args[2]#  
+  seed <-  args[3]
   
   
   df.invTime <- read.table(paste0(folderIn, seed, "_outputInvTime.txt", sep = ""), header = TRUE)
@@ -122,6 +122,8 @@ if(df.params$muInv == 0){
 }  else {
   print("did not go into if statement")
 }
+  
+
 ######################################################################################################
   
   
@@ -472,6 +474,9 @@ if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0){
            num_qtnsAdapt = num_qtns, inv_lengthAdapt = inv_length, 
            num_qtns_LscaledAdapt = num_qtns_Lscaled)
 
+   if(is.null(adapt.inv)){
+     no.adaptive.inversion <- "check"
+   }
   # no averaging for boxplots
   adapt.inv.data.nosum <- df.invAllData %>%
     group_by(sim_gen) %>%
@@ -589,8 +594,11 @@ if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0){
 
   ## LA final for OUTPUT
   LA_final <- df.popDyn$localAdaptSA[nrow(df.popDyn)]
-
-## Phenotypes ##
+  qtns <- df.muts[df.muts$type == "m2",]
+  av.effect <- mean(qtns$selCoef)
+  av.perc.VA <- mean(((qtns$selCoef^2*qtns$freq*(1-qtns$freq))/sum(qtns$selCoef^2*qtns$freq*(1-qtns$freq)))*100)
+  
+  ## Phenotypes ##
   df.pheno <- pivot_longer(df.popDyn[, c(1,10,14)], cols = c(meanPhenoP1, meanPhenoP2),
                             names_to = "pop", values_to = "meanPheno")
   pheno.plot.leg <- ggplot(data = df.pheno, 
@@ -693,8 +701,9 @@ if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0){
 
 ## IF NO INVERSION SIM DO NOT EVALUATE THE REST OF THE CODE OTHER THAN OUTPUTS
 if(df.params$muInv != 0){
-  if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0 & exists("invWindBases.MAF") ){
-      
+  if(nrow(df.invDataFinalGen) > 0 & nrow(df.invDataFinalGen.NS) > 0 & 
+     exists("invWindBases.MAF") & exists("invWinQTNrows") & !exists("no.adaptive.inversion")){
+
 ## Average Inversion Age ##
 
   # SELECTION #
@@ -2317,7 +2326,7 @@ if(length(adapt.inv)>0){
                  true_pos_pcadapt, true_pos_outflank, false_neg_pcadapt, false_neg_outflank, 
                  true_neg_pcadapt, true_neg_outflank, false_pos_pcadapt, false_pos_outflank,
                  true_neg_pcadapt_NS,  false_pos_pcadapt_NS, 
-                 true_neg_outflank_NS, false_pos_outflank_NS)
+                 true_neg_outflank_NS, false_pos_outflank_NS, av.effect, av.perc.VA)
 
 
 
@@ -2328,11 +2337,11 @@ if(length(adapt.inv)>0){
 #### end Data output
 ######################################################################################################
 ## END IF STATEMENT FOR IF THIS IS A NO INVERSION SIMULATION
-} else {
-    output.data <- as.data.frame(c(seed, NA, LA_final, rep(NA, 45)))
+  } else {
+    output.data <- as.data.frame(c(seed, NA, LA_final, rep(NA, 45), av.effect, av.perc.VA))
   } 
 } else {
-  output.data <- as.data.frame(c(seed, NA, LA_final, rep(NA, 45)))
+  output.data <- as.data.frame(c(seed, NA, LA_final, rep(NA, 45), av.effect, av.perc.VA))
 }
  write.table(t(output.data),  paste0(folderOut, "outputSumData.txt"), col.names = F, row.names = F, append = T)
   
