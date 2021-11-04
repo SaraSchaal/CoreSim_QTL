@@ -145,14 +145,14 @@ if(sum(removed_any) > 0){
 
 ```
 
-An initial new result:
-Final LA for old code was 0.449, final LA for new code is 0.455.
+An initial new result:  
+ Final LA for old code was **0.449**, final LA for new code is **0.455**.
 
-Local adaptation in original code compared to new code:
-<img src="../figures/20211010_fixInv/3384725_LAold.png" width = "500">
-<img src="../figures/20211010_fixInv/3384725_LAnew.png" width = "500">
+Local adaptation in original code compared to new code:  
+<img src="../figures/20211010_fixInv/3384725_LAold.png" width = "400">
+<img src="../figures/20211010_fixInv/3384725_LAnew.png" width = "400">
 
-Manhattan plot in original code compared to new code (NOTE** I will update this when its done running but the noSel sim is still running so I can't calculate adaptive inversions yet. I am guessing those plateaus will have adaptive inversions behind them similar to the old one, but I will confirm once its done running):
+Manhattan plot in original code compared to new code (NOTE** I will update this when its done running but the noSel sim is still running so I can't calculate adaptive inversions yet. I am guessing those plateaus will have adaptive inversions behind them similar to the old one, but I will confirm once its done running):  
 
 <img src="../figures/20211010_fixInv/3384725_manhFSTold.png" width = "1000">
 <img src="../figures/20211010_fixInv/3384725_manhFSTnew.png" width = "1000">
