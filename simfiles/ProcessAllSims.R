@@ -137,7 +137,7 @@ g_legend<-function(myggplot){
 # colnames(df.finalMuts)[2] <- "mut_id" 
 # write.table(df.finalMuts, "FullSet_finalMuts.txt", row.names = FALSE)
 
-folderIn <- "./results/Inversion/20210719_fullSummaryData/"
+folderIn <- "./results/Inversion/20210930_fixOrigin/"
 df.summary <- read.table(paste0(folderIn, "outputSumData.txt"))
 colnames(df.summary) <- c("seed", "Va_perc_In", "LA_final", "num_inv", "num_inv_NA", "num_inv_NS",
                           "capture_gain_p", "capture_no_gain_p", "neutral_gain_p", "neutral_no_gain_p",
@@ -152,7 +152,7 @@ colnames(df.summary) <- c("seed", "Va_perc_In", "LA_final", "num_inv", "num_inv_
                           "true_pos_pcadapt", "true_pos_outflank", "false_neg_pcadapt", "false_neg_outflank", 
                           "true_neg_pcadapt", "true_neg_outflank", "false_pos_pcadapt", "false_pos_outflank",
                           "true_neg_pcadapt_NS",  "false_pos_pcadapt_NS", 
-                          "true_neg_outflank_NS", "false_pos_outflank_NS")
+                          "true_neg_outflank_NS", "false_pos_outflank_NS", "av_qtn_effect_size", "av_qtn_perc_VA")
 
 #df.simStats_2 <- read.table("src/invSimParams_2.txt", header = TRUE)
 #df.simStats_1 <- read.table("src/invSimParams.txt", header = TRUE)
@@ -335,10 +335,10 @@ df.muInv3 <- df.sumData[df.sumData$muInv == 1e-03,]
 df.muInv6 <- df.sumData[df.sumData$muInv == 1e-06,]
 
 ## Join Inv mu 0 and with both of the other Inv mutation rates to calculate local adaptation difference
-df.muInv6_0 <- full_join(df.muInv6[,c(2:3,49:53, 55:57)], df.muInv0[,c(3,49:53, 55:57)], by = c("muBase", "sigmaK", "alpha", "enVar", "mig1", "mig2", "rep"))
-colnames(df.muInv6_0)[c(1,2,4,11:12)] <- c("VA_perc_In_6", "LA_final_6", "muInv_6", "LA_final_0", "muInv_0")
-df.muInv3_0 <- full_join(df.muInv3[,c(2:3,49:53, 55:57)], df.muInv0[,c(3,49:53, 55:57)], by = c("muBase", "sigmaK", "alpha", "enVar", "mig1", "mig2", "rep"))
-colnames(df.muInv3_0)[c(1,2,4,11:12)] <- c("VA_perc_In_3", "LA_final_3", "muInv_3", "LA_final_0", "muInv_0")
+df.muInv6_0 <- full_join(df.muInv6[,c(2:3,49:55, 57:59)], df.muInv0[,c(3,49:55, 57:59)], by = c("muBase", "sigmaK", "alpha", "enVar", "mig1", "mig2", "rep"))
+colnames(df.muInv6_0)[c(1:4,6,13:16)] <- c("VA_perc_In_6", "LA_final_6", "av_qtn_effect_size_6", "av_qtn_perc_VA_6", "muInv_6", "LA_final_0", "av_qtn_effect_size_0", "av_qtn_perc_VA_0", "muInv_0")
+df.muInv3_0 <- full_join(df.muInv3[,c(2:3,49:55, 57:59)], df.muInv0[,c(3,49:55, 57:59)], by = c("muBase", "sigmaK", "alpha", "enVar", "mig1", "mig2", "rep"))
+colnames(df.muInv3_0)[c(1:4,6,13:16)] <- c("VA_perc_In_3", "LA_final_3", "av_qtn_effect_size_3", "av_qtn_perc_VA_3", "muInv_3", "LA_final_0", "av_qtn_effect_size_0", "av_qtn_perc_VA_0", "muInv_0")
 df.muInv3_0$LA_diff <- df.muInv3_0$LA_final_3 - df.muInv3_0$LA_final_0
 df.muInv6_0$LA_diff <- df.muInv6_0$LA_final_6 - df.muInv6_0$LA_final_0
 
@@ -429,7 +429,7 @@ plot.LA_diff_inv3_ogen <- ggplot(df.muInv3_0_av[df.muInv3_0_av$enVar == 0 &
 
 
 #### Amount of Additive Genetic Variance Plots ####
-df.invGenome <- read.table(paste0(folderIn, "outputInvGenome_allData.txt"))
+df.invGenome <- read.table(paste0(folderIn, "outputInvGenome.txt"))
 head(df.invGenome)
 tail(df.invGenome)
 colnames(df.invGenome) <- c("seed", "uniqueBases", "numOverlap", "percGenome")
@@ -447,7 +447,7 @@ for(i in 1:7 ){
 }
 
 df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '0.0000001' = '0.0002', '0.000001' = '0.002')
-#df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '1e-07' = '0.0002', '1e-06' = '0.002')
+df.invGenome_av$muBase <- recode_factor(df.invGenome_av$muBase, '1e-07' = '0.0002', '1e-06' = '0.002')
 
 df.invGenome_av$sigmaK <- factor(df.invGenome_av$sigmaK, c(3, 1.5, 0.75))
 df.VA <- left_join(df.muInv3_0_av, df.invGenome_av[df.invGenome_av$muInv == 0.001,], by = c("muBase", "sigmaK", "alpha", 
@@ -708,7 +708,7 @@ plot.evoHist_ogen <- ggplot(df.ev.hist.long[df.ev.hist.long$enVar == 0 & df.ev.h
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = "Oligogenic Architecture", y = "Average Count", x = "Migration Rate") +
-  ylim(0,12)+
+  ylim(0,14)+
   scale_x_discrete(breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 evohist.leg <- g_legend(plot.evoHist_ogen)
@@ -753,6 +753,8 @@ for(i in 1:length(unique(df.invChar.muInv3$params))){
     plot.output <- rbind(plot.output, df)
   }
 }
+
+
 
 plot.age.pgen <- ggplot(data = plot.output[plot.output$enVar == 0 & 
                                                       plot.output$muBase == "0.002" & 
@@ -841,7 +843,7 @@ plot.numQTN.pgen <- ggplot(data = plot.output[plot.output$enVar == 0 &
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = " ", y = expression(bar(N)[QTNs] / "(Length"[inv]*")"), x = "Migration Rate") + 
-  ylim(c(0,0.012))
+  ylim(c(0,NA))
 
 
 plot.numQTN.ogen <- ggplot(data = plot.output[plot.output$enVar == 0  &
@@ -873,6 +875,73 @@ ggarrange(plot.age.pgen, plot.age.ogen, blank, plot.length.pgen.noLeg, plot.leng
           widths = c(2.3, 2.3, 0.8, 2.3, 2.3, 0.8, 2.3, 2.3, 0.8), 
           labels = c("A", "B", "", "C", "D", "", "E", "F"))
 # pdf 15 wide by 12 high 
+
+
+plot.age.onePanel <- ggplot(data = plot.output, 
+                        aes(x = adaptInv, y= inv_age, fill = adaptInv, color = adaptInv)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_color_manual(values = c("orange", "black", "grey21")) +
+  scale_fill_manual(values = color_scale) + 
+  guides(fill = guide_legend(title = "Inversion Status"),
+         color = guide_legend(title = "Inversion Status")) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  labs(title = " ", y = expression("Average Age"[inv]*" (gen)"), x = " ")
+
+
+plot.length.onePanel <- ggplot(data = plot.output, 
+                                   aes(x = adaptInv, y= inv_length, fill = adaptInv, color = adaptInv)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_color_manual(values = c("orange", "black", "grey21")) +
+  scale_fill_manual(values = color_scale) + 
+  guides(fill = guide_legend(title = "Inversion Status"),
+         color = guide_legend(title = "Inversion Status")) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  labs(title = " ", y = expression("Average Length"[inv]*" (bp)"), x = " ")
+
+plot.numQTNs.pgen.onePanel <- ggplot(data = plot.output[plot.output$enVar == 0  &
+                                                          plot.output$muBase == "0.002" &
+                                                          plot.output$alpha == 0.002,], 
+                                    aes(x = adaptInv, y= num_qtns_Lscaled, fill = adaptInv, color = adaptInv)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_color_manual(values = c("orange", "black", "grey21")) +
+  scale_fill_manual(values = color_scale) + 
+  guides(fill = guide_legend(title = "Inversion Status"),
+         color = guide_legend(title = "Inversion Status")) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  labs(title = " ", y = expression(bar(N)[QTNs] / "(Length"[inv]*")"), x = " ")
+
+plot.numQTNs.ogen.onePanel <- ggplot(data = plot.output[plot.output$enVar == 0  &
+                                                          plot.output$muBase == "0.0002" &
+                                                          plot.output$alpha == 0.2,], 
+                                     aes(x = adaptInv, y= num_qtns_Lscaled, fill = adaptInv, color = adaptInv)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_color_manual(values = c("orange", "black", "grey21")) +
+  scale_fill_manual(values = color_scale) + 
+  guides(fill = guide_legend(title = "Inversion Status"),
+         color = guide_legend(title = "Inversion Status")) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  labs(title = " ", y = expression(bar(N)[QTNs] / "(Length"[inv]*")"), x = " ")
+
+ggarrange(plot.age.onePanel, plot.length.onePanel, plot.numQTNs.pgen.onePanel, plot.numQTNs.ogen.onePanel, invChar.legend, 
+          ncol = 5, nrow = 1,
+          widths = c(2.3, 2.3, 2.3, 2.3, 0.8), 
+          labels = c("A", "B", "C", "D", ""))
 
 ### end Q4 plotting
 ######################################################################################################
@@ -1048,10 +1117,10 @@ ggarrange(plot.age.adapt.pgen, plot.age.adapt.ogen, plot.length.adapt.pgen, plot
 ######################################################################################################
 #### Q5: Plot Genome scan results
 
-df.outliers <- read.table("results/Inversion/20210525_fulldata/outputSumData.txt", header = FALSE,
-                                 stringsAsFactors = FALSE)
-head(df.muInv3)
-colnames(df.outliers) <- colnames(df.summary)
+df.outliers <- df.summary #read.table("results/Inversion/20210525_fulldata/outputSumData.txt", header = FALSE,
+                                 #stringsAsFactors = FALSE)
+#head(df.muInv3)
+#colnames(df.outliers) <- colnames(df.summary)
 df.outlierSumData <- left_join(df.outliers, df.simStats[,1:(ncol(df.simStats)-1)], by = "seed")
 df.muInv3_outliers <- df.outlierSumData[df.outlierSumData$muInv == 1e-03,]
 
@@ -1130,7 +1199,7 @@ plot.pcadapt.pgen <- ggplot(df.pcadapt.pgen[order(df.pcadapt.pgen$outcome),],
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = "PCAdapt", y = "Polygenic Architecture\nAverage number of inversions", x = " ") + 
-  ylim(c(0, 25)) + 
+  ylim(c(0, 26)) + 
   scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 
@@ -1148,7 +1217,7 @@ plot.pcadapt.ogen <- ggplot(df.pcadapt.ogen[order(df.pcadapt.ogen$outcome),],
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = " ", y = "Oligogenic Architecture\nAverage number of inversions", x = "Migration Rate") + 
-  ylim(c(0, 25)) +
+  ylim(c(0, 26)) +
   scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 
@@ -1166,7 +1235,7 @@ plot.outflank.pgen <- ggplot(df.outflank.pgen[order(df.outflank.pgen$outcome),],
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = "OutFLANK", y = " ", x = " ") + 
-  ylim(c(0, 25)) +
+  ylim(c(0, 26)) +
   scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 
@@ -1184,7 +1253,7 @@ plot.outflank.ogen <- ggplot(df.outflank.ogen[order(df.outflank.ogen$outcome),],
   theme(panel.background = element_blank(), 
         strip.background = element_rect(colour = "white", fill = "grey92")) +
   labs(title = " ", y = " ", x = "Migration Rate") + 
-  ylim(c(0, 25)) +
+  ylim(c(0, 26)) +
   scale_x_discrete("Migration Rate", breaks=factor(c(0.001,0.01,0.1,0.25,0.4,0.5)), drop=FALSE)
 
 

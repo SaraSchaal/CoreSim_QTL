@@ -203,48 +203,65 @@ recombination() {
 	g2_invs = genome2.mutationsOfType(m3);
 	unshared_invs = setSymmetricDifference(g1_invs, g2_invs); // all heterozygous loci
 	shared_invs = setIntersection(g1_invs, g2_invs); // all homozogyous loci
-		// heterozygous loci will not have recombination between homologous regions because
-		// they will not line up properly
-		// homozygous loci will have normal recombination because the chromosomes line up 
-		// which can then break apart the loci found in the inversion 
-	if(size(unshared_invs) == 0 & size(shared_invs) == 0){ // if no het
+	
+	if(size(unshared_invs) == 0 & size(shared_invs) == 0){// if no het and no hom inv
+		removed_any = F;
+	}
+
+	
+	if(size(shared_invs)){
+		removed_any = NULL;
+		for (invS in shared_invs) {
+			start = invS.position;
+	 		end = start + invS.tag;
+			inInv = (breakpoints > start) & (breakpoints <= end);
+			left = (breakpoints == start); // vector of T or F
+      	right = (breakpoints == end + 1); // vector of T or F lenght of inside inversion breakpoints
+			if(sum(inInv) % 2 == 0){
+				removed_any = c(removed_any, F);			
+			} else{
+				if(sum(left) > 0 & sum(right) > 0){ 
+					breakpoints = sort(c(breakpoints[!(left | right)]));
+				} else if(sum(left) > 0 | sum(right) > 0){	
+					breakpoints = sort(c(breakpoints[!(left | right)], 
+								c(start, end + 1),
+								c(start-2, end + 3)[c(sum(left)>0,sum(right)>0)]));
+				} else if(sum(c(left,right)) == 0){
+					breakpoints = sort(c(breakpoints, c(start, end + 1)));
+				}
+				removed_any = c(removed_any, T);			
+			}	
+		}
+	}
+	
+	if(size(unshared_invs)){
+		if(size(shared_invs)==0){
+			removed_any = NULL;
+		}
+		for (invU in unshared_invs){
+		
+			startU = invU.position;
+			endU = startU + invU.tag;
+		
+			inInv = (breakpoints > startU) & (breakpoints <= endU);
+			if (any(inInv)){
+			
+				// *****finds any breakpoints that were made during the recombination step that fall within
+				// the inversion and removes them*********
+				breakpoints = breakpoints[!inInv];
+				removed_any = c(removed_any, T);
+			} else {
+				removed_any = c(removed_any, F);
+			}
+		}
+	}
+
+	if(sum(removed_any) > 0){
+		return T;
+	}else{
 		return F;
 	}
 	
-	if(size(shared_invs)){
-		for (invS in shared_invs) {
-			start = invS.position;
-			end = start + invS.tag;
-			inInv = (breakpoints > start) & (breakpoints <= end);
-			// homozygote inverted
-      	left = (breakpoints == start);
-      	right = (breakpoints == end + 1);
-      	breakpoints = sort(c(breakpoints[!(left | right)],
-         	c(start, end + 1)[c(sum(left) > 0, sum(right) > 0)]));
-      	return T;
-	
-		}
-	}
-	if(size(unshared_invs)){
-	
-		for (inv in unshared_invs){
-			// define the start and end position of the inversion
-			start = inv.position;
-			end = start + inv.tag;
-		
-			// the positions of proposed breakpoints are supplied to the callback by SLiM in the "breakpoints" variable
-			// This variable is generated when recombination occurs and can be overwritten as we do below
-			inInv = (breakpoints > start) & (breakpoints <= end);
-			if(sum(inInv) % 2 == 0){
-				return F;
-			} else {
-		   	// heterozygote inverted: resample to get an even # of breakpoints
-         	// this is *recursive*: it calls this recombination callback again!
-         	breakpoints = sim.chromosome.drawBreakpoints(individual);
-      	}
-			return T;
-		}
-	}
 }
 
 // fitness calculations
