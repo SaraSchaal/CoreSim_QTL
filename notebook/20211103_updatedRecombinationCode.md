@@ -146,7 +146,10 @@ if(sum(removed_any) > 0){
 ```
 
 ### An initial new result:  
- Final LA for old code was **0.449**, final LA for new code is **0.455**.
+
+#### One simulation where inversions facilitate adaptation  
+
+Final LA for old code was **0.449**, final LA for new code is **0.455**.  
 
 Local adaptation in original code compared to new code:  
 <img src="../figures/20211010_fixInv/3384725_LAold.png" width = "400">
@@ -157,26 +160,30 @@ Manhattan plot in original code compared to new code:
 <img src="../figures/20211010_fixInv/3384725_manhFSTold.png" width = "1000">
 <img src="../figures/20211010_fixInv/3384725_manhFST_new.png" width = "1000">
 
-Local adaptation in original code compared to new code:  
-<img src="../figures/20211010_fixInv/3384843_LA_old.png" width = "400">
-<img src="../figures/20211010_fixInv/3384843_LA.png" width = "400">
-
-Manhattan plot in original code compared to new code:  
-
-<img src="../figures/20211010_fixInv/3384843_manhFST_old.png" width = "1000">
-<img src="../figures/20211010_fixInv/3384843_manhFST.png" width = "1000">
-
-
 All plots look very similar between old and new simulations. Even heatmaps appear similar with old on the left and new on the right for pop 1 and pop 2: 
 
-  
+</br>
 
 <img src="../figures/20211010_fixInv/3384725_heatmapPop1geno_old.png" width = "500"><img src="../figures/20211010_fixInv/3384725_heatmapPop1geno.png" width = "500">
 
 <img src="../figures/20211010_fixInv/3384725_heatmapPop2geno_old.png" width = "500"><img src="../figures/20211010_fixInv/3384725_heatmapPop1geno.png" width = "500">
 
+####A second sim where inversions facilitated adaptation:
 
-One simulation that had adaptative inversions previously no longer does. But this is a red diamond case because there is so much genome wide divergence that inversions aren't facilitating the adaptation:
+</br>
+
+Local adaptation in original code compared to new code:  
+<img src="../figures/20211010_fixInv/3384843_LA_old.png" width = "400">
+<img src="../figures/20211010_fixInv/3384843_LA.png" width = "400">
+
+Manhattan plot in original code compared to new code:  
+<img src="../figures/20211010_fixInv/3384843_manhFST_old.png" width = "1000">
+<img src="../figures/20211010_fixInv/3384843_manhFST.png" width = "1000">
+
+
+#### One simulation that had adaptative inversions previously no longer does. 
+
+But this is a red diamond case because there is so much genome wide divergence that inversions aren't facilitating the adaptation   
 <img src="../figures/20211010_fixInv/3384723_manhFST_old.png" width = "1000">
 <img src="../figures/20211010_fixInv/3384723_manhFST_new.png" width = "1000">
 
