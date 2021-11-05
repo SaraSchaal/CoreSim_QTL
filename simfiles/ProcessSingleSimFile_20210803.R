@@ -27,14 +27,14 @@
   
   ### Download Data
  
-  #folderIn <- "results/Inversion/20210930_fixOrigin/"
-  #folderOut <- "figures/20210930_fixOrigin/" 
-  #seed <-  "3384155"
+  folderIn <- "results/Inversion/20211010_fixInv/"
+  folderOut <- "figures/20211010_fixInv/" 
+  seed <-  "3384723"
   
-  args = commandArgs(trailingOnly=TRUE)
-  folderIn <- args[1] # 
-  folderOut <- args[2]#  
-  seed <-  args[3]
+  #args = commandArgs(trailingOnly=TRUE)
+  #folderIn <- args[1] # 
+  #folderOut <- args[2]#  
+  #seed <-  args[3]
   
   
   df.invTime <- read.table(paste0(folderIn, seed, "_outputInvTime.txt", sep = ""), header = TRUE)
@@ -1600,13 +1600,13 @@ if(df.params$muInv != 0){
   table(G_ref1)
   table(G_ref2)
 
-  png(paste0(folderOut, seed, "_heatmapPop1geno.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_heatmapPop1geno.png"),  width = 7, height = 7, units = 'in', res = 300)
     heatmap(t(G_ref1[,pop1_order]), Rowv = NA,  main="Pop1 genotypes",cexCol = 0.3,
             Colv = NA, useRaster=TRUE,
             scale="none")
   dev.off()
   
-  png(paste0(folderOut, seed, "_heatmapPop2geno.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_heatmapPop2geno.png"), width = 7, height = 7, units = 'in', res = 300)
     heatmap(t(G_ref2[,pop2_order]), Rowv = NA,  main="Pop2 genotypes",cexCol = 0.3,
             Colv = NA, useRaster=TRUE,
             scale="none")
@@ -1920,7 +1920,7 @@ if(length(adapt.inv) != 0){
           strip.background = element_rect(colour = "white", fill = "grey92"),
           text = element_text(size = 11)) +
     scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST)))*1.1) 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, max(c(df.neutQTNmuts$FST, df.neutQTNmuts.NS$FST))*1.1))
   
 
   manh.plot.NA <- ggplot(df.neutQTNmuts, aes(x = position, y = FST, 
@@ -1972,11 +1972,11 @@ if(length(adapt.inv) != 0){
   legManh <- g_legend(manh.plot)
   
   ## Print plot
-  png(paste0(folderOut, seed, "_manh.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_manh.png"), width = 7, height = 7, units = 'in', res = 300)
     print(ggarrange(manh.plot.noleg, blank, manh.plot.NA.noleg, legManh, manh.plot.NS.noleg, blank, nrow = 3, ncol = 2, widths = c(2.3,0.8,2.3,0.8,2.3,0.8)))
   dev.off()
   
-  png(paste0(folderOut, seed, "_manhFST.png"), type = "cairo", width = 25, height = 4, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_manhFST.png"), width = 25, height = 4, units = 'in', res = 300)
     print(manh.plot)
   dev.off()
 
@@ -2044,7 +2044,7 @@ if(length(adapt.inv) != 0){
   outlierleg <- get_legend(outflank.log10p)
   
   ## Print plots
-  png(paste0(folderOut, seed, "_outlierTests.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_outlierTests.png"), width = 7, height = 7, units = 'in', res = 300)
     print(ggarrange(manh.plot.slim, blank, outflank.log10pNoleg, outlierleg, pcadapt.log10p, blank, nrow = 3, ncol = 2, widths = c(2.3,0.8,2.3,0.8,2.3,0.8)))
   dev.off()
   
@@ -2101,7 +2101,7 @@ if(length(adapt.inv) != 0){
   outlierlegNA <- get_legend(outflank.log10p.NA)
   
   ## Print plots
-  png(paste0(folderOut, seed, "_outlierTestsNA.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "_outlierTestsNA.png"), width = 7, height = 7, units = 'in', res = 300)
    print(ggarrange(manh.plot.slim.NA, blank, outflank.log10pNoleg.NA, outlierlegNA, pcadapt.log10p.NA, blank, nrow = 3, ncol = 2, widths = c(2.3,0.8,2.3,0.8,2.3,0.8)))
   dev.off()
   
@@ -2160,7 +2160,7 @@ if(length(adapt.inv) != 0){
   outflank.log10pNoleg.NS <- outflank.log10p.NS + theme(legend.position = "none")
   outlierleg.NS <- g_legend(outflank.log10p.NS)
   
-  png(paste0(folderOut, seed, "noSel_outlierTests.png"), type = "cairo", width = 7, height = 7, units = 'in', res = 300)
+  png(paste0(folderOut, seed, "noSel_outlierTests.png"), width = 7, height = 7, units = 'in', res = 300)
     print(ggarrange(manh.plot.NS.noleg, blank, outflank.log10pNoleg.NS, outlierleg.NS, pcadapt.log10p.NS, blank, nrow = 3, ncol = 2, widths = c(2.3,0.8,2.3,0.8,2.3,0.8)))
   dev.off()
 
