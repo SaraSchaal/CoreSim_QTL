@@ -145,9 +145,9 @@ if(sum(removed_any) > 0){
 
 ```
 
-### An initial new result:  
+## An initial new result:  
 
-#### One simulation where inversions facilitate adaptation  
+### One simulation where inversions facilitate adaptation  
 
 Final LA for old code was **0.449**, final LA for new code is **0.455**.  
 
@@ -168,7 +168,7 @@ All plots look very similar between old and new simulations. Even heatmaps appea
 
 <img src="../figures/20211010_fixInv/3384725_heatmapPop2geno_old.png" width = "500"><img src="../figures/20211010_fixInv/3384725_heatmapPop1geno.png" width = "500">
 
-####A second sim where inversions facilitated adaptation:
+### A second sim where inversions facilitated adaptation:
 
 </br>
 
@@ -181,7 +181,7 @@ Manhattan plot in original code compared to new code:
 <img src="../figures/20211010_fixInv/3384843_manhFST.png" width = "1000">
 
 
-#### One simulation that had adaptative inversions previously no longer does. 
+### One simulation that had adaptative inversions previously no longer does. 
 
 But this is a red diamond case because there is so much genome wide divergence that inversions aren't facilitating the adaptation   
 <img src="../figures/20211010_fixInv/3384723_manhFST_old.png" width = "1000">
