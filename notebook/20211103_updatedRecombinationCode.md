@@ -157,12 +157,22 @@ Manhattan plot in original code compared to new code:
 <img src="../figures/20211010_fixInv/3384725_manhFSTold.png" width = "1000">
 <img src="../figures/20211010_fixInv/3384725_manhFST_new.png" width = "1000">
 
+Local adaptation in original code compared to new code:  
+<img src="../figures/20211010_fixInv/3384843_LA_old.png" width = "400">
+<img src="../figures/20211010_fixInv/3384843_LA.png" width = "400">
+
+Manhattan plot in original code compared to new code:  
+
+<img src="../figures/20211010_fixInv/3384843_manhFST_old.png" width = "1000">
+<img src="../figures/20211010_fixInv/3384843_manhFST.png" width = "1000">
+
+
 All plots look very similar between old and new simulations. Even heatmaps appear similar with old on the left and new on the right for pop 1 and pop 2: 
 
   
 
 <img src="../figures/20211010_fixInv/3384725_heatmapPop1geno_old.png" width = "500"><img src="../figures/20211010_fixInv/3384725_heatmapPop1geno.png" width = "500">
-  
+
 <img src="../figures/20211010_fixInv/3384725_heatmapPop2geno_old.png" width = "500"><img src="../figures/20211010_fixInv/3384725_heatmapPop1geno.png" width = "500">
 
 
