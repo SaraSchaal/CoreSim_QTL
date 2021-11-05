@@ -159,7 +159,7 @@ Manhattan plot in original code compared to new code:
 
 All plots look very similar between old and new simulations. Even heatmaps appear similar with old on the left and new on the right for pop 1 and pop 2: 
 
-</br>
+  
 
 <img src="../figures/20211010_fixInv/3384725_heatmapPop1geno_old.png" width = "500">
 <img src="../figures/20211010_fixInv/3384725_heatmapPop1geno.png" width = "500">
