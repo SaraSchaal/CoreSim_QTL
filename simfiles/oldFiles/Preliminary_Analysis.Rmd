@@ -1,0 +1,228 @@
+---
+title: "Inversion Sim Analysis"
+author: "Sara Michele Schaal"
+date: "2/24/2020"
+output: html_document
+---
+
+
+```{r}
+seeds <- c(1751625359138, 1751583067058)
+## Low Migration Low Mutation - Inversions 
+popDynLMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751568804886_outputPopDynam.csv")
+popDynLMLMuR2 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751570485992_outputPopDynam.csv")
+invQTNsLMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751568804886_outputInvTime.csv")
+invQTNsLMLMuR2 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvLowMigLowMut/1751570485992_outputInvTime.csv")
+
+# Low Migration Low Mutation -No Inversions
+popDynNoInLMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withoutInvLowMigLowMut/1751566183207_outputPopDynam.csv")
+popDynNoInLMLMuR2 <- read.csv("results/Inversion/20200302PrelimData/20200302withoutInvLowMigLowMut/1751626452845_outputPopDynam.csv")
+
+
+#### Medium Migration Low Mutation ####
+## Inversions
+#popDynMMLMuR1 <- read.csv("../results/Inversion/20200302withInvMedMigLowMut/1751572690982_outputPopDynam.csv")
+popDynMMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200303withInvMedMigLowMut/2065972841416_outputPopDynam.csv")
+invQTNsMMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200303withInvMedMigLowMut/2065972841416_outputInvTime.csv")
+#invQTNsMMLMuR2 <- read.csv("../results/Inversion/20200302withInvMedMigLowMut/1751582301417_outputInvTime.csv")
+
+# No Inversions
+popDynNoInMMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200303withoutInvMedMigLowMut/1751629716441_outputPopDynam.csv")
+popDynNoInMMLMuR2 <- read.csv("results/Inversion/20200302PrelimData/20200303withoutInvMedMigLowMut/1751630159938_outputPopDynam.csv")
+
+
+#### High migration low mutation ####
+##  Inversions
+popDynHMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvHighMigLowMut/1751625359138_outputPopDynam.csv")
+popDynHMLMuR2 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvHighMigLowMut/1751583067058_outputPopDynam.csv")
+invQTNsHMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvHighMigLowMut/1751625359138_outputInvTime.csv")
+invQTNsHMLMuR2 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvHighMigLowMut/1751583067058_outputInvTime.csv")
+
+# No Inversions
+popDynNoInHMLMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200303withoutInvHighMigLowMut/1751628536499_outputPopDynam.csv")
+popDynNoInHMLMuR2 <- read.csv("results/Inversion/20200302PrelimData/20200303withoutInvHighMigLowMut/1751629252645_outputPopDynam.csv")
+
+#### High migration high mutation ####
+##  Inversions
+popDynHMHMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvHighMigHighMut/1751583946190_outputPopDynam.csv")
+invQTNsHMHMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200302withInvHighMigHighMut/1751583946190_outputInvTime.csv")
+
+# No Inversions
+popDynNoInHMHMuR1 <- read.csv("results/Inversion/20200302PrelimData/20200303withoutInvHighMigHighMu/1751616892960_outputPopDynam.csv")
+popDynNoInHMHMuR2 <- read.csv("results/Inversion/20200302PrelimData/20200303withoutInvHighMigHighMu/1751620201657_outputPopDynam.csv")
+
+
+#### High migration low mutation ####
+# Inversions
+popDynHMLMu49 <- read.csv("../results/Inversion/1752787654626_outputPopDynam.csv")
+# no Inversions
+popDynNoInHMLMu49 <- read.csv("../results/Inversion/1752788564317_outputPopDynam.csv")
+
+```
+
+
+```{r}
+## Mean LA and FST
+par(mfrow = c(1,3))
+
+#FST QTNs
+plot(as.numeric(as.character(popDynLMLMuR1$meanFST_QTNs))~popDynLMLMuR1$sim_gen, type = "l", data = popDynLMLMuR1, ylab = "Mean FST", xlab = "Generation", ylim = c(0,0.7), main = "QTN Muts")
+lines(as.numeric(as.character(popDynMMLMuR1$meanFST_QTNs))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
+lines(as.numeric(as.character(popDynHMLMuR1$meanFST_QTNs))~popDynHMLMuR1$sim_gen, type = "l", col = "red", data = popDynHMLMuR1)
+legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+
+# FST Neutral
+plot(as.numeric(as.character(popDynLMLMuR1$meanFST_neut))~popDynLMLMuR1$sim_gen, type = "l", data = popDynLMLMuR1, ylab = "Mean FST", xlab = "Generation", ylim = c(0,0.7), main = "Neut Muts")
+lines(as.numeric(as.character(popDynMMLMuR1$meanFST_neut))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
+lines(as.numeric(as.character(popDynHMLMuR1$meanFST_neut))~popDynHMLMuR1$sim_gen, type = "l", col = "red", data = popDynHMLMuR1)
+legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+
+#FST Inversions
+plot(as.numeric(as.character(popDynLMLMuR1$meanFST_inv))~popDynLMLMuR1$sim_gen, type = "l", data = popDynLMLMuR1, ylab = "Mean FST", xlab = "Generation", ylim = c(0,1), main = "Inv Muts")
+lines(as.numeric(as.character(popDynMMLMuR1$meanFST_invs))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
+lines(as.numeric(as.character(popDynHMLMuR1$meanFST_inv))~popDynHMLMuR1$sim_gen, type = "l", col = "red", data = popDynHMLMuR1)
+legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+
+
+par(mfrow = c(1,2))
+# Local Adaptation
+plot(as.numeric(as.character(popDynLMLMuR1$localAdaptSA))~popDynLMLMuR1$sim_gen, type = "l", ylab = "Local Adaptation", xlab = "Generation", ylim = c(0,1), main = "With Inversions")
+lines(as.numeric(as.character(popDynMMLMuR1$localAdaptSA))~popDynMMLMuR1$sim_gen, type = "l", col = "blue")
+lines(as.numeric(as.character(popDynHMLMuR1$localAdaptSA))~popDynHMLMuR1$sim_gen, type = "l", col = "red")
+lines(as.numeric(as.character(popDynHMLMu49$localAdaptSA))~popDynHMLMu49$sim_gen, type = "l", col = "green", data = popDynHMLMu49)
+legend("topleft", legend = c("0.001", "0.01", "0.49","0.5"), lty = 1, col = c("black", "blue", "green","red"), cex = 0.7, title = "Migration")
+## no inversions
+plot(as.numeric(as.character(popDynNoInLMLMuR1$localAdaptSA))~popDynHMLMuR1$sim_gen, type = "l", data = popDynHMLMuR1, ylab = "Local Adaptation", xlab = "Generation", ylim = c(0,1), main = "Without Inversions")
+lines(as.numeric(as.character(popDynNoInMMLMuR1$localAdaptSA))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
+lines(as.numeric(as.character(popDynNoInHMLMuR1$localAdaptSA))~popDynLMLMuR1$sim_gen, type = "l", col = "red", data = popDynLMLMuR1)
+lines(as.numeric(as.character(popDynHMLMu49$localAdaptSA))~popDynHMLMu49$sim_gen, type = "l", col = "green", data = popDynNoInHMLMu49)
+legend("topleft", legend = c("0.001", "0.01", "0.49","0.5"), lty = 1, col = c("black", "blue", "green","red"), cex = 0.7, title = "Migration")
+
+par(mfrow = c(1,2))
+# Mean Fitness
+plot(as.numeric(as.character(popDynLMLMuR1$meanFitP1))~popDynLMLMuR1$sim_gen, type = "l", data = popDynLMLMuR1, ylab = "Mean Population Fitness", xlab = "Generation", ylim = c(0,1), main = "With Inversions")
+lines(as.numeric(as.character(popDynMMLMuR1$meanFitP1))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
+lines(as.numeric(as.character(popDynHMLMuR1$meanFitP1))~popDynHMLMuR1$sim_gen, type = "l", col = "red", data = popDynHMLMuR1)
+legend("bottomright", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+
+plot(as.numeric(as.character(popDynNoInLMLMuR1$meanFitP1))~popDynHMLMuR1$sim_gen, type = "l", data = popDynHMLMuR1, ylab = "Mean Population Fitness", xlab = "Generation", ylim = c(0,1), main = "Without Inversions")
+lines(as.numeric(as.character(popDynNoInMMLMuR1$meanFitP1))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
+lines(as.numeric(as.character(popDynNoInHMLMuR1$meanFitP1))~popDynLMLMuR1$sim_gen, type = "l", col = "red", data = popDynLMLMuR1)
+#legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+
+# Mean Phenotype
+plot(as.numeric(as.character(popDynLMLMuR1$meanPhenoP1))~popDynLMLMuR1$sim_gen, type = "l", data = popDynLMLMuR1, ylab = "Mean Phenotype", xlab = "Generation", ylim = c(0,1))
+lines(as.numeric(as.character(popDynMMLMuR1$meanPhenoP1))~popDynMMLMuR1$sim_gen, type = "l", col = "blue", data = popDynMMLMuR1)
+lines(as.numeric(as.character(popDynHMLMuR1$meanPhenoP1))~popDynHMLMuR1$sim_gen, type = "l", col = "red", data = popDynHMLMuR1)
+legend("topleft", legend = c("0.001", "0.01", "0.5"), lty = 1, col = c("black", "blue", "red"), cex = 0.7, title = "Migration")
+
+
+```
+
+
+
+```{r}
+
+aggregate(as.numeric(as.character(mean_INVQTNFST))~inv_id, FUN = mean, data = invQTNsR1[invQTNsR1$sim_gen == 10000,])
+
+plot(as.numeric(as.character(mean_INVQTNFST)), type = "l", data = invQTNsR1[invQTNsR1$sim_gen == 10000,] )
+
+final.genLMLMut <- subset(invQTNsLMLMuR1, subset = invQTNsLMLMuR1$sim_gen == 10000)
+final.genMMLMut <- subset(invQTNsMMLMuR1, subset = invQTNsMMLMuR1$sim_gen == 10000)
+final.genHMLMut <- subset(invQTNsHMLMuR1, subset = invQTNsHMLMuR1$sim_gen == 10000)
+
+HighMean <- mean(as.numeric(as.character(final.genHMLMut$mean_INVQTNFST)), na.rm = TRUE)
+HighLCI <- HighMean - 2*sd(as.numeric(as.character(final.genHMLMut$mean_INVQTNFST)), na.rm = TRUE)/sqrt(length(final.genHMLMut$mean_INVQTNFST))
+HighUCI <- HighMean + 2*sd(as.numeric(as.character(final.genHMLMut$mean_INVQTNFST)), na.rm = TRUE)/sqrt(length(final.genHMLMut$mean_INVQTNFST))
+
+MedMean <- mean(as.numeric(as.character(final.genMMLMut$mean_INVQTNFST)), na.rm = TRUE)
+MedLCI <- MedMean - 2*sd(as.numeric(as.character(final.genMMLMut$mean_INVQTNFST)), na.rm = TRUE)/sqrt(length(final.genMMLMut$mean_INVQTNFST))
+MedUCI <- MedMean + 2*sd(as.numeric(as.character(final.genMMLMut$mean_INVQTNFST)), na.rm = TRUE)/sqrt(length(final.genMMLMut$mean_INVQTNFST))
+
+LowMean <- mean(as.numeric(as.character(final.genLMLMut$mean_INVQTNFST)), na.rm = TRUE)
+LowLCI <- LowMean - 2*sd(as.numeric(as.character(final.genLMLMut$mean_INVQTNFST)), na.rm = TRUE)/sqrt(length(final.genLMLMut$mean_INVQTNFST))
+LowUCI <- LowMean + 2*sd(as.numeric(as.character(final.genLMLMut$mean_INVQTNFST)), na.rm = TRUE)/sqrt(length(final.genLMLMut$mean_INVQTNFST))
+
+
+LowMean <- mean(as.numeric(as.character(final.genLMLMut$mean_INVQTNFST)), na.rm = TRUE)
+LowLCI <- LowMean - 2*sd(as.numeric(as.character(final.genLMLMut$mean_INVQTNFST)), na.rm = TRUE)/sqrt(length(final.genLMLMut$mean_INVQTNFST))
+LowUCI <- LowMean + 2*sd(as.numeric(as.character(final.genLMLMut$mean_INVQTNFST)), na.rm = TRUE)/sqrt(length(final.genLMLMut$mean_INVQTNFST))
+
+HighMeanQTN <- popDynHMLMuR1[popDynHMLMuR1$sim_gen == 10000,9]
+HighMeanQTNnoIn <- popDynNoInHMLMuR1[popDynNoInHMLMuR1$sim_gen == 10000,9]
+MedMeanQTN <- popDynMMLMuR1[popDynHMLMuR1$sim_gen == 10000,9]
+MedMeanQTNnoIn <- popDynNoInMMLMuR1[popDynNoInHMLMuR1$sim_gen == 10000,9]
+LowMeanQTN <- popDynLMLMuR1[popDynHMLMuR1$sim_gen == 10000,9]
+LowMeanQTNnoIn <- popDynNoInLMLMuR1[popDynNoInHMLMuR1$sim_gen == 10000,9]
+
+HighMeanQTN <- popDynHMLMuR1[popDynHMLMuR1$sim_gen == 10000,9]
+HighMeanQTNnoIn <- popDynNoInHMLMuR1[popDynNoInHMLMuR1$sim_gen == 10000,9]
+MedMeanQTN <- popDynMMLMuR1[popDynHMLMuR1$sim_gen == 10000,9]
+MedMeanQTNnoIn <- popDynNoInMMLMuR1[popDynNoInHMLMuR1$sim_gen == 10000,9]
+LowMeanQTN <- popDynLMLMuR1[popDynHMLMuR1$sim_gen == 10000,9]
+LowMeanQTNnoIn <- popDynNoInLMLMuR1[popDynNoInHMLMuR1$sim_gen == 10000,9]
+
+HighCIupQTNnoIn<- popDynNoInHMLMuR1[popDynNoInHMLMuR1$sim_gen == 10000,10]
+MedCIupQTNnoIn <- popDynNoInMMLMuR1[popDynNoInMMLMuR1$sim_gen == 10000,10]
+LowCIupQTNnoIn <- LowMeanQTNnoIn + 0.051869
+
+HighCIlowQTNnoIn<- popDynNoInHMLMuR1[popDynNoInHMLMuR1$sim_gen == 10000,11]
+MedCIlowQTNnoIn <- popDynNoInMMLMuR1[popDynNoInMMLMuR1$sim_gen == 10000,11]
+LowCIlowQTNnoIn <- LowMeanQTNnoIn - 0.051869 
+
+means <- matrix(c(HighMean, MedMean, LowMean, HighMeanQTNnoIn, MedMeanQTNnoIn, LowMeanQTNnoIn), nrow = 2, byrow = TRUE)
+CIup <- c(HighUCI, HighCIupQTNnoIn, MedUCI,  MedCIupQTNnoIn, LowUCI, LowCIupQTNnoIn)
+CIlow <-  c(HighLCI, 0, MedLCI, 0, LowLCI, LowCIlowQTNnoIn)
+par(mfrow = c(1,1))
+bp<- barplot(means, beside = TRUE, names = c("High", "Med", "Low"), xlab = "Migration Rate",
+             ylim = c(0, 1))
+arrows(x0 = bp, x1 = bp, y0 = CIlow, y1 = CIup, code = 3, angle = 90)
+legend("topleft", legend = c("With Inv", "Without Inv"), fill = c("darkgrey", "lightgrey"))
+```
+
+
+```{r}
+
+## Mean LA and FST
+par(mfrow = c(1,3))
+
+#FST QTNs
+plot(popDynNoInR1$meanFST_QTNs~popDynNoInR1$sim_gen, type = "l", popDynNoInR1[popDynNoInR1$sim_gen <= 10000,], ylab = "Mean FST", xlab = "Generation", ylim = c(0,0.7), main = "QTN Muts")
+lines(popDynNoInR2$meanFST_QTNs~popDynNoInR2$sim_gen, type = "l", col = "red", data = popDynNoInR2[popDynNoInR2$sim_gen <= 10000,])
+legend("topleft", legend = c("Rep1", "Rep2"), lty = 1, col = c("black", "red"), cex = 0.7)
+
+# FST Neutral
+plot(popDynNoInR1$meanFST_neut~popDynNoInR1$sim_gen, type = "l", data = popDynNoInR1[popDynNoInR1$sim_gen <= 10000,], ylab = "Mean FST", xlab = "Generation", ylim = c(0,0.7), main = "Neutral Muts")
+lines(popDynNoInR2$meanFST_neut~popDynNoInR2$sim_gen, type = "l", data = popDynNoInR2[popDynNoInR2$sim_gen <= 10000,], ylab = "Mean FST", xlab = "Generation", ylim = c(0,0.7), col = "red")
+legend("topleft", legend = c("Rep1", "Rep2"), lty = 1, col = c("black", "red"), cex = 0.7)
+
+
+par(mfrow = c(1,3))
+# Local Adaptation
+plot(popDynNoInR1$localAdaptSA~popDynNoInR1$sim_gen, type = "l", popDynNoInR1[popDynNoInR1$sim_gen <= 10000,], ylab = "SA Local Adaptation", xlab = "Generation")
+lines(popDynNoInR2$localAdaptSA~popDynNoInR2$sim_gen, type = "l", col = "red", data = popDynNoInR2[popDynNoInR2$sim_gen <= 10000,])
+legend("topleft", legend = c("Rep1", "Rep2"), lty = 1, col = c("black", "red"))
+
+# Mean Fitness
+plot(popDynNoInR1$meanFitP1~popDynNoInR1$sim_gen, col = "cornflowerblue", type = "l", ylab = "Mean Fitness", xlab = "Generation")
+lines(popDynNoInR1$meanFitP2~popDynNoInR1$sim_gen, col = "limegreen", type = "l")
+lines(popDynNoInR2$meanFitP1~popDynNoInR2$sim_gen, col = "cornflowerblue", type = "l", lty = 2)
+lines(popDynNoInR2$meanFitP2~popDynNoInR2$sim_gen, col = "limegreen", type = "l", lty = 2)
+legend("bottomright", legend = c("Pop1-R1", "Pop2-R1", "Pop1-R2", "Pop2-R2"), lty = c(1,2,1,2), col = c("cornflowerblue", "cornflowerblue", "limegreen", "limegreen"), cex = 0.7)
+
+# Mean Phenotype
+plot(popDynNoInR1$meanPhenoP1~popDynNoInR1$sim_gen, col = "cornflowerblue", type = "l", ylab = "Mean Phenotype", xlab = "Generation", ylim = c(-1, 1))
+lines(popDynNoInR1$meanPhenoP2~popDynNoInR1$sim_gen, type = "l", col = "limegreen")
+lines(popDynNoInR2$meanPhenoP1~popDynNoInR2$sim_gen, col = "cornflowerblue", type = "l", lty = 2)
+lines(popDynNoInR2$meanPhenoP2~popDynNoInR2$sim_gen, col = "limegreen", type = "l", lty = 2)
+legend("topleft", legend = c("Pop1-R1", "Pop2-R1", "Pop1-R2", "Pop2-R2"), lty = c(1,2,1,2), col = c("cornflowerblue", "cornflowerblue", "limegreen", "limegreen"), cex = 0.7)
+
+
+```
+
+
+
+```{r}
+
+
+```

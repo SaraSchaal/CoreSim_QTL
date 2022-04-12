@@ -10,6 +10,15 @@ w.zik <- function(zik, theta, omega.sq){
   1 - (zik - theta)^2/omega.sq
 }
 
+# calculate fitness effects - normalize the height of the finess function to be 1.0
+# fitness = dnorm(phenotypes, optimum, sd=SIGMA_K) / dnorm(0.0, 0.0, sd=SIGMA_K);
+w.zikc <- function(zik, theta, omega.sq){
+  # used in SLiM
+  # note, I don't think this is exactly what the SLiM code does, replace with SLIM code  
+  a<- dnorm(zik, theta, sqrt(omega.sq))/dnorm(0,0, sqrt(omega.sq))
+  #a + 1 - max(a)
+  }
+
 ```
 
 For the 2-patch model, we assume that each patch has an optimum of +1 and -1.  We assume that for a given number of loci that affect the trait(`ntot`) at the lowest level of redundancy, their effect sizes (`alpha`) are $1/(2*ntot)$.  For this, we can use the supplemental equation from Yeaman 2015 Am Nat to calculate the critical migration rate $m_c$.  At $m>m_c$, alleles are prone to swamping by migration.
@@ -20,22 +29,22 @@ In our SLiM simulation, we can simulate up to 2000 SNPs of equal effect sites.
 
 theta.1 <- 1
 theta.2 <- -1
-omega.sq <- 25
+omega.sq <- c(3^2, 1.5^2, 0.75^2)
 ntot <- c(2,10,20,50,100,500)
-alpha <- 1/(ntot)
+alpha <- c(0.2, 0.002) #1/(ntot), 0.002
 
 m_crit <- function(alpha, theta.1, theta.2, omega.sq, N){
   w1bb <- 1#w.zik(4*alpha,theta.1, omega.sq)/
     #w.zik(4*alpha, theta.1, omega.sq)
-  w1Bb <- w.zik(2*alpha,theta.1, omega.sq)/
-    w.zik(4*alpha, theta.1, omega.sq)
-  w1BB <- w.zik(0, theta.1,omega.sq)/
-    w.zik(4*alpha, theta.1, omega.sq)
+  w1Bb <- w.zikc(2*alpha,theta.1, omega.sq)/
+    w.zikc(4*alpha, theta.1, omega.sq)
+  w1BB <- w.zikc(0, theta.1,omega.sq)/
+    w.zikc(4*alpha, theta.1, omega.sq)
   
-  w2bb <- w.zik(4*alpha,theta.2, omega.sq)/
-    w.zik(0, theta.2, omega.sq)
-  w2Bb <- w.zik(2*alpha,theta.2, omega.sq)/
-    w.zik(0, theta.2, omega.sq)
+  w2bb <- w.zikc(4*alpha,theta.2, omega.sq)/
+    w.zikc(0, theta.2, omega.sq)
+  w2Bb <- w.zikc(2*alpha,theta.2, omega.sq)/
+    w.zikc(0, theta.2, omega.sq)
   w2BB <- 1#w.zik(0, theta.2,omega.sq)/
     #w.zik(0, theta.2, omega.sq)
   
@@ -45,8 +54,278 @@ m_crit <- function(alpha, theta.1, theta.2, omega.sq, N){
   )
 }
 
-N=1000
-mc <- m_crit(alpha, theta.1, theta.2, omega.sq, N)
+N=1000 # from a patch perspective
+
+mc_exp <- m_crit(alpha[2], theta.1, theta.2, omega.sq[3], N)
+mc <- m_crit(inQTNs$selCoef, theta.1, theta.2, omega.sq[3], N)
+
+min(inQTNs$selCoef[which(mc < 0.25)])
+max(inQTNs$selCoef[which(mc < 0.25)])
+histIn <- hist(inQTNs$selCoef[inQTNs$MAF > 0.1], breaks = 100, col = alpha("red", 0.5), xlim = c(-0.01,0.01))
+
+mc.out <- m_crit(outQTNs$selCoef, theta.1, theta.2, omega.sq[3], N)
+max(outQTNs$selCoef[which(mc.out < 0.25)])
+min(outQTNs$selCoef[which(mc.out < 0.25)])
+
+histOut <- hist(outQTNs$selCoef[outQTNs$MAF > 0.1], breaks = 100, col = alpha("blue", 0.5), xlab = "QTN Effect Size",
+     main = "mig = 0.25, omega = 0.75^2, \nhighly polygenic", xlim = c(-0.01, 0.01))
+par(mfrow = c(2, 1))
+plot(histOut, col = alpha("blue", 0.5), ylim = c(0,500), xlab = "QTN Effect Size",
+     main = "mig = 0.25, omega = 0.75^2, \nhighly polygenic")
+plot(histIn, ylim = c(0,500), col = alpha("red", 0.5))
+abline(v = min(inQTNs$selCoef[which(mc < 0.25)]), lty = "dashed", col = "black", lwd = 3)
+abline(v = max(inQTNs$selCoef[which(mc < 0.25)]), lty = "dashed", col = "black", lwd = 3)
+#abline(v = alpha[2], lty  = "dashed", col = "grey", lwd = 2)
+#abline(v = -alpha[2], lty  = "dashed", col = "grey", lwd = 2)
+legend("topleft", legend = c("inversion window qtns", "outside inversion qtns"), fill = c(alpha("red", 0.5), alpha("blue", 0.5)), cex = 0.75)
+#legend("topright", legend = c("threshold qtn values", "threshold SD of effect sizes"), lty = "dashed", col = c("black", "grey"), cex = 0.75, lwd = c(3,2))
+par(mfrow = c(1,1))
+out.dens <- density(outQTNs$selCoef, adjust = 0.25)
+in.dens <- density(inQTNs$selCoef, adjust = 0.25)
+plot(out.dens, col = alpha("blue", 0.8), xlab = "QTN Effect Size", 
+     main = "mig = 0.25, omega = 0.75^2, \nhighly polygenic")
+polygon(out.dens, col = alpha("blue", 0.25))
+lines(in.dens, col = alpha("red", 0.8))
+polygon(in.dens, col = alpha("red", 0.25))
+dnorm.in <- cbind(dnorm(inQTNs$selCoef, mean = 0, sd = 0.002), inQTNs$selCoef)
+dnorm.in.order <- dnorm.in[order(dnorm.in[,2]),]
+dnorm.out <- cbind(dnorm(outQTNs$selCoef, mean = 0, sd = 0.002), outQTNs$selCoef)
+dnorm.out.order <- dnorm.out[order(dnorm.out[,2]),]
+points(dnorm.in.order[,1]~dnorm.in.order[,2], col = "black",type = "l", lty = "dashed", lwd = 3)
+#points(dnorm.out.order[,1]~dnorm.out.order[,2], col = "blue",type = "l", lty = "dashed",lwd = 2)
+length(inQTNs$selCoef)
+length(outQTNs$selCoef)
+
+#origin gen vs. effect size plot
+par(mfrow = c(1,2))
+plot(outQTNs$selCoef~outQTNs$originGen, pch = 1, col = alpha("blue", 0.5), 
+     main = "Outside Inversion QTNs",  xlim = c(0, 50000),
+     xlab = "Mutation Origin Generation", ylab = "QTN Effect Size")
+plot(inQTNs$selCoef~inQTNs$originGen, pch = 1, col = alpha("red", 0.5), 
+      main = "Inside Inversion QTNs",
+     xlab = "Mutation Origin Generation", ylab = " ")
+```
+
+```{r}
+w.zik <- function(zik, theta, omega.sq){
+  1 - (zik - theta)^2/omega.sq
+  # used in code setup
+}
+
+w.zikb <- function(zik, theta, omega.sq){
+     1 - exp(zik - theta)^2/omega.sq
+  # used in manuscript
+}
+
+
+
+zik <- seq(-1,1,0.01)
+par(mfrow = c(1,1))
+plot(zik, w.zik(zik, 0, 0.75^2), ylim=c(0,1)) # used in setup code
+plot(zik, w.zikb(zik, 0, 0.75^2), ylim=c(0,1)) # used in manuscript
+plot(zik, w.zikc(zik, 0, 0.75^2), ylim=c(0,1), main = "slim") # used in SLiM
+
+mc_exp <- m_crit(df.qtnMuts.MAF$selCoef, theta.1, theta.2, omega.sq[3], N)
+mc_exp_out <- m_crit(outQTNs$selCoef, theta.1, theta.2, omega.sq[3], N)
+
+min(inQTNs$selCoef[which(mc_exp < 0.25)])
+max(inQTNs$selCoef[which(mc_exp < 0.25)])
+
+
+ alpha_FST <- ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$inOut != "neut" & df.qtnMuts.MAF$MAF > 0.1,], 
+                     aes(x = abs(selCoef), y = FST)) + 
+   geom_point(aes(col = inOut), alpha = 0.5) + 
+   theme_classic() +
+   scale_color_manual(name = "",
+                      values = c("red", "blue")) + 
+   labs(title = expression(paste("mig = 0.25, ", omega, " = 0.75"^2, ", highly polygenic, MAF > 0.1")),
+        x = expression(paste("|", alpha, "|")),
+        y = expression("F"[italic("ST")])) + 
+   geom_vline(xintercept = max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)]), lty = "dashed") + 
+   theme(panel.background = element_blank(), 
+         strip.background = element_rect(colour = "white", fill = "grey92")) +
+   theme(legend.position = "none")
+ 
+ ggMarginal(alpha_FST, groupColour = TRUE, groupFill = TRUE)
+
+FSTvEffectSizePlot <- function(dataset, plotTitle, pointColor, shapePal){
+  alpha_FST <- ggplot(dataset, 
+                      aes(x = abs(selCoef), y = FST)) + 
+   geom_point(aes(col = adapt_Non, shape = adapt_Non), alpha = 0.5) + 
+   theme_classic() +
+   scale_color_manual(name = "",
+                      values = pointColor) + 
+   scale_shape_manual(name = "", values = shapePal) + 
+   labs(title = plotTitle,
+        x = expression(paste("|", alpha, "|")),
+        y = expression("F"[italic("ST")])) + 
+   geom_vline(xintercept = max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)]), lty = "dashed") + 
+   theme(panel.background = element_blank(), 
+         strip.background = element_rect(colour = "white", fill = "grey92")) +
+
+   theme(legend.position = "bottom") + 
+    ylim(0, max(df.qtnMuts.MAF$FST)*1.1) + 
+    xlim(0, max(df.qtnMuts.MAF$selCoef)*1.1)
+  
+  print(ggMarginal(alpha_FST, groupColour = TRUE, groupFill = TRUE))
+}
+
+FSTvEffectSizePlot.NS <- function(dataset, plotTitle, pointColor, shapePal){
+  alpha_FST <- ggplot(dataset, 
+                      aes(x = abs(selCoef), y = FST)) + 
+   geom_point(aes(col = inOut, shape = inOut), alpha = 0.5) + 
+   theme_classic() +
+   scale_color_manual(name = "",
+                      labels = c("nonadaptive inversions", "outside inversions"),
+                      values = pointColor) + 
+   scale_shape_manual(name = "", 
+                      labels = c("nonadaptive inversions", "outside inversions"),
+                      values = shapePal) + 
+   labs(title = plotTitle,
+        x = expression(paste("|", alpha, "|")),
+        y = expression("F"[italic("ST")])) + 
+   geom_vline(xintercept = max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)]), lty = "dashed") + 
+   theme(panel.background = element_blank(), 
+         strip.background = element_rect(colour = "white", fill = "grey92")) +
+
+   theme(legend.position = "bottom",
+         legend.key.size = unit(2, "cm"),
+         legend.text = element_text(size = 10)) + 
+    ylim(0, max(df.qtnMuts.MAF$FST)*1.1) + 
+    xlim(0, max(df.qtnMuts.MAF$selCoef)*1.1)
+  
+  print(ggMarginal(alpha_FST, groupColour = TRUE, groupFill = TRUE))
+
+}
+FSTvEffectSizePlot(df.qtnMuts.MAF[df.qtnMuts.MAF$MAF >0.1 & df.qtnMuts.MAF$adapt_Non != "neutral",], "Selection Sim - MAF > 0.1 ", c("red", "darkgreen", "blue"), c(19, 17, 15))
+
+FSTvEffectSizePlot(df.qtnMuts.MAF[df.qtnMuts.MAF$adapt_Non == "adaptive inversion",], 
+                            "adaptive inversions", "red", 19)
+
+non.adapt=FSTvEffectSizePlot(df.qtnMuts.MAF[df.qtnMuts.MAF$adapt_Non == "nonadaptive inversion",], 
+                                "nonadaptive inversions", "darkgreen", 17)
+outside <- FSTvEffectSizePlot(df.qtnMuts.MAF[df.qtnMuts.MAF$adapt_Non == "outside inversion",], 
+                              "outside inversions", "blue", 15)
+noSel <- FSTvEffectSizePlot.NS(df.qtnMuts.NS.MAF[df.qtnMuts.NS.MAF$inOut != "neut" & df.qtnMuts.NS.MAF$MAF > 0.1,], 
+                            "No Selection - MAF > 0.1", c("darkgreen", "blue"), c(17,15))
+
+# adaptive inversion qtns
+ alpha_FST_adapt <- ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$MAF > 0.1 & df.qtnMuts.MAF$adapt_Non == "adaptive inversion",], 
+                      aes(x = abs(selCoef), y = FST)) + 
+   geom_point(aes(col = adapt_Non, shape = adapt_Non), alpha = 0.5) + 
+   theme_classic() +
+   scale_color_manual(name = "",
+                      values = "red") + 
+   scale_shape_manual(name = "", values = 19) + 
+   labs(title = "Adaptive Inversion QTNs",
+        x = expression(paste("|", alpha, "|")),
+        y = expression("F"[italic("ST")])) + 
+   geom_vline(xintercept = max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)]), lty = "dashed") + 
+   theme(panel.background = element_blank(), 
+         strip.background = element_rect(colour = "white", fill = "grey92")) +
+   theme(legend.position = "none") + 
+   ylim(0, max(df.qtnMuts.MAF$FST)*1.1) + 
+   xlim(0, max(df.qtnMuts.MAF$selCoef)*1.1) + 
+   annotate(geom="text", x=max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)])/2, y=max(df.qtnMuts.MAF$FST)*1.1, label="Swamping prone",
+              color="black") + 
+   annotate(geom="text", x=(max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)])+max(df.qtnMuts.MAF$selCoef)*1.1)/2, y=max(df.qtnMuts.MAF$FST)*1.1, 
+            label="Swamping resistant",
+            color="black")
+   
+
+# nonadaptive inversion qtns
+ alpha_FST_nonadapt <- ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$MAF > 0.1 & df.qtnMuts.MAF$adapt_Non == "nonadaptive inversion",], 
+                      aes(x = abs(selCoef), y = FST)) + 
+   geom_point(aes(col = adapt_Non, shape = adapt_Non), alpha = 0.5) + 
+   theme_classic() +
+   scale_color_manual(name = "",
+                      values = "darkgreen") + 
+   scale_shape_manual(name = "", values = 17) + 
+   labs(title = "Nonadaptive Inversion QTNs",
+        x = expression(paste("|", alpha, "|")),
+        y = expression("F"[italic("ST")])) + 
+   geom_vline(xintercept = max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)]), lty = "dashed") + 
+   theme(panel.background = element_blank(), 
+         strip.background = element_rect(colour = "white", fill = "grey92")) +
+   theme(legend.position = "none") + 
+   ylim(0, max(df.qtnMuts.MAF$FST)*1.1) + 
+   xlim(0, max(df.qtnMuts.MAF$selCoef)*1.1) + 
+   annotate(geom="text", x=max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)])/2, y=max(df.qtnMuts.MAF$FST)*1.1, label="Swamping prone",
+              color="black") + 
+   annotate(geom="text", x=(max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)])+max(df.qtnMuts.MAF$selCoef)*1.1)/2, y=max(df.qtnMuts.MAF$FST)*1.1, 
+            label="Swamping resistant",
+            color="black")
+
+# outside inversion qtns
+ alpha_FST_outside <- ggplot(df.qtnMuts.MAF[df.qtnMuts.MAF$MAF > 0.1 & df.qtnMuts.MAF$adapt_Non == "outside inversion",], 
+                      aes(x = abs(selCoef), y = FST)) + 
+   geom_point(aes(col = adapt_Non, shape = adapt_Non), alpha = 0.5) + 
+   theme_classic() +
+   scale_color_manual(name = "",
+                      values = "blue") + 
+   scale_shape_manual(name = "", values = 15) + 
+   labs(title = "Outside Inversion QTNs",
+        x = expression(paste("|", alpha, "|")),
+        y = expression("F"[italic("ST")])) + 
+   geom_vline(xintercept = max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)]), lty = "dashed") + 
+   theme(panel.background = element_blank(), 
+         strip.background = element_rect(colour = "white", fill = "grey92")) +
+   theme(legend.position = "none") + 
+   ylim(0, max(df.qtnMuts.MAF$FST)*1.1) + 
+   xlim(0, max(df.qtnMuts.MAF$selCoef)*1.1) +
+   annotate(geom="text", x=max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)])/2, y=max(df.qtnMuts.MAF$FST)*1.1, label="Swamping prone",
+              color="black") + 
+   annotate(geom="text", x=(max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)])+max(df.qtnMuts.MAF$selCoef)*1.1)/2, y=max(df.qtnMuts.MAF$FST)*1.1, 
+            label="Swamping resistant",
+            color="black")
+ 
+# no selection sims
+ alpha_FST_NS <- ggplot(df.qtnMuts.NS.MAF[df.qtnMuts.NS.MAF$inOut != "neut" & df.qtnMuts.NS.MAF$MAF > 0.1,], 
+                      aes(x = abs(selCoef), y = FST)) + 
+   geom_point(aes(col = inOut, shape = inOut), alpha = 0.5) + 
+   theme_classic() +
+   scale_color_manual(name = "",
+                      values = c("darkgreen","blue")) + 
+   scale_shape_manual(name = "", values = c(17,15)) + 
+   labs(title = "No Selection QTNs",
+        x = expression(paste("|", alpha, "|")),
+        y = expression("F"[italic("ST")])) + 
+   geom_vline(xintercept = max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)]), lty = "dashed") + 
+   theme(panel.background = element_blank(), 
+         strip.background = element_rect(colour = "white", fill = "grey92")) +
+   theme(
+    legend.position = c(.85, .85),
+    legend.justification = c("right", "top"),
+    legend.box.just = "right",
+    legend.margin = margin(6, 6, 6, 6)
+    ) +
+   ylim(0, max(df.qtnMuts.MAF$FST)*1.1) + 
+   xlim(0, max(df.qtnMuts.MAF$selCoef)*1.1) + 
+   annotate(geom="text", x=max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)])/2, y=max(df.qtnMuts.MAF$FST)*1.1, label="Swamping prone",
+              color="black") + 
+   annotate(geom="text", x=(max(df.qtnMuts.MAF$selCoef[which(mc_exp < 0.25)])+max(df.qtnMuts.MAF$selCoef)*1.1)/2, y=max(df.qtnMuts.MAF$FST)*1.1, 
+            label="Swamping resistant",
+            color="black")
+  
+ ggarrange(ggMarginal(alpha_FST_adapt, groupColour = TRUE, groupFill = TRUE), 
+           ggMarginal(alpha_FST_nonadapt, groupColour = TRUE, groupFill = TRUE), 
+           ggMarginal(alpha_FST_outside, groupColour = TRUE, groupFill = TRUE), 
+           ggMarginal(alpha_FST_NS, groupColour = TRUE, groupFill = TRUE), ncol = 4)
+```
+
+OLD CODE
+```{r}
+plot(mc~inQTNs$selCoef, col = alpha("red",  0.55), xlim = c(min(c(inQTNs$selCoef, outQTNs$selCoef)),
+                                                            max(c(inQTNs$selCoef, outQTNs$selCoef))),
+     main = "mig = 0.25, omega = 0.75^2, \nhighly polygenic", ylab = "Critical Migration Rate", xlab = "QTN Effect Size")
+points(mc.out~outQTNs$selCoef, pch =18, col = alpha("blue", 0.55))
+abline(h = 0.25, lty = "dashed")
+legend("bottomleft", legend = c("inversion window qtns", "outside inversion qtns"), pch = c(1,18), col = c("red", "blue"), cex = 0.75)
+length(mc[mc>0.25])
+length(mc)
+length(mc.out[mc.out>0.25])
+length(mc.out)
 cbind(ntot, alpha, mc=round(mc,5), lowmc=0.0100*round(mc,5), highmc=100*round(mc,5))
+
 
 ```

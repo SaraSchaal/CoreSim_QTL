@@ -1,0 +1,537 @@
+---
+title: "processInversionSims"
+author: "Sara Michele Schaal"
+date: "6/17/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load Packages and Read in parameters ###
+```{r}
+library(ggplot2)
+library(dplyr)
+library(purrr)
+options(scipen = 999)
+
+# Load File Path
+folder <- "results/Inversion/20201115_FullSet"
+
+# upload a file with all the simulations that were run in this folder
+df.params <- read.table("src/InvSimParams.txt", header = TRUE)
+```
+
+### Run the following code chunk once to get full data files to do further analyses on ###
+```{r}
+## Inversion Through Time
+df.invTime <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invTimeNewFile <- read.table(paste(folder, seed, "_outputInvTime.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(invTimeNewFile) > 0){
+    invTimeNewFile$seed <- seed
+    df.invTime <-  rbind(df.invTime, invTimeNewFile)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.invTime, "FullSet_invTime.txt", row.names = FALSE)
+
+## Inversion Summary Data
+df.invData <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invData <- read.table(paste(folder, seed, "_outputInvSumInfo.txt", sep=""), header = TRUE,
+                        stringsAsFactors = FALSE)
+  if(nrow(invData) > 0){
+    invData$seed <- seed
+    df.invData <- rbind(df.invData, invData)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.invData, "FullSet_invData.txt", row.names = FALSE)
+
+## QTN Inversion Through Time
+df.invQTNTime <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invQTNTimeNewFile <- read.table(paste(folder, seed, "_outputInvQtn.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(invQTNTimeNewFile) > 0){
+    invQTNTimeNewFile$seed <- seed
+    df.invQTNTime <-  rbind(df.invQTNTime, invQTNTimeNewFile)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.invQTNTime, "FullSet_invQTNTime.txt", row.names = FALSE)
+
+## QTN Inversion Summary Data
+df.invQTNData <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  invQTNDataNewFile <- read.table(paste(folder, seed, "_outputInvQtnSumInfo.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(invQTNDataNewFile) > 0){
+    invQTNDataNewFile$seed <- seed
+    df.invQTNData <-  rbind(df.invQTNData, invQTNDataNewFile)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.invQTNData, "FullSet_invQTNSumInfo.txt", row.names = FALSE)
+
+## Pop Dynamics
+df.popDyn <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  popDynNewFile <- read.table(paste(folder, seed, "_outputPopDynam.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(popDynNewFile) > 0){
+   popDynNewFile$seed <- seed
+   df.popDyn <-  rbind(df.popDyn, popDynNewFile)
+  }
+  count <- count + 1
+  print(count)
+}
+write.table(df.popDyn, "FullSet_popDyn.txt", row.names = FALSE)
+
+## SimStats
+df.simStats <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  simStatsNewFile <- read.table(paste(folder, seed, "_outputSimStats.txt", sep=""), stringsAsFactors = FALSE)
+  simStatsNewFile$seed <- seed
+  df.simStats <-  rbind(df.simStats, simStatsNewFile)
+  count <- count + 1
+  print(count)
+}
+df.simStats <- df.simStats[,2:ncol(df.simStats)]
+colnames(df.simStats) <- c("mig1", "mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar", "Seed")
+write.table(df.simStats, "FullSet_simStats.txt", row.names = FALSE)
+
+## Mutations File
+df.finalMuts <- NULL
+count <- 0
+no.Data <- NULL
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  if(file.exists(paste(folder, seed, "_outputMutations.txt", sep=""))){
+    finalMutsNewFile <- read.table(paste(folder, seed, "_outputMutations.txt", sep=""), stringsAsFactors = FALSE, header = TRUE)
+  finalMutsNewFile$seed <- seed
+  df.finalMuts <-  rbind(df.finalMuts, finalMutsNewFile)
+  } else {
+    no.Data <- c(no.Data, seed)
+  }
+  count <- count + 1
+  print(count)
+}
+
+write.table(no.Data,"seedsToRerun.txt", row.names = FALSE)
+colnames(df.finalMuts)[2] <- "mut_id" 
+file.exists(paste(folder, seed, "_outputMutations.txt", sep=""))
+write.table(df.finalMuts, "FullSet_finalMuts.txt", row.names = FALSE)
+
+
+```
+
+## Unique Parameters
+Subset original parameters dataframe to identify all unique parameter combinations. Then using those parameter values identify the simulation seeds of replicate simulations for each set of parameters.
+```{r}
+
+unique.params <- unique(df.simStats[c("mig1","mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", "sigmaK", "burnin", "dom", "enVar")])
+reps <- 2
+for(i in 1:reps){
+  seedColName <- paste("Seed", i, sep = "")
+  unique.params[,seedColName] <- NA
+}
+
+for(i in 1:nrow(unique.params)){
+  for(j in 1:nrow(df.simStats)){
+    if(apply(unique.params[i,1:12], 1, paste, collapse = " ") == 
+       apply(df.simStats[j,c("mig1","mig2", "pop1N", "pop2N", "mu_base", "mu_inv", "r", "alpha", 
+                             "sigmaK", "burnin", "dom", "enVar")], 1, paste, collapse = " ")){
+      for(k in 1:reps){
+        seedCol <- paste("Seed", k, sep="")
+        if(is.na(unique.params[i, seedCol])){
+          unique.params[i, seedCol] <- df.simStats$Seed[j]
+          break
+        } 
+      }
+    }
+  }
+}
+
+```
+
+### Average Replicate Simulations - Pop dynamics file ONLY NEED THIS CHUNK ONCE
+Create a dataframe that has the average of all the replicate parameter values. Then bind the corresponding parameters to the dataframe for ease of plotting and analysis later. 
+```{r}
+
+########################
+### average for loop ###
+###################################################################
+
+df.LA.average <- NULL
+df.LA.stderr <- NULL
+df.LA.all <- NULL
+count <- 0
+# step through each line of the unique parameters dataframe
+for(i in 1:nrow(unique.params)){
+    ptm <- proc.time()
+    # create empty variable for putting each data set that should be average
+    df.average <- NULL
+    av.seeds <- NULL
+    # step through the population dynamics dataframe
+    for(j in 1:nrow(df.popDyn)){
+      # step through the different seeds that have the unique parameters
+      for(k in 1:reps){
+        seedCol <- paste("Seed", k, sep="")
+        # if that seed is not an NA then do the next step
+        if(!is.na(unique.params[i, seedCol])){
+          # if the seed from unique parameters matches the seed of the pop dynam dataset store it
+          if(df.popDyn$seed[j] == unique.params[i, seedCol]){
+            # bind data from same parameter combination together for averaging later
+            df.average <- rbind(df.average, df.popDyn[j,])
+            # store unique seeds to this dataset
+            av.seeds <- unique(c(av.seeds, unique.params[i, seedCol]))
+          }
+        }
+      }
+    }
+    
+    
+    ## average columns of interest
+    # df.averageSubset <- df.average[,vect.aggCols]
+    new.average <- aggregate(.~sim_gen, data = df.average, FUN = mean)
+    SE <- function(x){
+      sd(x)/sqrt(length(x))
+    }
+    new.se <- aggregate(.~sim_gen, data = df.average, FUN = SE)
+    df.simParams <- data.frame(mu_inv = rep(unique.params$mu_inv[i], nrow(new.average)), 
+                               mig = rep(unique.params$mig1[i], nrow(new.average)),
+                               alpha = rep(unique.params$alpha[i], nrow(new.average)), 
+                               sigmaK = rep(unique.params$sigmaK[i], nrow(new.average)), 
+                               enVar = rep(unique.params$enVar[i], nrow(new.average)), 
+                               mu_base = rep(unique.params$mu_base[i], nrow(new.average)))
+    
+    df.simParamsAll <- data.frame(mu_inv = rep(unique.params$mu_inv[i], nrow(df.average)), 
+                               mig = rep(unique.params$mig1[i], nrow(df.average)),
+                               alpha = rep(unique.params$alpha[i], nrow(df.average)), 
+                               sigmaK = rep(unique.params$sigmaK[i], nrow(df.average)), 
+                               enVar = rep(unique.params$enVar[i], nrow(df.average)), 
+                               mu_base = rep(unique.params$mu_base[i], nrow(df.average)))
+   
+    # create seed columns so we can keep track of relevant seed names
+    df.Seedcolumns <- NULL
+    df.SeedcolumnsAll <- NULL
+    vect.colNames <- NULL
+    for(m in 1:reps){
+      seedCol <- paste("Seed", m, sep = "")
+      if(!is.na(av.seeds[m])){
+        df.Seedcolumns <- cbind(df.Seedcolumns, rep(av.seeds[m], nrow(new.average)))
+        df.SeedcolumnsAll <- cbind(df.SeedcolumnsAll, rep(av.seeds[m], nrow(df.average)))
+      } else {
+        df.Seedcolumns <- cbind(df.Seedcolumns, rep(NA, nrow(new.average)))
+        df.SeedcolumnsAll <- cbind(df.SeedcolumnsAll, rep(NA, nrow(df.average)))
+      }
+      vect.colNames <- c(vect.colNames, seedCol)
+    }
+    colnames(df.Seedcolumns) <- vect.colNames
+    colnames(df.SeedcolumnsAll) <- vect.colNames
+    
+    # finally bind together all the data in the final dataframe
+    df.LA.average <- rbind(df.LA.average, cbind(new.average, df.simParams, df.Seedcolumns))
+    df.LA.stderr <- rbind(df.LA.stderr, cbind(new.se, df.simParams, df.Seedcolumns))
+    df.LA.all <- rbind(df.LA.all, cbind(df.average, df.simParamsAll, df.SeedcolumnsAll))
+    count <- count + 1
+    print(count)
+    print(proc.time() - ptm)
+} # close average for loop
+###################################################################
+df.LA.average <- subset(df.LA.average, select = -seed)
+df.LA.stderr <- subset(df.LA.stderr, select = -seed)
+df.LA.all <- subset(df.LA.all, select = -seed)
+
+#df.LA.average <- read.table("FullSet_LAaverage.txt", header = TRUE)
+write.table(df.LA.average, "FullSet_LAaverage.txt", row.names = FALSE)
+write.table(df.LA.stderr, "FullSet_LAstderr.txt", row.names = FALSE)
+write.table(df.LA.all, "FullSet_LAallData.txt", row.names = FALSE)
+
+# this should work I don't understand why it doesn't
+#df.LA.average[,df.LA.average] <- lapply(df.LA.average[,LA.cols], function(x) as.factor(as.character(x)))
+df.LA.average <- subset(df.LA.average, select = -seed)
+
+# convert every column of parameters data to factor 
+for(i in 16:ncol(df.LA.average)){
+  df.LA.average[,i] <- as.factor(as.character(df.LA.average[,i]))
+}
+```
+
+# Run this chunk if average file has already been made
+```{r}
+df.LA.average <- read.table("src/results/FullSet_LAaverage.txt", header = TRUE, stringsAsFactors = FALSE)
+
+for(i in 16:ncol(df.LA.average)){
+  df.LA.average[,i] <- as.factor(as.character(df.LA.average[,i]))
+}
+```
+
+## Plotting
+
+### Plotting for Local Adaptation 
+```{r}
+library(ggplot2)
+inv.labs <- c("0" = "No Inversions", "0.001" = "Inversion Mutation Rate = 0.001")
+ggplot(data = df.LA.average[df.LA.average$sim_gen > 4000,], 
+       aes(x = sim_gen, y = localAdaptSA, group = interaction(mig, mu_base))) + 
+    geom_line(aes(color = mig, linetype = mu_base), size = 0.75) + 
+    facet_wrap(~ mu_inv, labeller = labeller(mu_inv = inv.labs)) + 
+    labs(title = "Effect of Inversions on Local Adaptation",
+           y = "Local Adaptation",
+           x = "Generation") +
+ # scale_fill_discrete(names = c("Migration", "QTN Mutation Rate")) +
+  guides(color = guide_legend(title = "Migration Rate"), 
+         linetype = guide_legend(title = "QTN Mutation Rate")) +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        strip.background = element_rect(colour = "white", fill = "grey92")) +
+  scale_color_manual(values=c("cadetblue1","cadetblue3", "cornflowerblue", "navy")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(4200, NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1))
+
+```
+
+## Plotting for inversion characteristics
+```{r}
+#############################################################################################################
+#### PLOTTING For inversion characteristics ####
+#############################################################################################################
+  
+  ## make labels for facet wrapping
+    alpha.labels <- c("0.2" = "sigmaMu = 0.2", "0.002" = "sigmaMu = 0.002")
+    mig.labels <- c("0.001" = "mig = 0.001", "0.01" = "mig = 0.01", "0.1" = "mig = 0.1", 
+                  "0.25" = "mig = 0.25", "0.4" = "mig = 0.4", "0.5" = "mig = 0.5")
+
+
+  ## plot inversion age --  split by inversiion FST with reps
+    ggplot(data = df.FSTsplit[df.FSTsplit$enVar == 0 & df.FSTsplit$muInv == 0.001 & 
+                                df.FSTsplit$sigmaK == 0.75 & df.FSTsplit$alpha == 0.002,], 
+           aes(x = sim_gen, y = inv_ageT10, group = interaction(muBase, rep))) + 
+           geom_line(aes(color = muBase), size = 0.75, alpha = 0.3) + 
+           geom_line(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                                        df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+                     aes(x = sim_gen, y = inv_ageT10, group = muBase, color = muBase), size = 1.2) + 
+           facet_wrap(~ mig1 , labeller = labeller(mig1 = mig.labels), ncol = 6, nrow = 1) + 
+           labs(title = "Average Inversions Age Through Time",
+                 y = "Average Inversion Age",
+                 x = "Generation") +
+           guides(color = guide_legend(title = "QTN Mutation Rate")) +
+           theme_classic() +
+           theme(panel.background = element_blank(), 
+                 strip.background = element_rect(colour = "white", fill = "grey92")) +
+           scale_color_manual(values=c( "cadetblue3", "navy")) +
+           scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+           scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.FSTsplit$inv_ageT10)))
+    
+  ## plot inversion age -- split by inversion FST just average
+    ggplot(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                              df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+           aes(x = sim_gen, y = inv_ageT10)) + 
+      geom_line(aes(color = mig1), size = 0.75, alpha = 0.95) + 
+      geom_line(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                                      df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+                 aes(x = sim_gen, y = inv_ageB90, color = mig1), 
+                 size = 0.75, alpha = 0.95, linetype = 3) + 
+      facet_wrap(~ muBase + mig1 , labeller = labeller(mig1 = mig.labels), ncol = 6, nrow = 2) + 
+      labs(title = "Average Inversions Age Through Time",
+           y = "Average Inversion Age",
+           x = "Generation") +
+      guides(color = guide_legend(title = "Migration Rate")) +
+      scale_color_manual(values=c( "darkgrey","cadetblue1","cadetblue3", 
+                                   "cornflowerblue", "navy", "black")) +
+      theme_classic() +
+      theme(panel.background = element_blank(), 
+            strip.background = element_rect(colour = "white", fill = "grey92")) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+      scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.FSTsplit$inv_ageT10)))
+    
+    ggplot(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                                   df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+           aes(x = sim_gen, y = inv_ageT10)) + 
+      geom_line(aes(color = muBase), size = 0.75, alpha = 0.95) + 
+      geom_line(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                                        df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+                aes(x = sim_gen, y = inv_ageB90, color = muBase), 
+                size = 0.75, alpha = 0.95, linetype = 3) + 
+      facet_wrap(~ muBase + mig1 , labeller = labeller(mig1 = mig.labels), ncol = 6, nrow = 2) + 
+      labs(title = "Average Inversions Age Through Time",
+           y = "Average Inversion Age",
+           x = "Generation") +
+      guides(color= guide_legend(title = "QTN Mutation Rate")) +
+      scale_color_manual(values=c( "cadetblue3", "dodgerblue3")) +
+      theme_classic() +
+      theme(panel.background = element_blank(), 
+            strip.background = element_rect(colour = "white", fill = "grey92")) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+      scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.aveFSTsplit$inv_ageT10)))
+   
+  ## plot all data         
+    inv.Age <-  ggplot(data = df.all.data[df.all.data$enVar == 0 & df.all.data$muInv == 0.001 &
+                                          df.all.data$sigmaK == 0.75 & df.all.data$alpha == 0.002,], 
+                       aes(x = sim_gen, y = aveAge, group = interaction(muBase, rep))) + 
+      geom_line(aes(color = muBase), size = 0.75, alpha = 0.3) + 
+      geom_line(data = df.ave.data[df.ave.data$enVar == 0 & df.ave.data$muInv == 0.001 & 
+                                   df.ave.data$sigmaK == 0.75 & df.ave.data$alpha == 0.002,], 
+                aes(x = sim_gen, y = aveAge, group = muBase, color = muBase), 
+              size = 1.2) + 
+      facet_wrap(~ mig1 , labeller = labeller(mig1 = mig.labels),
+                 ncol = 6, nrow = 1) + 
+      labs(title = "Average Inversions Age Through Time",
+           y = "Average Inversion Age",
+           x = "Generation") +
+      guides(color = guide_legend(title = "QTN Mutation Rate")) +
+      theme_classic() +
+      theme(panel.background = element_blank(), 
+            strip.background = element_rect(colour = "white", fill = "grey92")) +
+      scale_color_manual(values=c( "cadetblue3", "navy")) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+      scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.ave.data$aveAge)))
+    
+ ### Inversion Length ####
+ #######################################
+    
+    inv.Length <- ggplot(data = df.all.data[df.all.data$enVar == 0 & df.all.data$muInv == 0.001 &
+                                               df.all.data$sigmaK == 0.75 & df.all.data$alpha == 0.002,], 
+                          aes(x = sim_gen, y = aveLength, group = interaction(muBase, rep))) + 
+      geom_line(aes(color = muBase), size = 0.75, alpha = 0.3) + 
+      geom_line(data = df.ave.data[df.ave.data$enVar == 0 & df.ave.data$muInv == 0.001 &
+                                     df.ave.data$sigmaK == 0.75 & df.ave.data$alpha == 0.002,], 
+                aes(x = sim_gen, y = aveLength, group = interaction(muBase), color = muBase), size = 1.2) + 
+      facet_wrap(~ mig1 , labeller = labeller(mig1 = mig.labels),
+                 ncol = 6, nrow = 1) + 
+      labs(title = "Average Inversion Length Through Time",
+           y = "Average Inversion Length",
+           x = "Generation") +
+      guides(color = guide_legend(title = "QTN Mutation Rate")) +
+          #   linetype = guide_legend(title = "Sigma Mu (Effect Size)")) +
+      theme_classic() +
+      theme(panel.background = element_blank(), 
+            strip.background = element_rect(colour = "white", fill = "grey92")) +
+      scale_color_manual(values=c( "cadetblue3", "navy")) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+      scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.ave.data$aveLength)))
+    
+    ## plot inversion length -- split by inversion FST just average
+    ggplot(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                                   df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+           aes(x = sim_gen, y = inv_lengthT10)) + 
+      geom_line(aes(color = mig1), size = 0.75, alpha = 0.95) + 
+      geom_line(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                                        df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+                aes(x = sim_gen, y = inv_lengthB90, color = mig1), 
+                size = 0.75, alpha = 0.95, linetype = 3) + 
+      facet_wrap(~muBase + mig1, labeller = labeller(mig1 = mig.labels), ncol = 6, nrow = 2) + 
+      labs(title = "Average Inversions Length Through Time",
+           y = "Average Inversion Length",
+           x = "Generation") +
+      guides(color = guide_legend(title = "Migration Rate")) +
+      scale_color_manual(values=c( "darkgrey","cadetblue1","cadetblue3", 
+                                   "cornflowerblue", "navy", "black")) +
+      theme_classic() +
+      theme(panel.background = element_blank(), 
+            strip.background = element_rect(colour = "white", fill = "grey92")) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+      scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.FSTsplit$inv_lengthT10)))
+    
+    
+    ggplot(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                                   df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+           aes(x = sim_gen, y = num_qtnsT10)) + 
+      geom_line(aes(color = mig1), size = 0.75, alpha = 0.95) + 
+      geom_line(data = df.aveFSTsplit[df.aveFSTsplit$enVar == 0 & df.aveFSTsplit$muInv == 0.001 & 
+                                        df.aveFSTsplit$sigmaK == 0.75 & df.aveFSTsplit$alpha == 0.002,], 
+                aes(x = sim_gen, y = numqtnsB90, color = mig1), 
+                size = 0.75, alpha = 0.95, linetype = 3) + 
+      facet_wrap(~muBase + mig1, labeller = labeller(mig1 = mig.labels), ncol = 6, nrow = 2) + 
+      labs(title = "Average Number of Inversion QTNs Through Time",
+           y = "Average Number of Inversion QTNs",
+           x = "Generation") +
+      guides(color = guide_legend(title = "Migration Rate")) +
+      scale_color_manual(values=c( "darkgrey","cadetblue1","cadetblue3", 
+                                   "cornflowerblue", "navy", "black")) +
+      theme_classic() +
+      theme(panel.background = element_blank(), 
+            strip.background = element_rect(colour = "white", fill = "grey92")) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+      scale_y_continuous(expand = c(0, 0), limits = c(0, 300))
+   
+### Inversion QTNs ####
+#######################################   
+    
+inv.numQTNs <-  ggplot(data = df.all.data[df.all.data$enVar == 0 & df.all.data$muInv == 0.001,], 
+                          aes(x = sim_gen, y = aveQTNs, group = interaction(muBase, alpha, rep))) + 
+      geom_line(aes(color = muBase, linetype = alpha), size = 0.75, alpha = 0.3) + 
+      geom_line(data = df.ave.data[df.ave.data$enVar == 0 & df.ave.data$muInv == 0.001,], 
+                aes(x = sim_gen, y = aveQTNs, group = interaction(muBase, alpha), linetype = alpha, color = muBase), size = 1.2) + 
+      facet_wrap(~ sigmaK + mig1 , labeller = labeller(mig1 = mig.labels),
+                 ncol = 6, nrow = 3) + 
+      labs(title = "Average Number of Inversion QTNs Through Time",
+           y = "Average Number of Inversion QTNs",
+           x = "Generation") +
+      guides(color = guide_legend(title = "QTN Mutation Rate"), 
+             linetype = guide_legend(title = "Sigma Mu (Effect Size)")) +
+      theme_classic() +
+      theme(panel.background = element_blank(), 
+            strip.background = element_rect(colour = "white", fill = "grey92")) +
+      scale_color_manual(values=c( "cadetblue3", "navy")) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + 
+      scale_y_continuous(expand = c(0, 0), limits = c(0, max(df.ave.data$aveQTNs)))
+    
+
+
+```
+## Dataframe for Katie
+
+```{r}
+# merge inversion through time data with parameters
+df.invTimeParam <- merge(df.invTime, df.params, all.x = TRUE, by = c("seed"))
+
+# subset inversion qtn file for just the seeds of interest
+df.invQTNTimeSub <- subset(df.invQTNTime, subset = seed == c(3383645, 3383657, 3383669, 3383681, 3383693))
+colnames(df.invQTNData)[3] <- "qtn_id"
+
+# merge inversion QTN data with parameters
+movie.InvQTNSub.Data <- merge(df.invQTNTimeSub, df.params, all.x = TRUE, by = c("seed"))
+head(movie.InvQTNSub.Data)
+
+df.invQTNData[df.invQTNData$sim_gen==200 & df.invQTNData$qtn_id == 9084,]
+movie.InvQTN.Data <- merge(df.invQTNData, movie.InvQTNSub.Data, all.y = TRUE, by = c("seed", "qtn_id"))
+movie.Inv.Data <- subset(df.invTimeParam, subset = muBase == 0.0000001 
+                          & muInv == 0.001 & sigmaK == 0.75 & alpha == 0.002 
+                          & enVar == 0 & mig1 == 0.25)
+movie.Inv.Data <- merge(movie.Inv.Data, all.y = TRUE, by = c("seed", "inv_id"))
+
+
+write.table(movie.Inv.Data, "movieInvData.txt", row.names = FALSE)
+write.table(movie.InvQTN.Data, "movieInvQTNData.txt", row.names = FALSE)
+
+```
+
+
+# Subset for a file that you are interested in
+```{r}
+# Run subset for either the seed you want or the parameter values
+# either this line:
+df.singleFile <- subset(df.params, subset = seed == 3383282)
+# or this line:
+df.singleFile <- subset(df.params, subset = muBase == 1e-7 & muInv == 1e-3 & alpha == 0.002 & sigmaK == 0.75 & 
+                                            rep == 1 & enVar == 0, mig1 == 0.25)
+
+```

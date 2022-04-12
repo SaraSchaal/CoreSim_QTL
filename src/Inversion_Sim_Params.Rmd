@@ -11,7 +11,7 @@ output: html_document
   
 ## List of Parameters in model
   first.seed <- 3383282 #runif(1, 0, 10000000)
-  mu_base <- c(1e-07, 1e-06)#, 1e-04, 1e-03)
+  mu_prop <- c(0.01, 0.1)#, 1e-04, 1e-03)
   mu_inv <- c(0, 1e-03, 1e-06)#1e-05, 1e-07) #orders of magnitude higher or lower than mu_base
   sigmaK <- c(0.75, 1.5, 3) # reduce to 3 values
   alpha <- c(0.002, 0.2) #sd of effect sizes of QTN mutations
@@ -32,10 +32,10 @@ output: html_document
   dom <- 2 # 2 is false and 1 is true in the code there is an issue with the letter F converting to FALSE
   
 ## Number of total simulations
-  num_sims <- length(mu_base)*length(mu_inv)*length(sigmaK)*length(alpha)*length(reps)*length(N)*length(envar)*length(mig1)*length(recom)*length(burnin)*length(theta1)*length(theta2)*length(chrom_num)
+  num_sims <- length(mu_prop)*length(mu_inv)*length(sigmaK)*length(alpha)*length(reps)*length(N)*length(envar)*length(mig1)*length(recom)*length(burnin)*length(theta1)*length(theta2)*length(chrom_num)
   
 ## colnames vector
-  columns <- c("seed", "muBase", "muInv", "sigmaK", "alpha", "rep", "n", "enVar", "mig1", "mig2", "theta1", "theta2", "burnin", "chromNum", "r", "dom")
+  columns <- c("seed", "muProp", "muInv", "sigmaK", "alpha", "rep", "n", "enVar", "mig1", "mig2", "theta1", "theta2", "burnin", "chromNum", "r", "dom")
 
 ## Time per sim varies based on parameters
  # min <- (num_sims/72)*
@@ -43,7 +43,7 @@ output: html_document
   days <- hours/24
   
   params <- matrix(nrow = 0, ncol = num_param)
-  for(b in 1:length(mu_base)){
+  for(b in 1:length(mu_prop)){
     for(i in 1:length(mu_inv)){
       for(k in 1:length(sigmaK)){
         for(a in 1:length(alpha)){
@@ -51,7 +51,7 @@ output: html_document
             for(n in 1:length(N)){
               for(e in 1:length(envar)){
                 for(m in 1:length(mig1)){
-                  new.row <- c(mu_base[b], mu_inv[i], sigmaK[k], alpha[a],
+                  new.row <- c(mu_prop[b], mu_inv[i], sigmaK[k], alpha[a],
                               reps[r], N[n], envar[e], mig1[m], mig2[m], theta1, 
                               theta2, burnin, chrom_num, recom, dom)
                   params <- rbind(params, new.row)
@@ -72,6 +72,10 @@ rownames(df.params) <- NULL
 head(df.params)
 tail(df.params)
 dim(df.params)
+df.params <- as.data.frame(df.params)
+
+removeLowInvMu_df <- df.params[df.params$muInv != 0.000001,]
+write.table(removeLowInvMu_df, "./results/Inversion/20220302_reviews/FullSet_dfparams.txt")
 #write.table(df.params, "src/invSimParams.txt", row.names = FALSE)
 #test.data #<- df.params[c(1,2155, sample(1:2000, 2)),]
 #write.table(test.data, "src/test_invSimParams.txt", row.names = FALSE)
@@ -83,10 +87,14 @@ df.params.rerun <- rbind(df.params[df.params$seed %in% seq(from = 3384362, to = 
 df.params.rerun2 <- rbind(df.params[df.params$seed <= 3385439 & df.params$seed >= 3385143,])
 
 
-df.params[df.params$mig1 == 0.01 & df.params$muBase ==  0.000001 
+df.params[df.params$mig1 == 0.4 & df.params$muBase ==  0.000001 
             & df.params$sigmaK == 0.75 & df.params$alpha == 0.002 
-            & df.params$enVar == 0 & df.params$muInv == 0, ] 
-df.params[df.params$seed == 3384843,]
+            & df.params$enVar == 0 & df.params$muInv == 0.001, ] 
+df.params[df.params$seed == 3384842,]
+
+removeLowInvMu_df[removeLowInvMu_df$mig1 == 0.1 & removeLowInvMu_df$muProp == 0.1 & 
+                    removeLowInvMu_df$sigmaK == 1.5 & removeLowInvMu_df$alpha == 0.002 &
+                    removeLowInvMu_df$enVar == 0.1 & removeLowInvMu_df$muInv == 0.001,]
 
 # 20210930
 #3384723 poly low mig (0.01) strong selec 
@@ -111,6 +119,9 @@ df.params[df.params$seed == 3384843,]
 #3384365 poly high mig strong select - no islands 3384725
 #3384366 poly high high mig strong select - no islands 3384726
 
+removeLowInvMu_df[removeLowInvMu_df$mig1 == 0.4 & removeLowInvMu_df$muProp == 0.1 & 
+                    removeLowInvMu_df$sigmaK == 0.75 & removeLowInvMu_df$alpha == 0.002 &
+                    removeLowInvMu_df$enVar == 0.1 & removeLowInvMu_df$muInv == 0.00,]
 
 #3383522 oligo low low mig weak select - inv 3383942
 #3383523 oligo low mig weak select - inv 3383943
@@ -130,10 +141,15 @@ df.params[df.params$seed == 3384843,]
 #3383345 oligo high mig strong select - inv 3383705
 #3383346 oligo high high mig strong select - inv 33836706
 
+## Concept fig list
+#orange square - inversions 3384962 no inversion control 3384602
+#purple triangle - inversions 3384843 no inversion control 3384483
+#yellow star - inversion 3384724 no inversion control 3384364 
+#blue circle - inversion 3384725 no inversion control 3384365
 
-df.params.2[df.params.2$mig1 == 0.25 & df.params.2$muBase ==  0.00000001 
-            & df.params.2$sigmaK == 0.75 & df.params.2$alpha == 0.2 
-            & df.params.2$enVar == 0.001 & df.params.2$muInv == 0.001, ]
+df.params[df.params$mig1 == 0.25 & df.params$muBase ==  0.0000001 
+            & df.params$sigmaK == 0.75 & df.params$alpha == 0.2 
+            & df.params$enVar == 0 & df.params$muInv == 0.001, ]
 
 # semi oligo 0.5 mig 3385447 (3385537) 
 # semi oligo 0.25 mig 3385445 (3385535)

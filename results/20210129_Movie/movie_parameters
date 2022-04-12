@@ -1,1 +1,0 @@
--d chromNum=21 -d r=1e-06 -d theta1=1 -d theta2=-1 -d burnin=10000 -d muBase=1e-06 -d n=1000 -d mig1=0.25 -d mig2=0.25 -d sigmaK=0.75 -d alpha=0.002 -d seed=3384725 -d enVar=0 -d muInv=1e-3 -d dom=2

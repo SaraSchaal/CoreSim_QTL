@@ -4,14 +4,7 @@
 .Ruserdata
 
 /results/Inversion
-/results/20210104_Movie/noSeed_InversionVCF.vcf
-/results/20210129_Movie/3384725_InversionVCF.vcf
-/results/Origin/3384725_InversionVCF.vcf
-/results/Origin/3384725_outputOriginInvQtn.txt
-/figures/ManuscriptFigs/extras/manh_heatmaps_GenomicIslands.pdf
-/figures/ManuscriptFigs/Supplementary/
+/results/Movies
+/figures/
 /inversion_movie/
-/figures/20210930_fixOrigin/
-/figures/20211010_invFix/
-/figures/20210803_noInvControls/
 /src/submissionFiles/

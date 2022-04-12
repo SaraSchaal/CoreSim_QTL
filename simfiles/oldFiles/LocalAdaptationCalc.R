@@ -1,64 +1,69 @@
+DATADIR <- "/scratch/schaal.s/InversionSimulations/results/20220220/10gen"
+folder <- "./results/Inversion/20220302_reviews/10gen/"
+PARAMSDIR <- "/scratch/schaal.s/InversionSimulations/src/"
+DATAOUT <- "/scratch/schaal.s/InversionSimulations/figures/"
 
-unique.params <- read.table("FullSet_uniqueParams.txt", header = TRUE)
-df.popDyn <- read.table("FullSet_popDyn.txt", header = TRUE)
+df.params <- read.table(paste0(PARAMSDIR, "FullSet_dfparams.txt"))
 
-########################
-### average for loop ###
-###################################################################
-
-df.LA.average <- NULL
-# step through each line of the unique parameters dataframe
-for(i in 1:nrow(unique.params)){
-  # create empty variable for putting each data set that should be average
-  df.average <- NULL
-  av.seeds <- NULL
-  # step through the population dynamics dataframe
-  for(j in 1:nrow(df.popDyn)){
-    # step through the different seeds that have the unique parameters
-    for(k in 1:reps){
-      seedCol <- paste("Seed", k, sep="")
-      # if that seed is not an NA then do the next step
-      if(!is.na(unique.params[i, seedCol])){
-        # if the seed from unique parameters matches the seed of the pop dynam dataset store it
-        if(df.popDyn$seed[j] == unique.params[i, seedCol]){
-          df.average <- rbind(df.average, df.popDyn[j,])
-          av.seeds <- unique(c(av.seeds, unique.params[i, seedCol]))
-        }
-      }
-    }
+df.popDyn <- NULL
+count <- 0
+for(i in 1:nrow(df.params)){
+  seed <- df.params$seed[i]
+  popDynNewFile <- read.table(paste(DATADIR, seed, "_outputPopDynam.txt", sep=""), header = TRUE, stringsAsFactors = FALSE)
+  if(nrow(popDynNewFile) > 0){
+    popDynNewFile$seed <- seed
+    df.popDyn <-  rbind(df.popDyn, popDynNewFile)
   }
-  
-  ## average columns of interest
-  # df.averageSubset <- df.average[,vect.aggCols]
-  new.average <- aggregate(.~sim_gen, data = df.average, FUN = mean)
-  df.simParams <- data.frame(mu_inv = rep(unique.params$mu_inv[i], nrow(new.average)), 
-                             mig = rep(unique.params$mig1[i], nrow(new.average)),
-                             alpha = rep(unique.params$alpha[i], nrow(new.average)), 
-                             sigmaK = rep(unique.params$sigmaK[i], nrow(new.average)), 
-                             enVar = rep(unique.params$enVar[i], nrow(new.average)), 
-                             mu_base = rep(unique.params$mu_base[i], nrow(new.average)))
-  
-  
-  # create seed columns so we can keep track of relevant seed names
-  df.Seedcolumns <- NULL
-  vect.colNames <- NULL
-  vect.NAseeds <- NULL
-  for(m in 1:reps){
-    seedCol <- paste("Seed", m, sep = "")
-    if(!is.na(av.seeds[m])){
-      df.Seedcolumns <- cbind(df.Seedcolumns, rep(av.seeds[m], nrow(new.average)))
-    } else {
-      df.Seedcolumns <- cbind(df.Seedcolumns, rep(NA, nrow(new.average)))
-    }
-    vect.colNames <- c(vect.colNames, seedCol)
-  }
-  colnames(df.Seedcolumns) <- vect.colNames
-  
-  # finally bind together all the data in the final dataframe
-  df.LA.average <- rbind(df.LA.average, cbind(new.average, df.simParams, df.Seedcolumns))
-  
-} # close average for loop
-###################################################################
-df.LA.average <- subset(df.LA.average, select = -seed)
+  count <- count + 1
+  print(count)
+}
+write.table(df.popDyn, paste0(DATAOUT,"FullSet_popDyn.txt"), row.names = FALSE)
 
-write.table(df.LA.average, "FullSet_localAdaptation.txt")
+df.popDyn_stats <- left_join(df.popDyn, df.params, by ="seed")
+
+popDyn_plotting_df <- aggregate(cbind(localAdaptSA, invVA, outVA)~sim_gen +muProp + muInv + sigmaK + alpha + rep + mig1 + enVar, FUN = mean, data = df.popDyn_stats)
+write.table(popDyn_plotting_df, paste0(DATAOUT, "FullSet_popDynam.txt"))
+# 
+# for(i in 2:(ncol(popDyn_plotting_df)-3)){
+#   popDyn_plotting_df[,i] <- as.factor(popDyn_plotting_df[,i])
+# }
+# popDyn_plotting_df$sigmaK <- factor(popDyn_plotting_df$sigmaK, c(3, 1.5, 0.75))
+# popDyn_plotting_df$sigmaK <- recode_factor(popDyn_plotting_df$sigmaK, '3' = 'Weak Selection', '1.5' = 'Moderate Selection','0.75' = 'Strong Selection')
+# popDyn_plotting_df$muInv <- recode_factor(popDyn_plotting_df$muInv, '0.001' = 'Inversions', '0' = 'No Inversions')
+# 
+# 
+# 
+# ggplot(data = popDyn_plotting_df, 
+#        aes(x = sim_gen, y = localAdaptSA, group = interaction(mig1, rep, muInv, sigmaK))) + 
+#   geom_line(aes(color = mig1, linetype = rep)) + 
+#   scale_color_manual(values = viridis(6)) + 
+#  # facet_grid(muInv~sigmaK) + 
+#   facet_wrap(~muInv + sigmaK) +
+#   labs(x = "Generation", y = "Local Adaptation") + 
+#   guides(color = guide_legend(title = "Migration Rate"),
+#          linetype = guide_legend(title = "Replicate")) +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   ylim(-0.05, 0.6)
+# 
+# ggplot(data = popDyn_plotting_df[popDyn_plotting_df$muProp ==0.01 & 
+#                                    popDyn_plotting_df$alpha ==0.2 &
+#                                    popDyn_plotting_df$enVar == 0.1,], 
+#        aes(x = sim_gen, y = localAdaptSA, group = interaction(mig1, rep, muInv, sigmaK))) + 
+#   geom_line(aes(color = mig1, linetype = rep)) +
+#   scale_color_manual(values = viridis(6)) + 
+#   #facet_grid(muInv~sigmaK) + 
+#   facet_wrap(~muInv + sigmaK) + 
+#   labs(x = "Generation", y = "Local Adaptation") + 
+#   guides(color = guide_legend(title = "Migration Rate"),
+#          linetype = guide_legend(title = "Replicate")) +
+#   theme_classic() +
+#   theme(panel.background = element_blank(), 
+#         strip.background = element_rect(colour = "white", fill = "grey92")) +
+#   ylim(-0.05, 1)
+# 
+#   
+
+
+

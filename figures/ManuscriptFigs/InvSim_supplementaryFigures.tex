@@ -29,13 +29,14 @@
  \raggedright
  \setlength{\parindent}{15pt} 
 
+\renewcommand{\figurename}{Supplementary Figure}
 
 \begin{document}
 
 \pagecolor{white}
 
 \begin{center}
-{ \Large \bf Figures }
+{ \Large \bf Supplementary Figures }
 \end{center}
 
 \listoffigures
@@ -45,9 +46,23 @@
 
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[width = 6.5 in]{./Supplementary/FigS1_Concept_genomeWide.pdf}
+		\includegraphics[width = 6.5 in]{./SFig1_schematicInversions.pdf}
 	\end{center}
-	\caption[Genome-wide divergence region examples]{Manhattan plots for two examples of what was termed as genome-wide adaptation. Simulations that included inversions are plotted on top and paired no-inversion control simulations are plotted on bottom. Dark and light blue colors for QTNs are alternated for each chromosome with the final all neutrally evolving chromosome in grey. Any yellow bars in manhattan plots represent regions that have an inversion.}
+	\caption[Supplementary Figure 1: Schematic for Inversion Overlap Dynamics]{Schematic depicting the way inversions were simulated. A) a new inversion mutation that was drawn in an individual could not overlap with an existing inversion. The top haplotype shows the proposed new inversion mutation (tan colored bar) and the bottom haplotype shows the individuals haplotype in that region which shows an existing inversion mutation (red colored bar) that overlaps with the location drawn for the new inversion mutation. This inversion was not allowed. B) If this draw was picked instead for an individual that did not have that existing mutation in their genome, the inversion was allowed. C) This resulted in some genomes having overlapping inversion windows (first potential genome) if an individual was heterozygous for each of the two inversions that have overlapping locations.}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 6.5 in]{SFig2_crossoversSlim.pdf}
+	\end{center}
+	\caption[Supplementary Figure 2: Recombination in Inversion Homozygotes]{Schematic depicting the way inversions recombine in inversion homozygotes in nature (A) vs. how they were simulated in SLiM (B). In nature, if a crossover (blue arrows) occurs in an individual that is homozygous for an inversion and that crossover occurs at a site inside an inversion then recombination occurs with alleles flipped between haplotypes after the crossover point (A). In this example, "A C D" switches with "a c d" resulting in two gametes "B a c d" and "b A C D".  In SLiM however, the inverted arrangement is not stored and a second crossover needs to be forced in order for the gametes to produce as they would in nature. Here a second crossover is placed at the end of the inverted sequence to result in the gametes "a B c d" and "A b C D" which matches what would happen in nature, but the QTNs are in a slightly different order.}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 6.5 in]{SFig3_LAthroughTime_enVar.pdf}
+	\end{center}
+	\caption[Supplementary Figure 3: Local Adaptation Through Time (environmental variance)]{Amount of local adaptation that evolved over time in each parameter combination for simulations that included environmental variance on the phenotype. Data are plotted for A) polygenic architecture and B) the highly polygenic architecture with simulations that included inversions in the left column compared to the paired simulations with no inversion mutations. Colored lines represent the six different migration rates and different shaped lines represent the five replicate simulations for that parameter combination. }
 \end{figure}
 
 \clearpage
@@ -55,9 +70,9 @@
 
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[width = 4.5 in]{FigS2_Heatmaps.pdf}
+		\includegraphics[width = 6.5 in]{SFig4_LAthroughTime_NoenVar.pdf}
 	\end{center}
-	\caption[Heatmaps of the genetic architecture of divergence]{Manhattan plots with F\textsubscript{ST} of all QTNs in the genome as a function of chromosome position for A ) simulation where inversions facilitated adaptation and B) the paired no inversion control on the top panel that evolved strong islands of divergence (mig = 0.25, strong selection, polygenic architecture). Corresponding heatmaps are plotted below each manhattan plot and are colored by the genotype at a given locus for each individual in population 1 (middle panel) and population 2 (bottom panel). Yellow bars in manhattan plots represent regions that have an inversion. Dark and light blue colors for QTNs are alternated for each chromosome with the final all neutrally evolving chromosome in grey. }
+	\caption[Supplementary Figure 4: Local Adaptation Through Time (no environmental variance)]{Amount of local adaptation that evolved over time in each parameter combination for simulations that did not include environmental variance on the phenotype. Data are plotted for A) polygenic architecture and B) the highly polygenic architecture with simulations that included inversions in the left column compared to the paired simulations with no inversion mutations. Colored lines represent the six different migration rates and different shaped lines represent the five replicate simulations for that parameter combination. }
 \end{figure}
 
 \clearpage
@@ -66,9 +81,9 @@
 
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[width = 4.5 in]{./Supplementary/FigS4_selectSim.pdf}
+		\includegraphics[width = 6.5 in]{SFig5_VAthroughTime_enVar.pdf}
 	\end{center}
-	\caption[Genome Scan Performance for Selection Simulations]{Average number of adaptive QTNs either called correctly as outliers (blue bars) or incorrectly called as nonoutliers (yellow bars) and average number of nonadaptive QTNs either called correctly as nonoutliers (navy bars) or incorrectly called as outliers (golden bars) for A) PCAdapt and B) OutFLANK. Results are plotted for an oligogenic architecture in the top row and polygenic architecture in the bottom row. PCAdapt showed a slight increase in the number of adaptive nonoutliers in selection simulations when the trait was polygenic (Fig S5A see adaptive inversion indicated by black arrow in example manhattan plot where PCAdapt shows no outliers called inside that region). Conversely, OutFLANK showed a slight increase in the number of nonadaptive outliers in selection simulations when gene flow between populations was low under a polygenic architecture (Fig S5B see inversion indicated by black arrow in example manhattan plot where OutFLANK shows outliers called inside a nonadaptive inversion region). }
+	\caption[Supplementary Figure 5: Additive Genetic Variance (environmental variance)]{Amount of additive genetic variance (V\textsubscript{A}) that evolved over time in each parameter combination for simulations that included environmental variance on the phenotype. Data are plotted for A) polygenic architecture and B) the highly polygenic architecture with simulations that included inversions in the left column compared to the paired simulations with no inversion mutations. Colored lines represent the six different migration rates and different shaped lines represent the five replicate simulations for that parameter combination. }
 \end{figure}
 
 \clearpage
@@ -76,9 +91,9 @@
 
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[width = 6.5 in]{FigS5_manh_outliers.pdf}
+		\includegraphics[width = 6.5 in]{SFig6_VAthroughTime_NoenVar.pdf}
 	\end{center}
-	\caption[Incorrect Outlier Examples]{Manhattan plots depicting either the FST of QTN loci (Top row across panels) or the empicial p-value for two different outlier detection methods, OutFLANK (middle row) and PCAdapt (bottom row), as a function of genomic position. Each point represents a QTN loci with alternating dark and light blue circles in the top panel representing each chromosome with loci under selection and light grey squares being the neutrally evolving chromosome. In the six outlier panels (middle and bottom rows), black filled in dots and red open circles represent nonoutlier and outlier loci, respectively. All gold bars represent inverted regions that are present in the simulation. Adaptive inversions are depicted in panel A with the black arrow identifying an inversion that was not identified as an outlier in PCAdapt. Panel B shows nonadaptive inversions with an arrow identifying an inversion that was called as an outlier in OutFLANK. Panel C shows inversions from the no-selection control simulation with an arrow identifying a nonadaptive inversion that was called as an outlier in PCAdapt.}
+	\caption[Supplementary Figure 6: Additive Genetic Variance (no environmental variance)]{Amount of additive genetic variance (V\textsubscript{A}) that evolved over time in each parameter combination for simulations that did not include environmental variance on the phenotype. Data are plotted for A) polygenic architecture and B) the highly polygenic architecture with simulations that included inversions in the left column compared to the paired simulations with no inversion mutations. Colored lines represent the six different migration rates and different shaped lines represent the five replicate simulations for that parameter combination. }
 \end{figure}
 
 \clearpage
@@ -86,9 +101,75 @@
 
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[width = 4.5 in]{./Supplementary/FigS6_noSelect.pdf}
+		\includegraphics[width = 6.5 in]{SFig7_overlappingInversions.pdf}
 	\end{center}
-	\caption[Genome Scan Performance for No-Selection Simulations]{Average number of nonadaptive QTNs either incorrectly called as outliers (blue bars) or correctly called as nonoutliers (yellow bars) for A) PCAdapt and B) OutFLANK. Results are plotted for an oligogenic architecture in the top row and polygenic architecture in the bottom row. PCAdapt showed a slight increase in false positives in control no-selection simulations when the trait was polygenic and migration rate was high (Fig S5C see inversion indicated by black arrow in example manhattan plot where PCAdapt shows outliers called inside a nonadaptive inversion region from a no-selection simulation). Error bars represent a single standard deviation among five replicate simulations.}
+	\caption[Supplementary Figure 7: Overlapping Inversions]{The average amount of overlapping inversions (A \& B) and inversions completely within other inversions (C \& D) that evolved plotted as a function of migration rate and split between three panels representing weak, moderate and strong selection for the polygenic (A \& C) and highly polygenic architectures (B \& D). All averages are across five replicate simulations and all error bars represent one standard deviation. Region symbols for simulations with local adaptation are plotted at the bottom of the figure with a brief description of the region\'s genomic architecture for both with-inversion and no-inversion control simulations. All results are shown for simulations that included environmental variance.}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 6.5 in]{SFig8_adaptInv_alphaHeatmap.pdf}
+	\end{center}
+	\caption[Supplementary Figure 8: Heatmap for adaptive inversion QTN effect sizes]{Heatmap and corresponding manhattan plot for populations 1 \& 2 showing their genotype matrix for adaptive inversion QTNs. Heatmap only depicts QTNs found inside inversions. The effect size of each QTN was converted to a -1 if less than one and +1 if greater than one and was then multiplied by both the genotype of the individual (0 for homozygous ancestral, 1 for heterozygous, and 2 for homozygous derived) and the F\textsubscript{ST} of the QTN. Red colors represent negative values and blues as positive values with the deeper the color the further from 0. Black boxes outline the different inversions that are segregating in the heatmap.}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 6.5 in]{SFig9_nonadaptInv_alphaHeatmap.pdf}
+	\end{center}
+	\caption[Supplementary Figure 9: Heatmap for nonadaptive inversion QTN effect sizes]{Heatmap and corresponding manhattan plot for populations 1 \& 2 showing their genotype matrix for nonadaptive inversion QTNs. Heatmap only depicts QTNs found inside inversions. The effect size of each QTN was converted to a -1 if less than one and +1 if greater than one and was then multiplied by both the genotype of the individual (0 for homozygous ancestral, 1 for heterozygous, and 2 for homozygous derived) and the F\textsubscript{ST} of the QTN. Red colors represent negative values and blues as positive values with the deeper the color the further from 0. Black boxes outline the different inversions that are segregating in the heatmap.}
+\end{figure}
+
+\clearpage
+\newpage
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 4.5 in]{FigS10_genoheatmap.pdf}
+	\end{center}
+	\caption[Supplementary Figure 10: Heatmaps of the genetic architecture of divergence]{Manhattan plots with F\textsubscript{ST} of all QTNs in the genome as a function of chromosome position for A ) simulation where inversions facilitated adaptation (mig = 0.25, strong selection, polygenic architecture) and B) a no-inversion control on the top panel that evolved strong islands of divergence (mig = 0.1 strong selection, polygenic architecture). Corresponding heatmaps are plotted below each manhattan plot and are colored by the genotype at a given locus for each individual in population 1 (middle panel) and population 2 (bottom panel). Tan bars in manhattan plots represent regions that have an inversion. Dark and light blue colors for QTNs are alternated for each chromosome with the final all neutrally evolving chromosome in grey. }
+\end{figure}
+
+\clearpage
+\newpage
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 4.5 in]{FigS11_characteristics_shapes.pdf}
+	\end{center}
+	\caption[Supplementary Figure 11: Inversion Characteristics split by parameter combination]{The average of three inversion characteristics across five replicate simulations is plotted as a function of migration rate and split between three panels representing weak, moderate and strong selection for adaptive inversions in orange, nonadaptive inversions in light grey, and inversions from the no-selection control simulation in black. Inversion age in generations (gen) is plotted for a A) polygenic architecture and B) highly polygenic architecture. Average inversion length in cM is plotted for a C) polygenic architecture and D) highly polygenic architecture. Average number of inversion quantitative trait nucleotides (QTNs) scaled by the total length of the inversion plotted for a E) highly polygenic architecture and F) polygenic architecture. Blank spaces represent those parameter combinations where no adaptive inversions evolved. Region symbols for simulations with local adaptation are plotted at the bottom of the figure. }
+\end{figure}
+
+\clearpage
+\newpage
+
+
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 4.5 in]{FigS12_outliers_count_envar_shapes.pdf}
+	\end{center}
+	\caption[Supplementary Figure 12: Genome Scan Performance for Selection Simulations]{Average number (across five replicate simulations) of adaptive inversions either called correctly as outliers (blue bars) or incorrectly called as nonoutliers (yellow bars) and average number of nonadaptive inversions either called correctly as nonoutliers (navy bars) or incorrectly called as outliers (golden bars) for A) pcadapt and B) OutFLANK. Results are plotted for an polygenic architecture in the top row and highly polygenic architecture in the bottom row. pcadapt showed a slight increase in the number of adaptive nonoutliers in selection simulations when the trait was polygenic (Fig S5A see adaptive inversion indicated by black arrow in example manhattan plot where pcadapt shows no outliers called inside that region). Conversely, OutFLANK showed a slight increase in the number of nonadaptive outliers in selection simulations when gene flow between populations was low under a highly polygenic architecture (Fig S5B see inversion indicated by black arrow in example manhattan plot where OutFLANK shows outliers called inside a nonadaptive inversion region). }
+\end{figure}
+
+\clearpage
+\newpage
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 6.5 in]{FigS13_manh_outliers.pdf}
+	\end{center}
+	\caption[Supplementary Figure 13: Incorrect Outlier Examples]{Manhattan plots depicting either the F\textsubscript{ST} of QTN loci (Top row across panels) or the empirical p-value for two different outlier detection methods, OutFLANK (middle row) and pcadapt (bottom row), as a function of genomic position. Each point represents a QTN locus with alternating dark and light blue circles in the top panel representing each chromosome with loci under selection and light grey squares being the neutrally evolving chromosome. In the six outlier panels (middle and bottom rows), black filled in dots and red open circles represent nonoutlier and outlier loci, respectively. All gold bars represent inversion regions that are present in the simulation. Adaptive inversions are depicted in panel A with the black arrow identifying an inversion that was not identified as an outlier in pcadapt. Panel B shows nonadaptive inversions with an arrow identifying an inversion that was called as an outlier in OutFLANK. Panel C shows inversions from the no-selection control simulation with black arrows identifying a nonadaptive inversion that was called as an outlier in pcadapt.}
+\end{figure}
+
+\clearpage
+\newpage
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width = 4.5 in]{FigS14_outliersNS_count_envar_shapes.pdf}
+	\end{center}
+	\caption[Supplementary Figure 14: Genome Scan Performance for No-Selection Simulations]{Average number (across five replicate simulations) of nonadaptive inversions either incorrectly called as outliers (blue bars) or correctly called as nonoutliers (yellow bars) for A) pcadapt and B) OutFLANK. Results are plotted for an polygenic architecture in the top row and highly polygenic architecture in the bottom row. PCAdapt showed a slight increase in nonadaptive outliers in control no-selection simulations when the trait was highly polygenic and migration rate was high (Fig S5C see inversion indicated by black arrow in example manhattan plot where pcadapt shows outliers called inside a nonadaptive inversion region from a no-selection simulation).}
 \end{figure}
 
 \clearpage
